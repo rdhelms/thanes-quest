@@ -330,6 +330,8 @@ export class Shell {
     if (sim.room.scene.kind === 'outdoor') out.push({ label: 'Map', line: 'map' });
     if (p.inv.potion && p.hp < p.maxHp * 0.6) out.push({ label: 'Drink a draught', line: 'drink potion' });
     if (p.inv.torch && sim.isDark()) out.push({ label: 'Light the torch', line: 'light torch' });
+    const spare = p.other && p.inv[p.other] ? c.items[p.other] : null;
+    if (spare) out.push({ label: `Ready the ${spare.name}`, line: 'swap' });
     for (const [id, n] of Object.entries(p.inv)) {
       // Things carried that are worth using where the player now stands, as the game's data marks them.
       const it = c.items[id];

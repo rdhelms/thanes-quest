@@ -2230,3 +2230,20 @@ describe('being told what is going wrong', () => {
     expect(swing()).toBe(false);
   });
 });
+
+describe('swapping weapons', () => {
+  it('goes from blade to bow and back without either being named', () => {
+    const sim = game();
+    expect(type(sim, 'swap')[0]).toBe(content.text.noSwap);
+    sim.give('sword');
+    sim.give('bow');
+    expect(sim.p.weapon).toBe('sword');
+    type(sim, 'swap');
+    expect(sim.p.weapon).toBe('bow');
+    type(sim, 'switch weapon');
+    expect(sim.p.weapon).toBe('sword');
+    type(sim, 'equip bow');
+    type(sim, 'q');
+    expect(sim.p.weapon).toBe('sword');
+  });
+});

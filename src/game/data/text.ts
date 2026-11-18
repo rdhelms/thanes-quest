@@ -91,6 +91,7 @@ export const text: Record<string, string> = {
   wordUnknown: 'The word sits in your mouth like a pebble. You do not yet know how to mean it.',
   wordTired: 'The word will not come again so soon.',
   noBow: 'You have nothing in hand that shoots.',
+  noSwap: 'You have nothing else to fight with.',
   saved: 'Your progress is carved in memory.',
   emptySlot: 'There is nothing saved there.',
   deathPrompt: 'Your saga ends here. For now.',
@@ -99,7 +100,7 @@ export const text: Record<string, string> = {
     'Arrow keys walk. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
     'Hold Shift to guard. Raise it when a foe shows a gold ! and the blow is turned aside, leaving them open.\n\n' +
     'Tab shows what you carry. Esc opens the menu; its Settings can make fights gentler.\n\n' +
-    'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC.\n\n' +
+    'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. SWAP changes between your last two weapons.\n\n' +
     'MAP shows where you have been, and the arrow keys look about it. JOURNAL lists your tasks, SKILLS what you have learned, and DEEDS what you have done. EXITS lists the ways out. THINK reminds you what to do next, and what is within reach. SAVE and RESTORE do what they say.\n\n' +
     'On a touch screen: the pad walks, Hit and Guard fight, OK answers, and the buttons above the pad offer what can be done where you stand.\n\n' +
     'Enter on an empty line repeats your last command. F1 is this help, F2 turns sound on and off, F3 brings back your last line to change, F4 is the map.',

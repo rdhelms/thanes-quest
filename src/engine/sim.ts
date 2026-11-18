@@ -165,6 +165,7 @@ export class Sim {
     const def = this.content.items[item];
     const held = p.weapon ? this.content.items[p.weapon] : null;
     if (def?.kind === 'weapon' && (!held || (held.kind === 'weapon' && (def.power ?? 0) > (held.power ?? 0)))) {
+      if (p.weapon) p.other = p.weapon;
       p.weapon = item;
       this.note(this.text('equipped', def.name));
     } else if (def?.kind === 'shield' && !p.shield) {

@@ -316,7 +316,7 @@ export const chars: Record<string, CharDef> = {
       {
         if: [{ quest: 'wolves', is: 1 }, { flag: 'wolves.killed', min: 3 }],
         say: '"Three. I heard them go quiet, one after another." He unslings the bow and holds it out. "A bargain is a bargain. She pulls a little to the left. You will get used to it."',
-        do: [{ quest: 'wolves', stage: 2 }, { give: 'bow' }, { score: 10, id: 'wolves.done' }, { note: 'Tip: EQUIP BOW, then attack to loose an arrow.' }],
+        do: [{ quest: 'wolves', stage: 2 }, { give: 'bow' }, { score: 10, id: 'wolves.done' }, { note: 'Tip: EQUIP BOW, then attack to loose an arrow. SWAP changes back.' }],
       },
       { if: [{ quest: 'wolves', is: 1 }], say: '"Not three yet. There are two in the west of this wood and at least one up on the ridge. Do not let them get behind you."' },
       { if: [{ flag: 'crown.unmade' }], say: '"I heard a thrush this morning. In the pinewood, in this month." Toke shakes his head slowly. "My hand is mending, too. Another week and I shall want that bow back." He very nearly smiles. "No. Keep her. You have fed her better than I ever did."' },

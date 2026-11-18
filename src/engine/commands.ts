@@ -227,6 +227,7 @@ function builtin(sim: Sim, verb: string, nouns: string[]): boolean {
     case 'equip': {
       if (!target || target.k !== 'item') sim.say(sim.text(nouns.length ? 'notCarried' : 'useWhat'));
       else if (target.def.kind === 'weapon' || target.def.kind === 'bow') {
+        if (p.weapon && p.weapon !== target.def.id) p.other = p.weapon;
         p.weapon = target.def.id;
         sim.say(sim.text('equipped', target.def.name));
       } else if (target.def.kind === 'shield') {
@@ -256,6 +257,18 @@ function builtin(sim: Sim, verb: string, nouns: string[]): boolean {
         sim.say(sim.text('unequipped'));
       }
       return true;
+    case 'swap': {
+      // Blade for bow and back again, without having to name either.
+      const carried = (id: string | null | undefined): id is string => !!id && (p.inv[id] ?? 0) > 0;
+      const next = carried(p.other) ? p.other : Object.keys(p.inv).find((id) => id !== p.weapon && ['weapon', 'bow'].includes(sim.content.items[id]?.kind ?? ''));
+      if (!next) sim.say(sim.text('noSwap'));
+      else {
+        p.other = p.weapon;
+        p.weapon = next;
+        sim.note(sim.text('equipped', sim.content.items[next].name));
+      }
+      return true;
+    }
     case 'exits':
       sim.say(exitsText(sim));
       return true;

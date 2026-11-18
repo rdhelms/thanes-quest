@@ -58,6 +58,7 @@ export const vocab: VocabDef = {
     sell: ['barter', 'pawn'],
     chop: ['cut', 'split', 'hack'],
     blow: ['breathe', 'puff', 'exhale'],
+    swap: ['switch', 'swap weapon', 'switch weapon', 'change weapon', 'other weapon', 'q'],
     temper: ['sharpen', 'hone', 'improve', 'upgrade', 'reforge', 'whet', 'tempered', 'sharpened', 'repair', 'fix', 'reinforce', 'strengthen'],
     price: ['how much', 'cost', 'costs', 'prices', 'wares'],
     time: ['what time', 'hour'],

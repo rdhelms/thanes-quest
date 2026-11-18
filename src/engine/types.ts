@@ -574,6 +574,8 @@ export interface PlayerState {
   inv: Record<string, number>;
   weapon: string | null;
   shield: string | null;
+  /** The weapon last put away, so the two can be swapped between without naming them. */
+  other?: string | null;
   armor?: string | null;
   /** The one trinket worn. */
   trinket?: string | null;
