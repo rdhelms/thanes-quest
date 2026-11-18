@@ -14,7 +14,9 @@ npm run dev
 
 Then open the address Vite prints (normally http://localhost:5173/).
 
-A built copy is hosted at https://thanes-quest.<account>.workers.dev
+A built copy is hosted at https://thanes-quest.daventry.io (and, as before, at
+https://thanes-quest.<account>.workers.dev). Saves are kept by the browser for the address
+they were made at, so a game saved at one is not seen at the other.
 
 | Command | What it does |
 |---|---|
