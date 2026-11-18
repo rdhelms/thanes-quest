@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>Thane's Quest</title>
+    <meta name="description" content="An open-world action RPG in an early typing-adventure shell. Walk, fight in real time, and type everything else." />
+    <meta name="theme-color" content="#000000" />
+    <!-- Added to a phone's home screen, the game opens full screen, without the browser round it. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Thane's Quest" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23161927'/%3E%3Cpath d='M7 2h2v12H7zM9 4h2v2H9zM11 6h2v2h-2zM9 8h2v2H9zM5 9h2v2H5zM3 11h2v2H3z' fill='%234cc4bc'/%3E%3C/svg%3E" />
+    <style>
+      html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
+      body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+      canvas { image-rendering: pixelated; display: block; touch-action: none; }
+
+      /* Touch controls: hidden unless the device has no keyboard to speak of. */
+      #ui { display: none; }
+      .touch body { justify-content: flex-start; padding-top: max(6px, env(safe-area-inset-top)); box-sizing: border-box; }
+      .touch #ui {
+        display: flex; flex-direction: column; gap: 8px; width: min(100vw, 520px); padding: 0 10px; box-sizing: border-box;
+        font: 15px/1.2 system-ui, sans-serif; color: #e4e4e4; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+      }
+      .touch button {
+        font: inherit; color: #e8e8e8; background: #23262e; border: 1px solid #474d5d; border-radius: 8px;
+        touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      }
+      .touch button:active, .touch button.down { background: #3c59a8; border-color: #6c8ad0; }
+      #chips { display: flex; gap: 6px; overflow-x: auto; min-height: 36px; scrollbar-width: none; }
+      #chips::-webkit-scrollbar { display: none; }
+      #chips button { flex: none; padding: 8px 12px; white-space: nowrap; }
+      #say { display: flex; gap: 6px; margin: 0; }
+      #cmd {
+        flex: 1; min-width: 0; font: 16px/1.2 ui-monospace, Menlo, monospace; color: #fff; background: #10121c;
+        border: 1px solid #474d5d; border-radius: 8px; padding: 9px 10px; -webkit-user-select: text; user-select: text;
+      }
+      #cmd:focus { outline: none; border-color: #6c8ad0; }
+      #say button { padding: 0 14px; }
+      #pads { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+      #dpad {
+        position: relative; width: 136px; height: 136px; border-radius: 50%; flex: none; touch-action: none;
+        background: radial-gradient(circle, #343a4b 0 22%, #1c202c 23% 100%); border: 1px solid #474d5d;
+      }
+      #dpad i { position: absolute; width: 0; height: 0; border: 9px solid transparent; opacity: 0.55; }
+      #dpad .u { left: 59px; top: 10px; border-bottom-color: #cdd3dc; border-top-width: 0; }
+      #dpad .d { left: 59px; bottom: 10px; border-top-color: #cdd3dc; border-bottom-width: 0; }
+      #dpad .l { top: 59px; left: 10px; border-right-color: #cdd3dc; border-left-width: 0; }
+      #dpad .r { top: 59px; right: 10px; border-left-color: #cdd3dc; border-right-width: 0; }
+      #dpad[data-dir~="up"] .u, #dpad[data-dir~="down"] .d, #dpad[data-dir~="left"] .l, #dpad[data-dir~="right"] .r { opacity: 1; }
+      #acts { display: grid; grid-template-columns: repeat(3, 62px); grid-auto-rows: 54px; gap: 8px; }
+      #acts .hit { grid-row: span 2; background: #4a1a1c; border-color: #b02c2a; font-weight: 600; }
+      #acts .hit.down { background: #b02c2a; }
+      /* Upright, the pad and buttons sit at the foot of the screen, where thumbs are. */
+      @media (orientation: portrait) {
+        .touch #pads {
+          position: fixed; left: 50%; transform: translateX(-50%); width: min(calc(100vw - 20px), 500px); box-sizing: border-box;
+          bottom: max(18px, env(safe-area-inset-bottom));
+        }
+      }
+      /* While the phone's keyboard is up there is no room for the pad. */
+      .typing #pads, .typing #chips { display: none; }
+
+      @media (orientation: landscape) {
+        .touch body { justify-content: center; padding-top: 0; }
+        .touch #ui { gap: 6px; }
+        .touch #pads { display: block; }
+        .touch #dpad { position: fixed; left: max(10px, env(safe-area-inset-left)); bottom: 12px; }
+        .touch #acts { position: fixed; right: max(10px, env(safe-area-inset-right)); bottom: 12px; grid-template-columns: repeat(2, 62px); }
+        .touch #acts .hit { grid-row: auto; grid-column: span 2; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="screen"></canvas>
+    <div id="ui">
+      <div id="chips"></div>
+      <form id="say" autocomplete="off">
+        <input id="cmd" type="text" placeholder="Type a command" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-label="Command" />
+        <button type="submit">Send</button>
+      </form>
+      <div id="pads">
+        <div id="dpad" aria-label="Walk"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i></div>
+        <div id="acts">
+          <button type="button" data-key="Escape">Menu</button>
+          <button type="button" data-key="Tab">Bag</button>
+          <button type="button" data-key="Control" class="hit">Hit</button>
+          <button type="button" data-key="Shift">Guard</button>
+          <button type="button" data-key="Enter">OK</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

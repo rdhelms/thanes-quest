@@ -1,0 +1,7 @@
+{
+  // Static hosting for the built game. Deploy with: npm run deploy
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thanes-quest",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./dist" }
+}

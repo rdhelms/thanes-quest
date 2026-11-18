@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thane's Quest: art test</title>
+    <style>
+      body { background: #15161a; color: #d8d8d8; font: 14px/1.45 system-ui, sans-serif; margin: 16px; }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      h2 { font-size: 14px; margin: 0 0 2px; color: #fff; }
+      p { margin: 4px 0; color: #a4a4a4; max-width: 70ch; }
+      code { color: #e6c35e; }
+      .bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 16px; align-items: center; }
+      .bar span { color: #8a8a8a; margin-left: 10px; }
+      button { background: #2a2c33; color: #e4e4e4; border: 1px solid #444852; border-radius: 4px; padding: 5px 10px; font: inherit; cursor: pointer; }
+      button.on { background: #3c59a8; border-color: #6c8ad0; }
+      .grid { display: flex; flex-wrap: wrap; gap: 22px; }
+      canvas { image-rendering: pixelated; display: block; background: #000; max-width: 100%; height: auto; }
+      .card { max-width: 100%; }
+      .card canvas + canvas { margin-top: 6px; }
+      .card p { font-size: 13px; margin: 0 0 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Thane's Quest: art test</h1>
+    <p>
+      One scene description and one set of character definitions, rendered three ways. Under each picture every animation loops in
+      place. The hero walks a loop by himself until you press an arrow key; then arrow keys walk and <code>Ctrl</code> swings. You can
+      also type: try <code>look</code>, <code>look well</code>, <code>help</code>. Enter or Esc closes a message. Use Speed to slow
+      everything down.
+    </p>
+    <div class="bar" id="bar"></div>
+    <div class="grid" id="grid"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

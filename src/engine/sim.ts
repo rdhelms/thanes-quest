@@ -1,0 +1,577 @@
+// The simulation. Headless and deterministic: no DOM, no clock, no Math.random. It takes intent
+// messages, advances one fixed tick, and emits events. Everything it remembers is in `state`.
+
+import { buildScene } from './build';
+import { hasPerk, playerAttack, swingHit, updateCombat } from './combat';
+import { command } from './commands';
+import { roomOf } from './frontier';
+import { Parser } from './parser';
+import { all, questKey, run } from './rules';
+import { PH, PW, type Scene } from './scene';
+import { nearestGround } from './walk';
+import type {
+  ActorState, Content, Dir, GameState, Intent, LookWhen, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
+} from './types';
+
+/** How close to a side edge the player gets before stepping into the next room. */
+const EDGE = 6;
+export const TICKS_PER_SECOND = 20;
+/** Ticks in a full day and night: eight minutes. */
+export const DAY_LENGTH = 9600;
+
+export type Behaviour = (sim: Sim, arg?: Value) => void;
+
+export const SKILLS = ['blade', 'block', 'archery', 'sorcery', 'mending', 'lore'] as const;
+
+function newPlayer(c: Content): PlayerState {
+  return {
+    x: c.start.x, y: c.start.y, dir: c.start.dir, act: 'idle', frame: 0, t: 0, mdx: 0, mdy: 0, blocking: false,
+    hp: 40, mp: 20, sp: 30, maxHp: 40, maxMp: 20, maxSp: 30,
+    level: 1, xp: 0, pendingLevels: 0,
+    skills: Object.fromEntries(SKILLS.map((s) => [s, { lv: 5, xp: 0 }])),
+    inv: {}, weapon: null, shield: null, spells: [], words: [], cd: {}, gold: 0, inside: [], dead: false, hurtT: 0,
+  };
+}
+
+export class Sim {
+  state: GameState;
+  /** Events since the last drain(). */
+  private out: SimEvent[] = [];
+  readonly parser: Parser;
+  /** Named behaviours that data can call with { run: name }. */
+  behaviours: Record<string, Behaviour> = {};
+  /** Enables debug commands (tp, give, set). */
+  dev = false;
+  private scenes = new Map<string, Scene>();
+
+  constructor(readonly content: Content, opts: { seed?: number; saved?: GameState; behaviours?: Record<string, Behaviour> } = {}) {
+    if (opts.behaviours) this.behaviours = opts.behaviours;
+    this.parser = new Parser(content.vocab);
+    for (const room of Object.values(content.rooms)) if (room.vocab) this.parser.addNouns(room.vocab);
+    if (opts.saved) {
+      this.state = opts.saved;
+      this.adopt(opts.saved);
+    } else {
+      const seed = opts.seed ?? 1;
+      this.state = {
+        v: 1, seed, rng: seed | 0, tick: 0, room: content.start.room, player: newPlayer(content),
+        rooms: {}, flags: { ...content.flags }, scored: [], score: 0, won: false,
+      };
+      this.enterRoom(content.start.room, content.start.x, content.start.y, content.start.dir);
+    }
+  }
+
+  /**
+   * Take up a saved game. Everything the simulation knows is in the state, so this is all a
+   * restore is. A game saved by an older build may not quite fit this one: drop anyone the
+   * content no longer knows, and make sure the player is not standing inside something that has
+   * moved.
+   */
+  adopt(saved: GameState): void {
+    this.state = structuredClone(saved);
+    const rs = this.rs;
+    if (rs) rs.actors = rs.actors.filter((a) => (a.kind === 'npc' ? this.content.chars[a.ref] : this.content.enemies[a.ref]));
+    this.settle(this.scene());
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Accessors
+
+  get p(): PlayerState {
+    return this.state.player;
+  }
+  get room(): RoomDef {
+    return roomOf(this.content, this.state.room)!;
+  }
+  get rs(): RoomState {
+    return this.state.rooms[this.state.room];
+  }
+
+  /** Picture buffers for a room. Derived from its data and cached; never part of saved state. */
+  scene(id = this.state.room): Scene {
+    const key = this.sceneKey(id);
+    let sc = this.scenes.get(key);
+    if (!sc) {
+      const def = roomOf(this.content, id)!.scene;
+      this.scenes.set(key, (sc = buildScene(def, (def.when ?? []).filter((w) => all(this, w.if)))));
+    }
+    return sc;
+  }
+
+  /** Identifies the room's picture as it stands now, including which conditional parts are showing. */
+  sceneKey(id = this.state.room): string {
+    const when = roomOf(this.content, id)!.scene.when;
+    return when ? `${id}#${when.map((w) => (all(this, w.if) ? 1 : 0)).join('')}` : id;
+  }
+
+  /** Seeded random number in [0, 1). */
+  rand(): number {
+    let t = (this.state.rng = (this.state.rng + 0x6d2b79f5) | 0);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
+  drain(): SimEvent[] {
+    const o = this.out;
+    this.out = [];
+    return o;
+  }
+
+  text(key: string, word = ''): string {
+    return (this.content.text[key] ?? key).replace('%s', word);
+  }
+
+  /** How something looks just now: its usual description, unless events have changed it. */
+  lookOf(def: { look: string; lookWhen?: LookWhen[] }): string {
+    return def.lookWhen?.find((v) => all(this, v.if))?.look ?? def.look;
+  }
+
+  /** Fill {flag.name} in a piece of text with that flag's value, as it stands (or stood at the start). */
+  fill(text: string): string {
+    return text.replace(/\{([\w.]+)\}/g, (_, k: string) => String(this.state.flags[k] ?? this.content.flags?.[k] ?? ''));
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Things the rule language can do
+
+  /** `who` names the speaker, when somebody is speaking. */
+  say(text: string, who?: string): void {
+    this.out.push({ t: 'say', text, who });
+  }
+  talked(char: string): void {
+    this.out.push({ t: 'talk', char });
+  }
+  /** How many passing remarks have been made: lets a caller tell whether something already spoke up. */
+  notes = 0;
+  note(text: string): void {
+    this.notes++;
+    this.out.push({ t: 'note', text });
+  }
+  sound(id: string): void {
+    this.out.push({ t: 'sound', id });
+  }
+  page(title: string, lines: string[]): void {
+    this.out.push({ t: 'page', title, lines });
+  }
+  showMap(): void {
+    this.out.push({ t: 'map' });
+  }
+
+  give(item: string, n = 1): void {
+    const p = this.p;
+    p.inv[item] = (p.inv[item] ?? 0) + n;
+    // A first or better weapon goes straight into the hand, a first shield onto the arm.
+    const def = this.content.items[item];
+    const held = p.weapon ? this.content.items[p.weapon] : null;
+    if (def?.kind === 'weapon' && (!held || (held.kind === 'weapon' && (def.power ?? 0) > (held.power ?? 0)))) {
+      p.weapon = item;
+      this.note(this.text('equipped', def.name));
+    } else if (def?.kind === 'shield' && !p.shield) {
+      p.shield = item;
+      this.note(this.text('shieldHint'));
+    } else if (def?.kind === 'armor' && (def.power ?? 0) > (p.armor ? this.content.items[p.armor]?.power ?? 0 : 0)) {
+      p.armor = item;
+      this.note(this.text('equipped', def.name));
+    } else if (def?.kind === 'trinket' && !p.trinket) {
+      p.trinket = item;
+      this.note(this.text('wearing', def.name));
+    } else if (def?.kind === 'tome') this.note(this.text('tomeHint'));
+  }
+
+  lose(item: string, n = 1): void {
+    const left = (this.p.inv[item] ?? 0) - n;
+    if (left > 0) this.p.inv[item] = left;
+    else {
+      delete this.p.inv[item];
+      if (this.p.weapon === item) this.p.weapon = null;
+      if (this.p.shield === item) this.p.shield = null;
+      if (this.p.armor === item) this.p.armor = null;
+      if (this.p.trinket === item) this.p.trinket = null;
+    }
+  }
+
+  award(id: string, points: number): void {
+    if (this.state.scored.includes(id)) return;
+    this.state.scored.push(id);
+    this.state.score += points;
+    this.sound('score');
+  }
+
+  setQuest(id: string, stage: number): void {
+    const key = questKey(id);
+    const now = Number(this.state.flags[key] ?? 0);
+    if (stage <= now) return;
+    this.state.flags[key] = stage;
+    const q = this.content.quests[id];
+    if (!q) return;
+    if (now === 0) this.say(this.text('questStart', q.name));
+    else if (stage >= q.done) this.say(this.text('questDone', q.name));
+    this.sound('quest');
+  }
+
+  teach(id: string): void {
+    const list = id.startsWith('word:') ? this.p.words : this.p.spells;
+    if (!list.includes(id)) list.push(id);
+  }
+
+  hurt(n: number, why: string): void {
+    this.p.hp -= n;
+    if (this.p.hp <= 0) this.die(why);
+    // The first time things look bad, a reminder that there is something to be done about it.
+    else if (this.p.hp < this.p.maxHp * 0.4 && !this.state.flags['hint.low'] && Object.keys(this.p.inv).some((id) => this.content.items[id]?.kind === 'potion')) {
+      this.state.flags['hint.low'] = true;
+      this.note(this.text('lowHint'));
+    }
+  }
+
+  die(text: string): void {
+    if (this.p.dead) return;
+    this.p.dead = true;
+    this.p.hp = 0;
+    this.p.act = 'dead';
+    this.p.mdx = this.p.mdy = 0;
+    this.sound('death');
+    this.out.push({ t: 'died', text });
+  }
+
+  win(text: string): void {
+    this.state.won = true;
+    this.sound('win');
+    this.out.push({ t: 'won', text });
+  }
+
+  /** Hide or show a thing. "room/thing" reaches into another room. */
+  setThing(ref: string, visible: boolean): void {
+    const [a, b] = ref.split('/');
+    const roomId = b ? a : this.state.room;
+    const thing = b ?? a;
+    const rs = this.roomState(roomId);
+    const add = (list: string[]): void => void (list.includes(thing) || list.push(thing));
+    const drop = (list: string[]): void => void (list.includes(thing) && list.splice(list.indexOf(thing), 1));
+    if (visible) {
+      add(rs.shown);
+      drop(rs.gone);
+    } else {
+      add(rs.gone);
+      drop(rs.shown);
+    }
+  }
+
+  spawn(kind: string, x: number, y: number, level = 0): void {
+    const def = this.content.enemies[kind];
+    if (!def) return;
+    // Never inside anything: a creature called up into a pile of treasure would stand there for ever.
+    [x, y] = nearestGround(this.scene(), x, y, 12);
+    const a = this.makeActor(`dyn:${this.state.tick}:${this.rs.actors.length}`, 'enemy', kind, x, y, 'down', Math.round(def.hp * (1 + 0.25 * level)));
+    a.ai.lv = level;
+    a.ai.max = a.hp;
+    this.rs.actors.push(a);
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Looking things up
+
+  /** Things currently present in the room. */
+  things(): ThingDef[] {
+    const rs = this.rs;
+    return (this.room.things ?? []).filter((t) => !rs.gone.includes(t.id) && (!t.hidden || rs.shown.includes(t.id)));
+  }
+
+  /** Is the player within reach of a point? Depth counts double, as the ground is foreshortened. */
+  within(x: number, y: number, d: number): boolean {
+    return Math.hypot(this.p.x - x, (this.p.y - y) * 2) <= d;
+  }
+
+  /** Is the player near a thing or actor, named by id (or a character/enemy id)? */
+  isNear(id: string, d?: number): boolean {
+    const thing = this.things().find((t) => t.id === id);
+    if (thing) return this.within(thing.x, thing.y, d ?? thing.reach ?? 30);
+    const actor = this.rs.actors.find((a) => a.id === id || a.ref === id);
+    return !!actor && this.within(actor.x, actor.y, d ?? 44);
+  }
+
+  /**
+   * How much daylight there is, from 1 (day) to 0 (deep night). The day turns with the game
+   * clock: a long day, a short dusk, a night, a dawn.
+   */
+  daylight(): number {
+    const phase = ((this.state.tick + DAY_LENGTH * 0.12) % DAY_LENGTH) / DAY_LENGTH;
+    if (phase < 0.58) return 1;
+    if (phase < 0.68) return 1 - (phase - 0.58) / 0.1;
+    if (phase < 0.92) return 0;
+    return (phase - 0.92) / 0.08;
+  }
+
+  /** True in a dark room when the player has no light. */
+  isDark(): boolean {
+    return !!this.room.dark && Number(this.state.flags.light ?? 0) <= this.state.tick;
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Rooms
+
+  private roomState(id: string): RoomState {
+    return (this.state.rooms[id] ??= { actors: [], gone: [], shown: [], dead: [], shots: [] });
+  }
+
+  private makeActor(id: string, kind: 'npc' | 'enemy', ref: string, x: number, y: number, dir: Dir, hp: number): ActorState {
+    return { id, kind, ref, x, y, dir, act: 'idle', frame: 0, t: 0, wait: 20, tx: x, ty: y, hp, ai: {} };
+  }
+
+  enterRoom(id: string, x: number, y: number, dir?: Dir): void {
+    const def = roomOf(this.content, id);
+    if (!def) return;
+    const p = this.p;
+    // Whoever was in the room being left is rebuilt on return, so need not be remembered (or saved).
+    const left = this.state.rooms[this.state.room];
+    if (left && this.state.room !== id) {
+      left.actors = [];
+      left.shots = [];
+    }
+    this.state.room = id;
+    const rs = this.roomState(id);
+    const sc = this.scene(id);
+
+    // Whoever should be here right now. Rebuilt on every entry: characters return to their
+    // posts, and anything not yet defeated is back on its feet.
+    rs.actors = [];
+    rs.shots = [];
+    for (const n of def.npcs ?? [])
+      if (all(this, n.if)) rs.actors.push(this.makeActor(`npc:${n.char}`, 'npc', n.char, n.x, n.y, n.dir ?? 'down', 1));
+    for (const s of def.spawns ?? []) {
+      const e = this.content.enemies[s.kind];
+      // Some things do not stay dead.
+      const fell = rs.deadAt?.[s.id];
+      if (s.respawn && fell !== undefined && this.state.tick - fell >= s.respawn) {
+        rs.dead = rs.dead.filter((d) => d !== s.id);
+        delete rs.deadAt![s.id];
+      }
+      if (!e || rs.dead.includes(s.id) || !all(this, s.if)) continue;
+      // Some things keep to the dark.
+      if ((s.when === 'night' && this.daylight() > 0.35) || (s.when === 'day' && this.daylight() < 0.5)) continue;
+      const [sx, sy] = nearestGround(sc, s.x, s.y, 12);
+      const a = this.makeActor(s.id, 'enemy', s.kind, sx, sy, 'down', Math.round(e.hp * (1 + 0.25 * (s.level ?? 0))));
+      a.ai.lv = s.level ?? 0;
+      a.ai.max = a.hp;
+      rs.actors.push(a);
+    }
+
+    p.x = Math.max(EDGE + 1, Math.min(PW - EDGE - 2, x));
+    p.y = Math.max(sc.walkTop + 1, Math.min(PH - 3, y));
+    if (dir) p.dir = dir;
+    p.inside = [];
+    this.settle(sc);
+    // Standing in a doorway on arrival must not send the player straight back.
+    p.inside = this.standingIn();
+
+    this.out.push({ t: 'room', id });
+    // Arriving somewhere one was sent is worth saying.
+    if (Object.entries(this.state.flags).some(([k, v]) => (k === 'goal' || k.startsWith('goal.')) && v === id)) this.note(this.text('atGoal', def.name));
+    // A place that was only pointed out (marked under its own name) is no longer a mark once found.
+    if (this.state.flags[`goal.${id}`] === id) this.state.flags[`goal.${id}`] = false;
+    if (this.isDark()) this.say(this.text('dark'));
+    for (const r of def.rules ?? []) if (r.enter && all(this, r.if)) run(this, r.do);
+  }
+
+  private footBlocked(sc: Scene, x: number, y: number): boolean {
+    return sc.blocked(x, y) || sc.blocked(x - 4, y) || sc.blocked(x + 4, y);
+  }
+
+  /**
+   * Make sure the player is standing on the room's real ground: not inside anything, and not in
+   * a pocket cut off from the rest. If they are, move them to the nearest place that is.
+   */
+  private settle(sc: Scene): void {
+    // Wherever they could have walked to is fine as it is, right up to the edges.
+    [this.p.x, this.p.y] = nearestGround(sc, this.p.x, this.p.y, EDGE + 1);
+  }
+
+  private standingIn(): string[] {
+    const { x, y } = this.p;
+    const hit: string[] = [];
+    (this.room.zones ?? []).forEach((z) => x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1 && hit.push(`zone:${z.id}`));
+    (this.room.doors ?? []).forEach((d, i) => x >= d.x0 && x <= d.x1 && y >= d.y0 && y <= d.y1 && hit.push(`door:${i}`));
+    return hit;
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // The tick
+
+  step(intents: Intent[] = []): void {
+    const p = this.p;
+    if (p.dead) return;
+    for (const it of intents) {
+      if (it.t === 'move') {
+        p.mdx = Math.sign(it.dx);
+        p.mdy = Math.sign(it.dy);
+      } else if (it.t === 'attack') playerAttack(this);
+      else if (it.t === 'block') {
+        // Raising a guard takes a little breath, so it cannot simply be hammered.
+        if (it.on && !p.blocking) {
+          p.guardT = this.state.tick;
+          if (!hasPerk(this, 'ironarm')) p.sp = Math.max(0, p.sp - 1.5);
+        }
+        p.blocking = it.on;
+      }
+      else if (it.t === 'say') command(this, it.line);
+      else if (it.t === 'ease') this.state.flags.gentle = it.gentle;
+      else if (it.t === 'level' && p.pendingLevels > 0) {
+        p.pendingLevels--;
+        if (it.pool === 'hp') p.hp = p.maxHp += 10;
+        else if (it.pool === 'mp') p.mp = p.maxMp += 10;
+        else p.sp = p.maxSp += 10;
+      }
+      if (p.dead) return;
+    }
+    this.state.tick++;
+    // Out of doors, the day's turning is worth a word.
+    if (this.room.scene.kind === 'outdoor') {
+      const phase = (t: number): number => ((t + DAY_LENGTH * 0.12) % DAY_LENGTH) / DAY_LENGTH;
+      const [was, now] = [phase(this.state.tick - 1), phase(this.state.tick)];
+      if (was < 0.6 && now >= 0.6) {
+        this.note(this.text(this.state.flags['hint.night'] ? 'dusk' : 'firstDusk'));
+        this.state.flags['hint.night'] = true;
+      } else if (was < 0.94 && now >= 0.94) this.note(this.text('dawn'));
+    }
+    this.updatePlayer();
+    if (p.dead) return;
+    this.updateActors();
+    updateCombat(this);
+    if (p.dead) return;
+    this.checkTriggers();
+  }
+
+  private updatePlayer(): void {
+    const p = this.p;
+    if (p.act === 'swing') {
+      p.t++;
+      p.frame = Math.min(2, p.t >> 1);
+      if (p.t === 3) swingHit(this);
+      if (p.t >= 8) {
+        p.act = 'idle';
+        p.t = 0;
+      }
+      return;
+    }
+    // Holding a guard roots you to the spot and slowly tires you.
+    if (p.blocking && p.sp > 0) {
+      p.act = 'block';
+      p.sp = Math.max(0, p.sp - 0.12);
+      // The guard can always be turned to face a new threat.
+      if (p.mdx || p.mdy) p.dir = p.mdx > 0 ? 'right' : p.mdx < 0 ? 'left' : p.mdy > 0 ? 'down' : 'up';
+      // With practice a guard can be carried forward, slowly.
+      if (hasPerk(this, 'steady') && (p.mdx || p.mdy) && this.state.tick % 2 === 0) {
+        if (p.mdx) this.tryStep(p.mdx * 2, 0);
+        if (p.mdy) this.tryStep(0, p.mdy);
+      }
+      return;
+    }
+    const { mdx, mdy } = p;
+    if (!mdx && !mdy) {
+      p.act = 'idle';
+      return;
+    }
+    p.dir = mdx > 0 ? 'right' : mdx < 0 ? 'left' : mdy > 0 ? 'down' : 'up';
+    const room = this.state.room;
+    const mx = mdx ? this.tryStep(mdx * 2, 0) : false;
+    const my = mdy && this.state.room === room ? this.tryStep(0, mdy) : false;
+    p.act = 'walk';
+    if (mx || my) p.t++;
+    p.frame = Math.floor(p.t / 3) & 3;
+  }
+
+  /** Move the player if the ground allows, or into the next room at an edge. */
+  private tryStep(dx: number, dy: number): boolean {
+    const p = this.p;
+    const sc = this.scene();
+    const ex = this.room.exits ?? {};
+    const nx = p.x + dx;
+    const ny = p.y + dy;
+    const leave = (to: string | undefined, x: number, y: number, dir: Dir): boolean => {
+      if (!to) return false;
+      this.enterRoom(to, x, y, dir);
+      return true;
+    };
+    if (nx < EDGE) return leave(ex.w, PW - EDGE - 2, p.y, 'left');
+    if (nx > PW - 1 - EDGE) return leave(ex.e, EDGE + 1, p.y, 'right');
+    if (ny <= sc.walkTop) return leave(ex.n, p.x, PH - 4, 'up');
+    if (ny >= PH - 2) return ex.s ? leave(ex.s, p.x, this.scene(ex.s).walkTop + 2, 'down') : false;
+    if (this.footBlocked(sc, nx, ny)) return false;
+    p.x = nx;
+    p.y = ny;
+    return true;
+  }
+
+  private updateActors(): void {
+    const sc = this.scene();
+    for (const a of this.rs.actors) {
+      if (a.kind !== 'npc') continue;
+      const def = (this.room.npcs ?? []).find((n) => n.char === a.ref);
+      const box = def?.wander;
+      if (a.wait > 0) {
+        a.wait--;
+        a.act = 'idle';
+        // Turn to face the player when they come close.
+        if (this.within(a.x, a.y, 40)) {
+          const dx = this.p.x - a.x;
+          const dy = this.p.y - a.y;
+          a.dir = Math.abs(dx) > Math.abs(dy) * 2 ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+          if (box) a.wait = Math.max(a.wait, 10);
+        }
+        continue;
+      }
+      if (!box) {
+        a.wait = 1000;
+        continue;
+      }
+      const dx = a.tx - a.x;
+      const dy = a.ty - a.y;
+      if (Math.abs(dx) < 1.5 && Math.abs(dy) < 1) {
+        a.wait = 40 + Math.floor(this.rand() * 90);
+        a.tx = box[0] + this.rand() * (box[2] - box[0]);
+        a.ty = box[1] + this.rand() * (box[3] - box[1]);
+        a.dir = 'down';
+        continue;
+      }
+      a.act = 'walk';
+      const horiz = Math.abs(dx) >= 1.5;
+      a.dir = horiz ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+      const nx = a.x + (horiz ? Math.sign(dx) : 0);
+      const ny = a.y + (horiz ? 0 : Math.sign(dy) * 0.5);
+      if (sc.blocked(nx, ny) || sc.blocked(nx - 4, ny) || sc.blocked(nx + 4, ny)) {
+        a.tx = a.x;
+        a.ty = a.y;
+      } else {
+        a.x = nx;
+        a.y = ny;
+      }
+      a.t++;
+      a.frame = Math.floor(a.t / 4) & 3;
+    }
+  }
+
+  /** Zones and doors fire once when stepped into. */
+  private checkTriggers(): void {
+    const p = this.p;
+    const now = this.standingIn();
+    const entered = now.filter((id) => !p.inside.includes(id));
+    p.inside = now;
+    const room = this.room;
+    for (const id of entered) {
+      if (this.room !== room || p.dead) return;
+      const [kind, key] = id.split(':');
+      if (kind === 'zone') {
+        for (const r of room.rules ?? []) if (r.zone === key && all(this, r.if)) run(this, r.do);
+      } else {
+        const d = room.doors![Number(key)];
+        if (all(this, d.if)) {
+          this.sound('door');
+          this.enterRoom(d.to, d.x, d.y, d.dir);
+          // Stop on the threshold, or a held key would walk straight back out.
+          p.mdx = p.mdy = 0;
+        } else if (d.locked) this.say(d.locked);
+      }
+    }
+  }
+}
