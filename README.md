@@ -18,6 +18,9 @@ A built copy is hosted at https://thanes-quest.daventry.io (and, as before, at
 https://thanes-quest.<account>.workers.dev). Saves are kept by the browser for the address
 they were made at, so a game saved at one is not seen at the other.
 
+A push to `main` goes live by itself: Cloudflare builds it (`npm run build`) and deploys it
+(`npx wrangler deploy`). `npm run deploy` still publishes by hand.
+
 | Command | What it does |
 |---|---|
 | `npm run dev` | Development server with debug commands enabled |
