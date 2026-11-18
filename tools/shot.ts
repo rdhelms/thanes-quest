@@ -97,6 +97,8 @@ export function setup(room: string, x: number | undefined, y: number | undefined
   for (const c of o.cmds) {
     // "key:Enter" presses a key instead of typing a line.
     if (c.startsWith('key:')) shell.keyDown(c.slice(4));
+    // "point:200,150" points at the picture, as a click or a tap would.
+    else if (c.startsWith('point:')) shell.walkTo(...(c.slice(6).split(',').map(Number) as [number, number]));
     else shell.submit(c);
     shell.tick();
     if (!o.keep) shell.modals = [];

@@ -195,6 +195,13 @@ export class Shell {
     this.plan();
   }
 
+  /** Where a pointed-at walk will end, while one is under way: so the picture can mark the spot. */
+  get heading(): { x: number; y: number } | null {
+    const b = this.bound;
+    const end = b?.paces[b.paces.length - 1];
+    return b && end && b.i < b.paces.length ? { x: end.x, y: end.y } : null;
+  }
+
   private plan(): void {
     const b = this.bound!;
     const room = this.sim.room;

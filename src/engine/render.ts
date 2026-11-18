@@ -427,6 +427,18 @@ export class Renderer {
         const icon = t.icon && ICONS[t.icon];
         if (icon) items.push({ y: t.y, draw: () => this.drawIcon(sc, icon, t.x, t.y, t.lift ?? 0) });
       }
+      // Where a pointed-at walk is bound: a small mark on the ground, under everything.
+      const to = shell.heading;
+      if (to && (shell.uiTick >> 2) & 1)
+        items.push({
+          y: -1,
+          draw: () => {
+            // Gold over a dark edge: it has to show on snow and on a dark floor alike.
+            const arms = [[0, 0], [-2, -1], [2, -1], [-2, 1], [2, 1]];
+            for (const [dx, dy] of arms) this.fill(to.x + dx - 1, to.y + dy + PIC_Y, 4, 2, UI.black);
+            for (const [dx, dy] of arms) this.fill(to.x + dx, to.y + dy + PIC_Y, 2, 1, UI.gold);
+          },
+        });
       // Just after a blow the hero flickers, which is also when he cannot be hit again.
       if (!(p.hurtT > 0 && shell.uiTick & 1)) person('hero', sim.content.hero, p, false);
       sc.flames.forEach((f, k) => items.push({ y: f.y, draw: () => this.drawFlame(sc, f, shell.uiTick, k) }));
