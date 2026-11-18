@@ -2247,3 +2247,23 @@ describe('swapping weapons', () => {
     expect(sim.p.weapon).toBe('sword');
   });
 });
+
+describe('looking away', () => {
+  it('pauses the world until the player comes back', () => {
+    const shell = new Shell(content, memoryStore(), false, behaviours);
+    shell.modals = [];
+    shell.pause();
+    expect(shell.modal).toBeUndefined();
+    shell.tick();
+    shell.pause();
+    expect(shell.modal?.k === 'list' && shell.modal.title).toBe('Paused');
+    const tick = shell.sim.state.tick;
+    for (let i = 0; i < 10; i++) shell.tick();
+    expect(shell.sim.state.tick).toBe(tick);
+    shell.pause();
+    expect(shell.modals.length).toBe(1);
+    shell.keyDown('Enter');
+    shell.tick();
+    expect(shell.sim.state.tick).toBe(tick + 1);
+  });
+});

@@ -291,6 +291,14 @@ export class Shell {
     this.held.clear();
   }
 
+  /** Stop the world while the player is looking elsewhere: it is a poor time to be bitten. */
+  pause(): void {
+    this.held.clear();
+    this.tapDir = [0, 0];
+    if (this.modal || this.sim.p.dead || this.sim.state.tick === 0) return;
+    this.list('Paused', ['Resume'], () => {});
+  }
+
   /** A typed line. A few commands belong to the player's side and never reach the simulation. */
   submit(line: string): void {
     this.input = '';

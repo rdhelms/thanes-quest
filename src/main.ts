@@ -99,7 +99,9 @@ window.addEventListener('keydown', (e) => {
   if (shell.keyDown(e.key)) e.preventDefault();
 });
 window.addEventListener('keyup', (e) => shell.keyUp(e.key));
-window.addEventListener('blur', () => shell.release());
+// Looking away pauses the game: the world is real-time, and wolves do not wait.
+window.addEventListener('blur', () => shell.pause());
+document.addEventListener('visibilitychange', () => document.hidden && shell.pause());
 window.addEventListener('pointerdown', wake);
 
 let last = performance.now();
