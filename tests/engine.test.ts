@@ -6,6 +6,7 @@ import { Shell } from '../src/engine/shell';
 import { Sim } from '../src/engine/sim';
 import type { ActorState, Intent } from '../src/engine/types';
 import { validate } from '../src/engine/validate';
+import { mainGround } from '../src/engine/walk';
 import { behaviours } from '../src/game/behaviours';
 import { content } from '../src/game/content';
 import { game, type, walk } from './helpers';
@@ -2271,6 +2272,85 @@ describe('looking away', () => {
 });
 
 describe('pointing at the picture', () => {
+  const fresh = (room: string, x: number, y: number): Shell => {
+    const shell = new Shell(content, memoryStore(), false, behaviours);
+    shell.modals = [];
+    shell.sim.enterRoom(room, x, y);
+    shell.tick();
+    shell.modals = [];
+    return shell;
+  };
+
+  it('finds the way round whatever stands between', () => {
+    // From the ford's south bank up into the village and round the well, in every room: point
+    // at ground the far side of something, and get there.
+    let walked = 0;
+    for (const [room, sx, sy] of [['village', 160, 160], ['farm', 130, 164], ['pinewood', 160, 150], ['camp', 160, 160], ['wild_2_1', 160, 150], ['wild_0_3', 160, 150]] as const) {
+      const shell = fresh(room, sx, sy);
+      // Nothing with teeth, for once.
+      shell.sim.rs.actors = shell.sim.rs.actors.filter((a) => a.kind === 'npc');
+      const sc = shell.sim.scene();
+      const ground = mainGround(sc);
+      const zones = [...(shell.sim.room.zones ?? []), ...(shell.sim.room.doors ?? [])];
+      for (let ty = sc.walkTop + 4; ty < 158; ty += 9)
+        for (let tx = 16; tx < 304; tx += 23) {
+          if (!ground[ty * 320 + tx] || zones.some((z) => tx >= z.x0 - 8 && tx <= z.x1 + 8 && ty >= z.y0 - 40 && ty <= z.y1 + 8)) continue;
+          shell.walkTo(tx, ty);
+          for (let i = 0; i < 500 && (shell.sim.p.act !== 'idle' || i < 2); i++) {
+            shell.tick();
+            shell.modals = [];
+            if (shell.sim.state.room !== room) throw new Error(`${room}: walking to ${tx},${ty} left the room`);
+            if (shell.sim.p.inside.length) throw new Error(`${room}: walking to ${tx},${ty} stepped into ${shell.sim.p.inside}`);
+          }
+          if (Math.abs(shell.sim.p.x - tx) > 2 || Math.abs(shell.sim.p.y - ty) > 1) throw new Error(`${room}: pointed at ${tx},${ty}, ended at ${shell.sim.p.x},${shell.sim.p.y}`);
+          walked++;
+        }
+    }
+    expect(walked).toBeGreaterThan(200);
+  });
+
+  it('goes through a door only when the door is what was pointed at', () => {
+    const shell = fresh('village', 160, 160);
+    // Past the hall door, to the far side of it: round, not through.
+    shell.walkTo(30, 124);
+    for (let i = 0; i < 300; i++) shell.tick();
+    expect(shell.sim.state.room).toBe('village');
+    // At the door itself, well up the picture of it: in.
+    shell.walkTo(69, 100);
+    for (let i = 0; i < 300 && shell.sim.state.room === 'village'; i++) shell.tick();
+    expect(shell.sim.state.room).toBe('hall');
+  });
+
+  it('keeps off thin ice unless sent onto it', () => {
+    const shell = fresh('tarn', 60, 150);
+    shell.walkTo(200, 150);
+    for (let i = 0; i < 300; i++) {
+      shell.tick();
+      expect(shell.sim.p.inside).toEqual([]);
+    }
+    shell.walkTo(190, 122);
+    for (let i = 0; i < 300; i++) {
+      shell.tick();
+      expect(shell.sim.p.inside).toEqual([]);
+    }
+    expect(shell.sim.p.dead).toBe(false);
+    // Pointing at the ice is asking for it.
+    shell.walkTo(124, 136);
+    for (let i = 0; i < 300 && !shell.modal; i++) shell.tick();
+    expect(shell.sim.p.inside.includes('zone:thin') || shell.sim.p.dead).toBe(true);
+  });
+
+  it('walks off the edge of the picture when the edge is pointed at', () => {
+    const shell = fresh('ford', 160, 150);
+    shell.walkTo(318, 150);
+    for (let i = 0; i < 300 && shell.sim.state.room === 'ford'; i++) shell.tick();
+    expect(shell.sim.state.room).not.toBe('ford');
+    const south = fresh('ford', 160, 150);
+    south.walkTo(160, 166);
+    for (let i = 0; i < 300 && south.sim.state.room === 'ford'; i++) south.tick();
+    expect(south.sim.state.room).toBe('wild_0_2');
+  });
+
   it('walks there, stops on arrival, and gives up against something solid', () => {
     const shell = new Shell(content, memoryStore(), false, behaviours);
     shell.modals = [];
@@ -2282,11 +2362,15 @@ describe('pointing at the picture', () => {
     expect(Math.abs(shell.sim.p.x - 200)).toBeLessThanOrEqual(2);
     expect(Math.abs(shell.sim.p.y - 158)).toBeLessThanOrEqual(1);
     expect(shell.sim.p.act).toBe('idle');
-    // Straight at the farmhouse: no way through, so the walk ends short of it.
-    shell.walkTo(236, 100);
-    for (let i = 0; i < 200; i++) shell.tick();
+    // At somewhere there is no ground (the middle of the farmhouse wall): as near as the ground comes.
+    const ground = mainGround(shell.sim.scene());
+    const wall = [240, 110];
+    expect(ground[wall[1] * 320 + wall[0]]).toBe(0);
+    shell.walkTo(wall[0], wall[1]);
+    for (let i = 0; i < 300; i++) shell.tick();
     expect(shell.sim.p.act).toBe('idle');
-    expect(shell.sim.p.y).toBeGreaterThan(104);
+    expect(ground[shell.sim.p.y * 320 + shell.sim.p.x]).toBe(1);
+    expect(Math.hypot(shell.sim.p.x - wall[0], shell.sim.p.y - wall[1])).toBeLessThan(40);
     // A key takes over at once.
     shell.walkTo(20, 150);
     shell.tick();

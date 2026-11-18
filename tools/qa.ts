@@ -6,6 +6,7 @@
 import { Sim } from '../src/engine/sim';
 import { roomOf } from '../src/engine/frontier';
 import type { ActorState, Intent } from '../src/engine/types';
+import { routeTo } from '../src/engine/walk';
 import { behaviours } from '../src/game/behaviours';
 import { content } from '../src/game/content';
 
@@ -463,6 +464,15 @@ function fuzz(ticks: number): void {
       } else if (r < 0.5) intents.push({ t: 'move', dx: Math.floor(rnd() * 3) - 1, dy: Math.floor(rnd() * 3) - 1 });
       else if (r < 0.58) intents.push({ t: 'attack' });
       else if (r < 0.62) intents.push({ t: 'block', on: rnd() < 0.5 });
+      else if (r < 0.63) {
+        // A point at the picture: there must always be an answer, and it must stay on the ground.
+        const paces = routeTo(sim.scene(), sim.p.x, sim.p.y, Math.floor(rnd() * 320), Math.floor(rnd() * 168));
+        last = `a route in ${sim.state.room}`;
+        const sc = sim.scene();
+        if (paces.length > 4000) note(`a route of ${paces.length} paces in ${sim.state.room}`);
+        for (const q of paces) if (sc.blocked(q.x, q.y) || q.y <= sc.walkTop || q.y >= 166) note(`a route off the ground in ${sim.state.room}`);
+        if (paces.length) intents.push({ t: 'move', dx: paces[0].dx, dy: paces[0].dy });
+      }
       if (sim.p.pendingLevels > 0) intents.push({ t: 'level', pool: pick(['hp', 'mp', 'sp'] as const) });
       sim.step(intents);
       sim.drain();

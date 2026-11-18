@@ -7,8 +7,10 @@ import { inventoryPage } from './commands';
 import { wrap } from './font';
 import { roomOf } from './frontier';
 import { all } from './rules';
+import { PH, PW } from './scene';
 import { Sim, type Behaviour } from './sim';
 import type { Content, GameState, Intent } from './types';
+import { routeTo, type Pace } from './walk';
 
 export interface Store {
   get(key: string): string | null;
@@ -169,14 +171,39 @@ export class Shell {
     }
   }
 
-  /** Somewhere in the picture the player has pointed at and is walking to, and how long they have made no headway. */
-  private bound: { x: number; y: number; stuck: number; lastX: number; lastY: number } | null = null;
+  /**
+   * Somewhere in the picture the player has pointed at and is walking to: the paces still to
+   * take, which way to keep on once they are taken (off the edge of the picture), and how long
+   * the walk has lasted and made no headway.
+   */
+  private bound: { x: number; y: number; paces: Pace[]; i: number; on: [number, number] | null; ticks: number; stuck: number; lastX: number; lastY: number } | null = null;
 
-  /** Walk toward a point in the picture, in a straight line, until there or until something is in the way. */
+  /**
+   * Walk to a point in the picture, round whatever is in the way, or as near as the ground
+   * allows. Pointing at the edge of the picture walks off it. Doors, and ground where something
+   * happens to whoever steps on it, are only walked into when they are what was pointed at.
+   */
   walkTo(x: number, y: number): void {
     if (this.modal) return;
+    const sc = this.sim.scene();
     const p = this.sim.p;
-    this.bound = { x, y, stuck: 0, lastX: p.x, lastY: p.y };
+    const on: [number, number] | null = x < 12 ? [-1, 0] : x > PW - 13 ? [1, 0] : y >= PH - 7 ? [0, 1] : y <= sc.walkTop + 3 ? [0, -1] : null;
+    // Pointing anywhere on a door means its threshold.
+    const door = (this.sim.room.doors ?? []).find((d) => x >= d.x0 - 6 && x <= d.x1 + 6 && y >= d.y0 - 40 && y <= d.y1 + 4);
+    if (door) [x, y] = [Math.round((door.x0 + door.x1) / 2), Math.round((door.y0 + door.y1) / 2)];
+    this.bound = { x, y, paces: [], i: 0, on: door ? null : on, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y };
+    this.plan();
+  }
+
+  private plan(): void {
+    const b = this.bound!;
+    const room = this.sim.room;
+    const p = this.sim.p;
+    // Ground that does something when stepped on is kept off, unless it is where the walk is going or already stands.
+    const holds = (z: { x0: number; y0: number; x1: number; y1: number }, x: number, y: number): boolean => x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1;
+    const shut = [...(room.doors ?? []), ...(room.zones ?? [])].filter((z) => !holds(z, b.x, b.y) && !holds(z, p.x, p.y));
+    b.paces = routeTo(this.sim.scene(), p.x, p.y, b.x, b.y, shut.length ? (x, y) => shut.some((z) => holds(z, x, y)) : undefined);
+    b.i = 0;
   }
 
   private direction(): [number, number] {
@@ -185,13 +212,20 @@ export class Shell {
     const b = this.bound;
     if (b) {
       const p = this.sim.p;
-      // A key takes over at once; so does arriving, or making no headway against something solid.
       b.stuck = p.x === b.lastX && p.y === b.lastY ? b.stuck + 1 : 0;
       [b.lastX, b.lastY] = [p.x, p.y];
-      const dx = Math.abs(b.x - p.x) > 2 ? Math.sign(b.x - p.x) : 0;
-      const dy = Math.abs(b.y - p.y) > 1 ? Math.sign(b.y - p.y) : 0;
-      if (keys[0] || keys[1] || this.tapDir[0] || this.tapDir[1] || (!dx && !dy) || b.stuck > 6) this.bound = null;
-      else return [dx, dy];
+      // A key takes over at once; and a walk that has gone on far too long is given up.
+      if (keys[0] || keys[1] || this.tapDir[0] || this.tapDir[1] || ++b.ticks > 600) this.bound = null;
+      else {
+        // Knocked off the way (a blow, a swing, a raised guard): find it again from here.
+        const at = b.i ? b.paces[b.i - 1] : null;
+        if (at && (Math.abs(p.x - at.x) > 0.5 || Math.abs(p.y - at.y) > 0.5)) this.plan();
+        const pace = b.paces[b.i++];
+        if (pace) return [pace.dx, pace.dy];
+        // Arrived. At the edge of the picture, keep on until it gives way or will not.
+        if (b.on && b.stuck <= 6) return b.on;
+        this.bound = null;
+      }
     }
     if (this.settings.tapToWalk) return this.tapDir;
     return keys;

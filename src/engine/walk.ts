@@ -86,3 +86,54 @@ export function blockedEdges(seen: Uint8Array, walkTop: number, sides: string): 
   const open: Record<string, boolean> = { w: col(7), e: col(PW - 8), n: row(walkTop + 1), s: row(PH - 3) };
   return [...sides].filter((side) => !open[side]);
 }
+
+/** One tick of walking: the direction held, and where it leaves the walker. */
+export interface Pace {
+  dx: number;
+  dy: number;
+  x: number;
+  y: number;
+}
+
+/**
+ * The way from one point to as near another as the ground allows, round whatever stands between:
+ * one pace per tick, moving exactly as a walker does (two across, then one up or down, each only
+ * if the ground is free). `shut` marks ground not to be set foot on. `side` is how far in from
+ * the side edges a walker must stay.
+ */
+export function routeTo(sc: Scene, sx: number, sy: number, tx: number, ty: number, shut: (x: number, y: number) => boolean = () => false, side = 6): Pace[] {
+  const free = (x: number, y: number): boolean =>
+    x >= side && x <= PW - 1 - side && y > sc.walkTop && y < PH - 2 && !sc.blocked(x, y) && !sc.blocked(x - 4, y) && !sc.blocked(x + 4, y) && !shut(x, y);
+  const [x0, y0] = [Math.round(sx), Math.round(sy)];
+  // Where each point was reached from, and by which of the eight directions (0 is unvisited).
+  const from = new Int32Array(PW * PH).fill(-1);
+  const how = new Uint8Array(PW * PH);
+  const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  const start = y0 * PW + x0;
+  from[start] = start;
+  const queue = [start];
+  let best = start;
+  let bestD = Math.hypot(x0 - tx, (y0 - ty) * 2);
+  for (let head = 0; head < queue.length; head++) {
+    const i = queue[head];
+    const x = i % PW;
+    const y = (i / PW) | 0;
+    const d = Math.hypot(x - tx, (y - ty) * 2);
+    if (d < bestD) [best, bestD] = [i, d];
+    for (let k = 0; k < 8; k++) {
+      const [dx, dy] = DIRS[k];
+      const nx = dx && free(x + dx * 2, y) ? x + dx * 2 : x;
+      const ny = dy && free(nx, y + dy) ? y + dy : y;
+      // A pace that is half refused (sliding along a wall) is left to the straight ones.
+      if ((dx && nx === x) || (dy && ny === y)) continue;
+      const n = ny * PW + nx;
+      if (from[n] >= 0) continue;
+      from[n] = i;
+      how[n] = k;
+      queue.push(n);
+    }
+  }
+  const paces: Pace[] = [];
+  for (let i = best; i !== start; i = from[i]) paces.push({ dx: DIRS[how[i]][0], dy: DIRS[how[i]][1], x: i % PW, y: (i / PW) | 0 });
+  return paces.reverse();
+}
