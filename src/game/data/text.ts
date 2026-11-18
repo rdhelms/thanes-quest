@@ -35,6 +35,7 @@ export const text: Record<string, string> = {
   toughest: 'You have never seen one like it. You are not sure anybody has, and lived to say so.',
   couldDo: 'Within reach, you could:',
   atGoal: '%s. This is the place you were sent to.',
+  winded: 'You are winded: your blows are weak until you catch your breath.',
   lowHint: 'You are badly hurt. Tip: DRINK DRAUGHT, if you carry one.',
   parryHint: 'A gold ! means a blow is coming. Guard (Shift) as it shows, to turn it aside.',
   firstDusk: 'Night is falling. Out past the valley, the dead walk further in the dark.',

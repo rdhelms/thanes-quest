@@ -118,6 +118,11 @@ export function swingHit(sim: Sim): void {
   const power = (w?.kind === 'weapon' ? w.power ?? 3 : 1.5) * edge(sim);
   const tired = p.sp < 5;
   p.sp = Math.max(0, p.sp - 5);
+  // Swinging on no breath does little; say so, now and then, so it is not a mystery.
+  if (tired && !(p.cd.winded > 0)) {
+    p.cd.winded = 240;
+    sim.note(sim.text('winded'));
+  }
   const reach = hasPerk(sim, 'reach') ? 34 : 28;
   // A blow struck just after a parry lands twice as hard, for those who have learned how.
   const riposte = (p.cd.riposte ?? 0) > 0 && hasPerk(sim, 'riposte');

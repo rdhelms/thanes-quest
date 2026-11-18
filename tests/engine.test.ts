@@ -2214,3 +2214,19 @@ describe('function keys', () => {
     expect(shell.modal?.k).toBe('map');
   });
 });
+
+describe('being told what is going wrong', () => {
+  it('says so when a swing is thrown on no breath, but not every time', () => {
+    const sim = game('farm', 100, 150);
+    sim.p.sp = 0;
+    sim.drain();
+    const swing = (): boolean => {
+      sim.p.sp = 0;
+      sim.step([{ t: 'attack' }]);
+      for (let i = 0; i < 9; i++) sim.step();
+      return sim.drain().some((e) => e.t === 'note' && e.text.includes('winded'));
+    };
+    expect(swing()).toBe(true);
+    expect(swing()).toBe(false);
+  });
+});

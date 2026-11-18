@@ -470,7 +470,8 @@ export class Renderer {
         if (moon && (dx + 2) * (dx + 2) + (dy + 1) * (dy + 1) < 8) continue;
         fb[(4 + dy) * SW + sx + dx] = moon ? spriteColour(R.blue, 1) : d > 5 ? UI.gold : spriteColour(R.fire, 3);
       }
-    this.bar(196, 'H', p.hp, p.maxHp, UI.health);
+    // Badly hurt, the health bar flashes: it is easy to miss in the middle of a fight.
+    this.bar(196, 'H', p.hp, p.maxHp, p.hp < p.maxHp * 0.3 && !p.dead && (shell.uiTick >> 2) & 1 ? UI.white : UI.health);
     this.bar(238, 'M', p.mp, p.maxMp, UI.mana);
     this.bar(280, 'S', p.sp, p.maxSp, UI.stamina);
 
