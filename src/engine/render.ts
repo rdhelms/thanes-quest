@@ -491,7 +491,11 @@ export class Renderer {
     });
     const held = [p.weapon, p.shield].filter(Boolean).map((id) => sim.content.items[id!]?.name ?? id);
     const hands = held.length ? `[${held.join(' + ')}]` : '';
-    drawText(fb, SW, 0, PIC_Y + PH + 16, [hands, ...words].filter(Boolean).join('  ').slice(0, 40), UI.dim);
+    // Whatever is lending its help just now, at the right-hand end: a ward, borrowed strength, a carried light.
+    const until = (k: string): boolean => Number(st.flags[k] ?? 0) > st.tick;
+    const boons = [until('ward') ? 'Ward' : '', until('might') ? 'Might' : '', until('light') && sim.room.dark ? 'Light' : ''].filter(Boolean).join(' ');
+    if (boons) drawText(fb, SW, SW - boons.length * 8, PIC_Y + PH + 16, boons, UI.gold);
+    drawText(fb, SW, 0, PIC_Y + PH + 16, [hands, ...words].filter(Boolean).join('  ').slice(0, 40 - (boons ? boons.length + 1 : 0)), UI.dim);
 
     // Something that takes a whole fight to bring down gets its name and its health across the top.
     const boss = dark ? undefined : sim.rs.actors.find((a) => a.kind === 'enemy' && a.act !== 'dead' && sim.content.enemies[a.ref]?.ai === 'boss');
