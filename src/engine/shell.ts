@@ -16,7 +16,8 @@ export interface Store {
 }
 
 export type Modal =
-  | { k: 'msg'; text: string; more?: boolean; who?: string }
+  /** `any`: goes away on any key at all, not only the usual ones. */
+  | { k: 'msg'; text: string; more?: boolean; who?: string; any?: boolean }
   | { k: 'page'; title: string; lines: string[]; more?: boolean }
   /** The map, with a cursor that can be moved about it: dx, dy are its offset from where the player stands. */
   | { k: 'map'; dx: number; dy: number }
@@ -269,7 +270,7 @@ export class Shell {
         // Look about the map: the place under the cursor is named below it.
         m.dx = Math.max(-8, Math.min(8, m.dx + (key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : 0)));
         m.dy = Math.max(-4, Math.min(4, m.dy + (key === 'ArrowDown' ? 1 : key === 'ArrowUp' ? -1 : 0)));
-      } else if (key === 'Enter' || key === 'Escape' || key === ' ') this.modals.shift();
+      } else if (key === 'Enter' || key === 'Escape' || key === ' ' || (m.k === 'msg' && m.any)) this.modals.shift();
       return true;
     }
     if (key.startsWith('Arrow')) {
@@ -319,7 +320,7 @@ export class Shell {
     this.held.clear();
     this.tapDir = [0, 0];
     if (this.modal || this.sim.p.dead || this.sim.state.tick === 0) return;
-    this.list('Paused', ['Resume'], () => {});
+    this.modals.unshift({ k: 'msg', text: this.sim.text('paused'), any: true });
   }
 
   /** A typed line. A few commands belong to the player's side and never reach the simulation. */

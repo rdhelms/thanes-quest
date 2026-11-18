@@ -2256,13 +2256,15 @@ describe('looking away', () => {
     expect(shell.modal).toBeUndefined();
     shell.tick();
     shell.pause();
-    expect(shell.modal?.k === 'list' && shell.modal.title).toBe('Paused');
+    expect(shell.modal?.k === 'msg' && shell.modal.text).toContain('Paused');
     const tick = shell.sim.state.tick;
     for (let i = 0; i < 10; i++) shell.tick();
     expect(shell.sim.state.tick).toBe(tick);
     shell.pause();
     expect(shell.modals.length).toBe(1);
-    shell.keyDown('Enter');
+    // Any key at all brings the world back.
+    shell.keyDown('ArrowLeft');
+    expect(shell.modal).toBeUndefined();
     shell.tick();
     expect(shell.sim.state.tick).toBe(tick + 1);
   });
