@@ -168,10 +168,32 @@ export class Shell {
     }
   }
 
+  /** Somewhere in the picture the player has pointed at and is walking to, and how long they have made no headway. */
+  private bound: { x: number; y: number; stuck: number; lastX: number; lastY: number } | null = null;
+
+  /** Walk toward a point in the picture, in a straight line, until there or until something is in the way. */
+  walkTo(x: number, y: number): void {
+    if (this.modal) return;
+    const p = this.sim.p;
+    this.bound = { x, y, stuck: 0, lastX: p.x, lastY: p.y };
+  }
+
   private direction(): [number, number] {
-    if (this.settings.tapToWalk) return this.tapDir;
     const h = this.held;
-    return [(h.has('ArrowRight') ? 1 : 0) - (h.has('ArrowLeft') ? 1 : 0), (h.has('ArrowDown') ? 1 : 0) - (h.has('ArrowUp') ? 1 : 0)];
+    const keys: [number, number] = [(h.has('ArrowRight') ? 1 : 0) - (h.has('ArrowLeft') ? 1 : 0), (h.has('ArrowDown') ? 1 : 0) - (h.has('ArrowUp') ? 1 : 0)];
+    const b = this.bound;
+    if (b) {
+      const p = this.sim.p;
+      // A key takes over at once; so does arriving, or making no headway against something solid.
+      b.stuck = p.x === b.lastX && p.y === b.lastY ? b.stuck + 1 : 0;
+      [b.lastX, b.lastY] = [p.x, p.y];
+      const dx = Math.abs(b.x - p.x) > 2 ? Math.sign(b.x - p.x) : 0;
+      const dy = Math.abs(b.y - p.y) > 1 ? Math.sign(b.y - p.y) : 0;
+      if (keys[0] || keys[1] || this.tapDir[0] || this.tapDir[1] || (!dx && !dy) || b.stuck > 6) this.bound = null;
+      else return [dx, dy];
+    }
+    if (this.settings.tapToWalk) return this.tapDir;
+    return keys;
   }
 
   /** Turn simulation events into boxes and sounds. */
@@ -189,6 +211,7 @@ export class Shell {
       else if (e.t === 'sound') this.settings.sound && this.sounds.push(e.id);
       else if (e.t === 'room') {
         this.talkingTo = null;
+        this.bound = null;
         // Not at the very start: a new game must not overwrite, or pose as, a game in progress.
         if (this.sim.state.tick > 0) {
           this.save('auto', true);

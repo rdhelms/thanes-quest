@@ -97,7 +97,7 @@ export const text: Record<string, string> = {
   deathPrompt: 'Your saga ends here. For now.',
   dark: 'It is pitch dark. Something nearby is breathing, and you hope it is you.',
   help:
-    'Arrow keys walk. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
+    'Arrow keys walk; so does a click or a tap on the place you want to go. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
     'Hold Shift to guard. Raise it when a foe shows a gold ! and the blow is turned aside, leaving them open.\n\n' +
     'Tab shows what you carry. Esc opens the menu; its Settings can make fights gentler.\n\n' +
     'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. SWAP changes between your last two weapons.\n\n' +

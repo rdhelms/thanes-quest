@@ -26,7 +26,8 @@ A built copy is hosted at https://thanes-quest.<account>.workers.dev
 
 ## How to play
 
-- **Arrow keys** walk. (The menu can switch this to tap-to-start, tap-to-stop.)
+- **Arrow keys** walk. (The menu can switch this to tap-to-start, tap-to-stop.) A click or a tap on
+  the picture walks to that spot in a straight line, and stops if something is in the way.
 - **Ctrl** swings your weapon, or looses an arrow if a bow is in hand. **Space** does the same
   when the typing line is empty.
 - **Shift** (held) raises a guard: you cannot walk, but you can turn, and blows from the front

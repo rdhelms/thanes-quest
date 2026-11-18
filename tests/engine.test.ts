@@ -2267,3 +2267,30 @@ describe('looking away', () => {
     expect(shell.sim.state.tick).toBe(tick + 1);
   });
 });
+
+describe('pointing at the picture', () => {
+  it('walks there, stops on arrival, and gives up against something solid', () => {
+    const shell = new Shell(content, memoryStore(), false, behaviours);
+    shell.modals = [];
+    shell.sim.enterRoom('farm', 130, 164);
+    shell.tick();
+    shell.modals = [];
+    shell.walkTo(200, 158);
+    for (let i = 0; i < 120; i++) shell.tick();
+    expect(Math.abs(shell.sim.p.x - 200)).toBeLessThanOrEqual(2);
+    expect(Math.abs(shell.sim.p.y - 158)).toBeLessThanOrEqual(1);
+    expect(shell.sim.p.act).toBe('idle');
+    // Straight at the farmhouse: no way through, so the walk ends short of it.
+    shell.walkTo(236, 100);
+    for (let i = 0; i < 200; i++) shell.tick();
+    expect(shell.sim.p.act).toBe('idle');
+    expect(shell.sim.p.y).toBeGreaterThan(104);
+    // A key takes over at once.
+    shell.walkTo(20, 150);
+    shell.tick();
+    shell.keyDown('ArrowRight');
+    const x = shell.sim.p.x;
+    for (let i = 0; i < 5; i++) shell.tick();
+    expect(shell.sim.p.x).toBeGreaterThan(x);
+  });
+});

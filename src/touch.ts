@@ -118,7 +118,13 @@ export function setupTouch(shell: Shell, renderer: Renderer, canvas: HTMLCanvasE
 export function setupPointer(shell: Shell, renderer: Renderer, canvas: HTMLCanvasElement): void {
   canvas.addEventListener('pointerdown', (e) => {
     const m = shell.modal;
-    if (!m) return;
+    if (!m) {
+      // With nothing to answer, pointing at the picture means: walk there.
+      const r = canvas.getBoundingClientRect();
+      const [x, y] = [((e.clientX - r.left) / r.width) * SW, ((e.clientY - r.top) / r.height) * SH - 8];
+      if (y >= 0 && y < 168) shell.walkTo(Math.round(x), Math.round(y));
+      return;
+    }
     e.preventDefault();
     if (m.k === 'map') {
       // A tap on the map looks at that place; a tap off it closes the map.
