@@ -7,7 +7,7 @@ import { behaviours } from './game/behaviours';
 import { content } from './game/content';
 import { Music, measure } from './music';
 import { playSound, unlockSound } from './sound';
-import { isTouchDevice, setupTouch } from './touch';
+import { isTouchDevice, setupPointer, setupTouch } from './touch';
 
 const canvas = document.getElementById('screen') as HTMLCanvasElement;
 canvas.width = SW;
@@ -86,6 +86,7 @@ function fit(): void {
   canvas.style.height = `${SH * scale}px`;
 }
 if (touch) setupTouch(shell, renderer, canvas, fit);
+setupPointer(shell, renderer, canvas);
 window.addEventListener('resize', fit);
 fit();
 

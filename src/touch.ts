@@ -108,7 +108,14 @@ export function setupTouch(shell: Shell, renderer: Renderer, canvas: HTMLCanvasE
     );
   }, 250);
 
-  // --- tapping the picture answers a message or picks from a list
+  window.visualViewport?.addEventListener('resize', refit);
+}
+
+/**
+ * A tap or a click on the picture answers a message, picks a row from a list, or looks at a place
+ * on the map. For fingers and for mice alike.
+ */
+export function setupPointer(shell: Shell, renderer: Renderer, canvas: HTMLCanvasElement): void {
   canvas.addEventListener('pointerdown', (e) => {
     const m = shell.modal;
     if (!m) return;
@@ -130,6 +137,4 @@ export function setupTouch(shell: Shell, renderer: Renderer, canvas: HTMLCanvasE
     }
     shell.keyDown('Enter');
   });
-
-  window.visualViewport?.addEventListener('resize', refit);
 }
