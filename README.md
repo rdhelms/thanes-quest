@@ -26,6 +26,7 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
 |---|---|
 | `npm run dev` | Development server with debug commands enabled |
 | `npm test` | Unit tests plus a headless play-through of the whole game |
+| `npm run typecheck` | Type-check only |
 | `npm run build` | Type-check and build a static site into `dist/` |
 | `npm run preview` | Serve the built `dist/` locally |
 | `npm run deploy` | Build and publish to Cloudflare (needs `wrangler login`) |
@@ -39,18 +40,25 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
   when the typing line is empty.
 - **Shift** (held) raises a guard: you cannot walk, but you can turn, and blows from the front
   mostly bounce.
-- **Tab** shows what you carry. **Esc** opens the menu (map, journal, deeds, save, restore, and
-  settings: music, sound effects, how walking works, and whether fights are fair or gentle).
+- **Tab** shows what you carry. **Esc** opens the menu (map, journal, skills, deeds, save, restore,
+  how to play, start again, and settings: music, sound effects, how walking works, and whether
+  fights are fair or gentle).
 - **Everything else is typed.** Enter sends the line; Enter on an empty line repeats the last one.
 - **F1** is help, **F2** turns sound on and off, **F3** brings back your last line to edit, **F4**
   is the map.
+- **The mouse** also answers a message (click it), picks a row from a menu, and looks about the
+  map: a click on a square names it, and a click off the map closes it.
+- **Looking away pauses the game.** When the window or tab loses focus the world stops; any key,
+  click or tap goes on.
 
 Some things to type: `look`, `look at sign`, `take hatchet`, `equip hatchet`, `talk to woman`,
-`ask elder about barrow`, `read tome`, `cast flame`, `buy sword`, `map`, `exits`, `think`,
-`journal`, `skills`, `save`, `help`.
+`ask elder about barrow`, `read tome`, `cast flame`, `buy sword`, `wear torc`, `swap` (changes
+between your last two weapons), `map`, `exits`, `think`, `journal`, `skills`, `deeds`, `time`,
+`save`, `help`.
 
-Skills rise only by use: swing to raise Blade, block to raise Block, cast to raise Sorcery, read
-runes and books to raise Lore. Skill gains raise your level, and each level lets you add to
+There are six skills, and they rise only by use: swing to raise Blade, shoot to raise Archery,
+block to raise Block, cast to raise Sorcery, heal yourself to raise Mending, read runes and books
+(and speak runewords) to raise Lore. Skill gains raise your level, and each level lets you add to
 Health, Mana or Stamina. Runewords are learned from standing stones and spoken by typing the word.
 
 Talking to someone opens a menu of things to say, buy or give; you can also type `ask <name>
@@ -62,8 +70,11 @@ stand. Add `?touch` to the address to see that layout on a computer. Added to a 
 screen, the game opens full screen.
 
 Fights reward timing. An enemy about to strike shows a gold `!`; raise your guard while it shows
-and the blow is parried, leaving the attacker open. Each skill grants a perk at two levels (the
-`skills` page lists what you have earned).
+and the blow is parried, leaving the attacker open. The health bar flashes when you are badly
+hurt, and swinging with no breath left lands weak blows until you catch it. Each skill grants a
+perk at three levels (the `skills` page lists what you have earned). The line under the typing
+line shows what is in your hands, the runewords you know, and any boon still on you (Ward, Might,
+Light).
 
 The nine hand-made outdoor screens are only the middle of the map. Walk off any open edge and
 new country is generated a screen at a time: the same place every time you return, and tougher
@@ -121,6 +132,7 @@ src/engine/          the engine; nothing in here knows about this particular gam
   doll.ts icons.ts font.ts palette.ts               characters, item icons, text, colour
   frontier.ts walk.ts generates country beyond the hand-made map, on demand; what can be walked
   tune.ts            the notation tunes are written in
+  noise.ts           seeded noise and hashing, for pictures and for generated country
   validate.ts        checks content before it is played
   types.ts           the data model
 src/game/            the game itself, as data
@@ -128,11 +140,14 @@ src/game/            the game itself, as data
   data/rooms/        the hand-made screens: the valley, its interiors, and four places far out
   data/cast.ts       characters and their dialogue
   data/vocab.ts      every word the parser knows
+  data/text.ts       system messages, the help page and the opening words
   data/music.ts      nine original tunes, as data
   data/frontier.ts   settings and wording for generated country
   behaviours.ts      the few named behaviours data cannot express
 tests/               engine tests and the walkthrough bot
-tools/               QA scripts: screenshots without a browser, and measurements (see below)
+tools/               QA scripts: screenshots without a browser, and measurements (see below);
+                     icon.ts draws the home-screen icons
+public/              the web app manifest and home-screen icons, copied into the build as they are
 art-test/            the original three-style art comparison (reference only, not shipped)
 ```
 
@@ -188,8 +203,9 @@ keyboard-equivalent intents:
 - the first saga, twice, checking both runs end in identical state;
 - the first saga again with the game saved and restored every two seconds, which must change nothing;
 - the first saga with a deliberately slow hand that never guards, which must still survive;
-- everything after it (the Elder's work, the forge, all three steading quests, both landmarks and
-  the second saga), ending with every score award the content declares having been earned.
+- everything after it (the Elder's work, the forge, all three steading quests, all three landmarks
+  and the second saga), ending with every score award the content declares having been earned;
+- a walk out into generated country, a fight there, and the walk back.
 
 Every generated room within seven screens of the valley, and every vault under them, is also put
 through the same validator as the hand-made rooms.
