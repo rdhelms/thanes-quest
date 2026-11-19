@@ -12,11 +12,11 @@ whether or not it is ever sold, and a game its owner is proud of and enjoys play
 who do not play many games and came across this one, and people who love games but never played
 the old ones. It is family friendly, for ages thirteen and up.
 
-**Typing lets a player explore the world fully** and try creative actions that a point-and-click
-or console game could not allow. Typing is less convenient than the other controls, and it is
-optional: a player who wants to use only lower-friction controls can play the game that way. A
-player who chooses to type gets a richer experience for it: Easter eggs, hidden puzzles, jokes,
-and more interesting stories.
+**Typing is optional, and it is the richer way to play.** It lets a player explore the world
+fully and try creative actions that a point-and-click or console game could not allow. It is less
+convenient than the other controls, so a player who wants to use only lower-friction controls can
+play the game that way. A player who chooses to type gets more for it: Easter eggs, hidden
+puzzles, jokes, and more interesting stories.
 
 **The game should feel both deep and vast.** The Sierra adventure games, Skyrim, and D&D are
 examples of games that achieve that feeling of depth and scale, each in a different way.
