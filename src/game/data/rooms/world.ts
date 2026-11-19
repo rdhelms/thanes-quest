@@ -514,7 +514,7 @@ export const barrow: RoomDef = {
     { on: 'veth', do: [{ say: 'The word goes out across the snow and is lost. You would need to be nearer the door for it to hear you.' }] },
     { on: ['open door', 'push door', 'pull door', 'knock door', 'enter barrow', 'enter door'], if: [{ not: { flag: 'barrow.open' } }], do: [{ say: 'You put your shoulder to the slab. It does not move. You have the strong impression it has not noticed you.' }] },
     { on: ['open door', 'enter barrow', 'enter door'], do: [{ say: 'It stands open. Walk in, if you are going.' }] },
-    { on: 'orun', do: [{ say: 'ORUN. The mound shows its bones. Beside the great doorway there was once a second, smaller one, walled up with fitted stone before the turf was ever laid over it. Whoever built this place for their king built a way out as well, and then thought better of it.' }] },
+    { on: 'orun', do: [{ set: 'orun.barrow' }, { say: 'ORUN. The mound shows its bones. Beside the great doorway there was once a second, smaller one, walled up with fitted stone before the turf was ever laid over it. Whoever built this place for their king built a way out as well, and then thought better of it.' }] },
     { on: ['read rune', 'pet rune', 'read door'], do: [{ say: 'The rune is the mirror of something. It asks; it does not tell. Somewhere there is a stone that carries the answer.' }] },
   ],
 };

@@ -99,7 +99,10 @@ export const chars: Record<string, CharDef> = {
       elder: '"That is me. Do try to keep up."',
       word: '"I know nothing of that craft and want to know less. That is what the hermit is for."',
       crown: '"A dead man\'s hat. Keep it away from me."',
-      king: '"If the stories are true, he let his own people freeze rather than share his fire. I would not expect him to have mellowed."',
+      king: [
+        { if: [{ flag: 'fenn.told' }], say: '"Fenn has told me what was cut on that wall." Marta looks at the fire for some time. "I have been cold enough, and angry enough, to cut those words myself. I hope I should have had the sense to go back and rub them out." She does not sound sure.' },
+        { say: '"If the stories are true, he let his own people freeze rather than share his fire. I would not expect him to have mellowed."' },
+      ],
       thane: [
         { if: [{ flag: 'hearth.lit' }], say: '"It means the village feeds you, and you bleed for the village. It is not a good bargain. It is the only one I have to offer, and you took it."' },
         { say: '"We have not had a Thane in my lifetime. We have not had anyone worth the name."' },
@@ -216,7 +219,7 @@ export const chars: Record<string, CharDef> = {
       },
       {
         if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }],
-        say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing will not sit still. A smith works to order. Somebody asked for that crown." He looks at the dark window for a while, and then shakes his head. "Another winter\'s question. Pass me the ink."',
+        say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing would not sit still. A smith works to order. Somebody asked for that crown." He turns back a page, to the three words you read off the wall as they went dark. "Let him freeze. No king says that of himself. A people says it, of a king who kept his fire while they buried their own."\n\nHe counts something on his fingers, and gives it up. "Those notched pillars under the mound. One notch for each of their dead, I think, and one winter for each notch. Four thousand. The count ran out on the night your hearths went cold. He woke with his sentence served and the crown still on his head, drinking every warmth he reached for, because nobody was left alive to tell the smith it was enough."\n\nFenn looks at the dark window for a while. "I do not say he was owed better. I say they meant it to end, and it did not end, until you." He shakes his head. "Pass me the ink."',
         do: [{ set: 'fenn.told' }, { score: 5, id: 'crown.told' }, { run: 'study', arg: 60 }],
       },
       { if: [{ quest: 'errand', is: 1 }, { has: 'amulet' }], say: '"Is that..." He has gone very still. "You have it. You actually have it." He holds out a hand that is not quite steady.' },
@@ -225,6 +228,8 @@ export const chars: Record<string, CharDef> = {
     ],
     topics: {
       barrow: [
+        { if: [{ flag: 'fenn.told' }, { flag: 'orun.barrow' }], say: '"That second door you uncovered, beside the great one. They built him a way out, for when the count was paid, and then they walled it up before the turf went on." Fenn turns a page. "I do not think they were wicked. I think they were cold, and tired, and had buried too many. It is a poor state in which to decide anything."' },
+        { if: [{ flag: 'king.dead' }], say: '"Empty now, by your account, and only a hill again. Good. That is all a grave should be."' },
         {
           if: [{ quest: 'hearth', min: 1 }],
           say: '"A king is in that mound who loved warmth so much he took it with him. Now he has woken, and he is taking yours." Fenn turns a page. "The door answers to a word: VETH. I cannot give it to you. Words like that are not told, they are taken, from the stones that hold them. There is one on the west ridge, above the pinewood. Lay your hand on the rune and read it, if it lets you."',
@@ -285,7 +290,10 @@ export const chars: Record<string, CharDef> = {
       ],
       elder: '"Marta. She was a child when I was already old. Stubborn then, too."',
       name: '"Fenn. It will do."',
-      king: '"He was called something once. He has outlived his own name, which is the kind of thing that happens when you refuse to die properly."',
+      king: [
+        { if: [{ flag: 'fenn.told' }, { flag: 'orun.ante' }], say: '"He had a name once, and nobody alive knows it. I have looked. Four thousand names on those pillars, by your telling, and not one of them is his."' },
+        { say: '"He was called something once. He has outlived his own name, which is the kind of thing that happens when you refuse to die properly."' },
+      ],
     },
     shrug: '"That is either beneath my notice or above yours," says Fenn, and turns a page.',
     menu: [

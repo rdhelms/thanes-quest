@@ -52,8 +52,8 @@ Fenn's fire still burns, because he has drawn a line at his threshold that the K
 not cross.
 
 Marta pays the hero ten silver to look into the barrow, and sends the hero to Fenn. Fenn says the
-king in the mound has woken and is taking the village's warmth. The game does not say what woke
-him. The barrow's door is sealed with a rune and answers to the word VETH.
+king in the mound has woken and is taking the village's warmth. The barrow's door is sealed with a
+rune and answers to the word VETH.
 
 The hero reads VETH from the stone on the west ridge and speaks it at the door, and the slab sinks
 into the earth. Under the mound there are three rooms:
@@ -61,7 +61,7 @@ into the earth. Under the mound there are three rooms:
 1. **The antechamber.** A wolf, a stag, and a crown are carved on the wall, above the words "First
    the one who hunts. Then the one who is hunted. Last the one who is crowned, for all come to him
    in the end." Pressing them in that order opens the way. A wrong choice is answered with a blast
-   of cold.
+   of cold. The pillars here are ringed with notches, a long tally.
 2. **The Hall of Sleepers.** It is dark. The dead of forty generations lie here, and some of them
    get up.
 3. **The Barrow-King's chamber.** All the warmth of Hollowmere has ended up in this room, and it
@@ -70,9 +70,6 @@ into the earth. Under the mound there are three rooms:
 
 The hero kills the Barrow-King. He falls in on himself and leaves only a crown of black iron with
 seven points. The rune behind his seat is ORUN, which Fenn had searched for across sixty years.
-Spoken outside the barrow, ORUN shows a second, smaller doorway, walled up before the turf was
-laid. Whoever built the mound for their king built a way out as well, and then thought better of
-it.
 
 The hero lays the crown in front of Marta. She will not light her own hearth: the hero went down
 there, so the hero lights it. The hero lays a dry log from the woodpile and strikes a spark, and
@@ -105,16 +102,49 @@ reading, they want obeying.
 As the Cold Smith weakens he strikes his anvil, and the dead step out of the ice of the pillars.
 The Thane breaks him, lays the crown on the anvil, and strikes it once with the Smith's own
 hammer. The crown does not break. It melts to water, and every flawed crown melts with it. The
-wind drops for the first time since the hero came north. Some of the warmth the crown had been
-drinking for four thousand years goes into the Thane.
+wind drops for the first time since the hero came north. The three runes on the wall go dark one
+after another, and as each one goes the Thane can read it. They were an order, three words long:
+"Let him freeze." Some of the warmth the crown had been drinking for four thousand years goes
+into the Thane.
 
 After that the winter is only a winter. In Hollowmere the well thaws, the eaves drip, the snow on
 Gorm's field goes soft, and a thrush sings in the pinewood. Marta gives the Thane a purse that
 every household has put something into. Fenn laughs that it all ended as a puddle on a floor, has
 the Thane tell him the whole of it, and writes it down.
 
-Fenn ends on a question that the game does not answer. A smith works to order, so somebody asked
-for that crown. He calls it "another winter's question".
+Late that night Fenn works out the rest. A smith works to order, so somebody asked for that crown,
+and the three words say who. No king says "let him freeze" of himself. His own people said it, of
+a king who kept his fire while they buried their dead. They went to the Cold Smith for a crown
+that would keep him cold, and they set a term: one notch on the barrow's pillars for each of their
+dead, and one winter for each notch. There are four thousand.
+
+The count ran out on the night the hearths of Hollowmere went cold. The King woke with his
+sentence served and the crown still on his head. It drank every warmth he reached for, which is
+why all the fire of the village could sit in his chamber and leave it cold. Nobody was left alive
+to tell the Smith it was enough, so the Smith never stopped. "I do not say he was owed better,"
+Fenn says. "I say they meant it to end, and it did not end, until you."
+
+The dead that the crown called up do not lie down when it is unmade. Putting them back in the
+ground is part of the work Marta goes on paying a Thane to do.
+
+## What the word of uncovering shows
+
+A player who speaks ORUN in the right places learns more of this story than the sagas tell.
+
+- **At the barrow**, a second, smaller doorway, walled up before the turf was laid. Fenn explains
+  it afterward: the King's people built him a way out, for when the count was paid, and then
+  walled it up. "I do not think they were wicked. I think they were cold, and tired, and had
+  buried too many."
+- **In the antechamber**, a name beside every notch on the pillars. They are not the names of
+  kings: Hild, Old Kell, Kell's two boys, Thora the weaver, and one scratched so small that it
+  must have been a small person's. It is a count of people, not of years. Fenn says afterward that
+  the King's own name is not among the four thousand, and that nobody alive knows it.
+- **In the Cold Forge**, hundreds of handprints pressed into the ice around the three runes, large
+  hands and small ones, the way people sign a thing who have no letters.
+
+Once Fenn has told her what was cut on the wall, Marta says she has been cold enough and angry
+enough to cut those words herself, and hopes she would have had the sense to go back and rub them
+out. She does not sound sure.
 
 ## Side stories
 

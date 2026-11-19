@@ -236,6 +236,8 @@ export const ante: RoomDef = {
     { on: ['push crown', 'pet crown'], if: [{ flag: 'ante.wolf' }, { flag: 'ante.stag' }], do: [{ set: 'ante.open' }, { sound: 'door' }, { score: 10, id: 'ante.open' }, { say: 'The crown goes in with a click you feel in your teeth. The third rune wakes, and in the eastern archway the cold lets go all at once, like a held breath. The way down is open.' }] },
     { on: ['push crown', 'pet crown'], do: [{ set: 'ante.wolf', to: false }, { set: 'ante.stag', to: false }, { hurt: 7, why: 'The barrow does not care for guesswork. The cold stops your heart between one beat and the next.' }, { say: 'The crown does not move. The runes go dark, and cold comes out of the wall like a blow.' }] },
     { on: 'veth', do: [{ say: 'The word booms round the chamber and comes back unanswered. Whatever holds the archway is not a door, and does not open like one.' }] },
+    { on: 'orun', if: [{ not: { flag: 'orun.ante' } }], do: [{ set: 'orun.ante' }, { run: 'study', arg: 20 }, { say: 'ORUN. The notches on the pillars stand out as sharp as the day they were cut, and beside each one, for the length of a breath, there is a name. They are not the names of kings. Hild. Old Kell. Kell\'s two boys. Thora the weaver. One is scratched so small that it must have been a small person\'s. There are four thousand of them. This is not a count of years. It is a count of people.' }] },
+    { on: 'orun', do: [{ say: 'ORUN. The names do not come back. You find that you remember most of them.' }] },
   ],
 };
 
