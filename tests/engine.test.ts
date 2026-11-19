@@ -1314,7 +1314,7 @@ describe('a world that notices', () => {
   it('describes the village differently once the hearth is lit', () => {
     const sim = game('village', 104, 158);
     expect(type(sim, 'look')[0]).toContain('pretending not to stare');
-    expect(type(sim, 'look at the forge')[0]).toContain('went out a week ago');
+    expect(type(sim, 'look at the forge')[0]).toContain('went out nine days ago');
     sim.state.flags['hearth.lit'] = true;
     expect(type(sim, 'look')[0]).toContain('smoke standing straight up');
     expect(type(sim, 'look at the forge')[0]).toContain('ringing');
@@ -2378,5 +2378,22 @@ describe('pointing at the picture', () => {
     const x = shell.sim.p.x;
     for (let i = 0; i < 5; i++) shell.tick();
     expect(shell.sim.p.x).toBeGreaterThan(x);
+  });
+});
+
+describe('great foes in their own halls', () => {
+  it('each calls up the dead in his own words, not the other one\'s', () => {
+    for (const [room, ref, want, not] of [['rimehall', 'coldsmith', 'Cold Smith strikes his anvil', 'Barrow-King'], ['throne', 'king', 'Barrow-King calls', 'Smith']] as const) {
+      const sim = game(room, 60, 150);
+      const boss = sim.rs.actors.find((a) => a.ref === ref)!;
+      boss.hp = Math.floor((boss.ai.max ?? content.enemies[ref].hp) * 0.6);
+      const notes: string[] = [];
+      for (let i = 0; i < 40; i++) {
+        sim.step([]);
+        for (const e of sim.drain()) if (e.t === 'note') notes.push(e.text);
+      }
+      expect(notes.join(' '), room).toContain(want);
+      expect(notes.join(' '), room).not.toContain(not);
+    }
   });
 });

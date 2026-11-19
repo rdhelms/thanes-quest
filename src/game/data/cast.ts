@@ -234,7 +234,7 @@ export const chars: Record<string, CharDef> = {
       crown: [
         {
           if: [{ quest: 'crown', is: 1 }, { has: 'crown' }],
-          say: '"Put it on the table. No. Not near the books." Fenn looks at the crown for a long time without touching it. "Seven points. I took it for his. It is not his. Look at the join, here: this was made for a bigger head, and cut down to fit. Somebody crowned him. Somebody gave a cold king a colder crown, four thousand years ago, and it has been calling the dead to it ever since. Now it is calling them to you."\n\nHe sits back. "The old tales put the crowning in the west, at a pass they named the Frost Gate, five ridges west of Hollowmere, out past the pinewood. If the maker is anywhere, he is there, behind a door you will not see until it is uncovered. You have a word for that. Take the crown back to where it was made, and unmake it."',
+          say: '"Put it on the table. No. Not near the books." Fenn looks at the crown for a long time without touching it. "Seven points. I took it for his. It is not his. Look at the join, here: this was made for a bigger head, and cut down to fit. Somebody crowned him. Somebody gave a cold king a colder crown, four thousand years ago, and it has been calling the dead to it ever since. Now it is calling them to you."\n\nHe sits back. "The old tales put the crowning in the west, at a pass they named the Frost Gate, five ridges west of Hollowmere, out past the pinewood. If the maker is anywhere, he is there, behind a door you will not see until it is uncovered. There is a word for that. Take the crown back to where it was made, and unmake it."',
           do: [{ quest: 'crown', stage: 2 }, { set: 'goal.gate', to: 'frostgate' }, { score: 3, id: 'crown.fenn' }, { note: 'The Frost Gate is marked on your map.' }],
         },
         { if: [{ quest: 'crown', min: 2, max: 4 }], say: '"West of the village, five ridges, out past the pinewood. The door will not show itself; it wants uncovering. And do not put that thing down in here again. My ink froze."' },
@@ -242,7 +242,10 @@ export const chars: Record<string, CharDef> = {
         { if: [{ has: 'crown' }], say: '"A dead king\'s crown, and you are carrying it about like a loaf. Well, you won it. I should keep it wrapped, if I were you. It does not feel finished."' },
         { say: '"The Barrow-King wore one, by all accounts. Seven points. If you ever see it, do not try it on."' },
       ],
-      menhir: '"Three stones in this valley still hold their words. One on the west ridge. One by the old watchtower, south-east. The third..." He shrugs. "Nobody who found the third came back to tell me where."',
+      menhir: [
+        { if: [{ flag: 'fenn.orun' }], say: '"Three stones in this valley still hold their words. One on the west ridge. One by the old watchtower, south-east. And the third is a wall behind a dead king\'s chair, as I now know."' },
+        { say: '"Three stones in this valley still hold their words. One on the west ridge. One by the old watchtower, south-east. The third..." He shrugs. "Nobody who found the third came back to tell me where."' },
+      ],
       word: '"VETH opens, and pushes. ISKA stills, and freezes. ORUN uncovers what is hidden. Each lives in a stone, and each tires the tongue: speak one and you must wait before it will come to you again."',
       tarn: [
         {
@@ -307,6 +310,11 @@ export const chars: Record<string, CharDef> = {
     nouns: ['toke'],
     spec: { skin: 'skin', hair: 'brown', hairStyle: 'hood', beard: true, tunic: 'green', legs: 'leather', boots: 'fur', cloak: 'green' },
     look: 'A lean man in a green hood with a bow on his back and a bandage on one hand. He is watching the trees, not you.',
+    lookWhen: [
+      { if: [{ quest: 'wolves', is: 2 }, { flag: 'toke.mended' }], look: 'A lean man in a green hood. The bite on his hand has closed to a pink seam, and his bow is yours now. He is watching the trees, not you.' },
+      { if: [{ quest: 'wolves', is: 2 }], look: 'A lean man in a green hood with a bandage on one hand. His bow is yours now. He is watching the trees, not you.' },
+      { if: [{ flag: 'toke.mended' }], look: 'A lean man in a green hood with a bow on his back. The bite on his hand has closed to a pink seam. He is watching the trees, not you.' },
+    ],
     talk: [
       {
         if: [{ quest: 'wolves', is: 0 }],
@@ -319,6 +327,7 @@ export const chars: Record<string, CharDef> = {
         do: [{ quest: 'wolves', stage: 2 }, { give: 'bow' }, { score: 10, id: 'wolves.done' }, { note: 'Tip: EQUIP BOW, then attack to loose an arrow. SWAP changes back.' }],
       },
       { if: [{ quest: 'wolves', is: 1 }], say: '"Not three yet. There are two in the west of this wood and at least one up on the ridge. Do not let them get behind you."' },
+      { if: [{ flag: 'crown.unmade' }, { flag: 'toke.mended' }], say: '"I heard a thrush this morning. In the pinewood, in this month." Toke shakes his head slowly. "And my hand is whole. I could take that bow back." He very nearly smiles. "No. Keep her. You have fed her better than I ever did."' },
       { if: [{ flag: 'crown.unmade' }], say: '"I heard a thrush this morning. In the pinewood, in this month." Toke shakes his head slowly. "My hand is mending, too. Another week and I shall want that bow back." He very nearly smiles. "No. Keep her. You have fed her better than I ever did."' },
       { if: [{ flag: 'hearth.lit' }, { quest: 'wolves', is: 2 }], say: '"Thane, they tell me. The wolves will have heard; they hear everything." He looks you over. "There are deer again, out past the valley. Halla pays for venison, if you can get near enough to loose."' },
       { say: '"Quiet wood, for once. I could get used to it."' },
@@ -411,7 +420,7 @@ export const chars: Record<string, CharDef> = {
     topics: {
       work: [{ say: '"I do not walk as far as I did. But I know where things are, and things do not move much."', do: [{ run: 'rumour', arg: 'Ivar One-Glove' }] }],
       wolf: '"A wolf comes in fast, bites, and is gone before you have finished swearing. Do not chase. Let it come to you, and be ready when it does."',
-      bear: '"He gave me fair warning. He stood up, and he took his time, the way they do. I was young and thought I was quicker." He holds up the bare hand. "Watch for the moment before the blow. There is always a moment."',
+      bear: '"He gave me fair warning. He stood up, and he took his time, the way they do. I was young and thought I was quicker." He holds up the hand he has left. "Watch for the moment before the blow. There is always a moment."',
       weather: '"Forty winters, and none like this. The cold comes from the west now. It used to come from the north, like honest cold."',
       village: '"Is Marta still Elder? Then it is still standing. Tell her Ivar is not dead, if she asks. She will not ask."',
       pelt: '"Four silver a wolf. Ten for a bear, and I will want to hear how you did it."',

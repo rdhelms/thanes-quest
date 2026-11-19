@@ -293,7 +293,7 @@ const rules: Rule[] = [
   { on: ['blow', 'blow *'], do: [{ say: 'You breathe out. Your breath hangs in the air a moment, considers freezing, and drifts off.' }] },
   { on: ['temper', 'temper *'], do: [{ say: 'That is smith\'s work, and the only smith is Odd, in Hollowmere.' }] },
   // Trade at the lone steadings.
-  { on: ['buy potion', 'buy'], if: [withFolk, { gold: 7 }], do: [{ gold: -7 }, { give: 'potion' }, { sound: 'take' }, { say: 'Seven silver changes hands, and a red draught comes out from under a fur. "Brewed it myself. It works. Do not ask what is in it."' }] },
+  { on: ['buy potion', 'buy'], if: [withFolk, { gold: 7 }], do: [{ gold: -7 }, { give: 'potion' }, { sound: 'take' }, { say: 'Seven silver changes hands, and a red draught comes out from under a fur. "It works. Do not ask what is in it."' }] },
   { on: ['buy potion', 'buy'], if: [withFolk], do: [{ say: '"Seven silver for a draught. I do not give credit to people who walk about out here; they tend not to come back."' }] },
   { on: ['sell pelt', 'give pelt'], if: [withFolk, { has: 'pelt' }], do: [{ lose: 'pelt' }, { gold: 4 }, { sound: 'take' }, { say: 'The pelt is looked over, hair and hide, and found sound. Four silver.' }] },
   { on: ['sell bearskin', 'give bearskin'], if: [withFolk, { has: 'bearskin' }], do: [{ lose: 'bearskin' }, { gold: 10 }, { sound: 'take' }, { say: '"You killed that? You?" A long look, then ten silver, counted out with new respect.' }] },
@@ -352,7 +352,7 @@ const rules: Rule[] = [
 const deeds: Content['deeds'] = [
   { text: 'Came north to Hollowmere with nothing but a road behind you.' },
   { if: [{ flag: 'wolves.killed', min: 3 }], text: 'Quieted the pinewood, and was given a bow for it.' },
-  { if: [{ quest: 'stores', is: 2 }], text: "Took back Gorm's seed grain from the robbers at the ford." },
+  { if: [{ quest: 'stores', is: 2 }], text: "Took back Gorm's seed grain from the robbers past the ford." },
   { if: [{ quest: 'errand', is: 2 }], text: 'Froze the tarn with a word, and gave Fenn back what the ice kept.' },
   { if: [{ flag: 'barrow.open' }], text: 'Spoke VETH at the barrow door, and it opened.' },
   { if: [{ flag: 'king.dead' }], text: 'Ended the Barrow-King in his own hall.' },

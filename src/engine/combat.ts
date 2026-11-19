@@ -382,7 +382,7 @@ function enemyAI(sim: Sim, a: ActorState, def: EnemyDef): void {
   if (def.ai === 'wolf' && ai.cool > 8) moveToward(sim, a, a.x - Math.sign(dx || 1) * 30, a.y + (ai.slide || 1) * 6, speed, true);
   else moveToward(sim, a, p.x - Math.sign(dx || 1) * (reach - 7), p.y, speed, beast);
 
-  // The Barrow-King calls the dead as he weakens.
+  // A great foe calls the dead as he weakens.
   if (def.ai === 'boss') {
     const full = ai.max ?? def.hp;
     const stage = a.hp < full * 0.33 ? 2 : a.hp < full * 0.66 ? 1 : 0;

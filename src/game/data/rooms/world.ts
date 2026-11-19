@@ -138,7 +138,7 @@ export const village: RoomDef = {
     { id: 'woodpile', nouns: ['woodpile'], x: 146, y: 120, reach: 34, try: ['take wood'], look: 'Split pine, stacked with the care of someone expecting a long winter.' },
     { id: 'hatchet', nouns: ['hatchet'], x: 172, y: 122, reach: 30, icon: 'hatchet', take: 'hatchet', takeSay: 'You work the hatchet out of the frozen snow. Nobody is watching. It is yours now, in the way things become yours.', look: 'A hatchet left lying by the woodpile, half buried.' },
     {
-      id: 'anvil', nouns: ['anvil', 'barrel', 'hearth'], x: 104, y: 154, reach: 34, look: "The smith's anvil, set on a stump in the open. The forge-fire went out a week ago; now he works cold iron and swears.",
+      id: 'anvil', nouns: ['anvil', 'barrel', 'hearth'], x: 104, y: 154, reach: 34, look: "The smith's anvil, set on a stump in the open. The forge-fire went out nine days ago; now he works cold iron and swears.",
       lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: "The smith's anvil, ringing. The forge beside it is lit and has not been allowed to cool since. Odd feeds it like a man making up for lost time." }],
     },
     {

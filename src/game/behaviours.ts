@@ -281,9 +281,11 @@ export const behaviours: Record<string, Behaviour> = {
     }
   },
 
-  /** The Barrow-King calls up the dead as he weakens. */
+  /** A great foe calls up the dead as he weakens: the Barrow-King from his barrow, the Cold Smith from the ice of his hall. */
   bossPhase: (sim, stage) => {
-    sim.note(stage === 1 ? 'The Barrow-King calls, and the dead answer.' : 'The King howls. The barrow shakes.');
+    const smith = sim.rs.actors.some((a) => a.ref === 'coldsmith');
+    if (smith) sim.note(stage === 1 ? 'The Cold Smith strikes his anvil, and one of the dead steps out of the ice.' : 'The Smith strikes again. The pillars crack, and more of the dead come out.');
+    else sim.note(stage === 1 ? 'The Barrow-King calls, and the dead answer.' : 'The King howls. The barrow shakes.');
     sim.spawn('wight', 60, 140);
     if (stage === 2) sim.spawn('wight', 260, 140);
   },
