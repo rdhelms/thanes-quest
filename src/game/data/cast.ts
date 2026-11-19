@@ -397,7 +397,8 @@ export const chars: Record<string, CharDef> = {
     name: 'Ivar One-Glove',
     nouns: ['ivar'],
     spec: { skin: 'skin', hair: 'white', hairStyle: 'short', beard: true, tunic: 'green', legs: 'grey', boots: 'fur', cloak: 'leather' },
-    look: 'An old hunter, lean as a rail, with one hand gloved and the other bare and the colour of oak. He leans on a spear he plainly no longer needs for walking.',
+    look: 'An old hunter, lean as a rail. His right sleeve is pinned up at the wrist, and his left hand is bare and the colour of oak. He leans on a spear he plainly no longer needs for walking.',
+    lookWhen: [{ if: [{ quest: 'message', is: 3 }], look: 'An old hunter, lean as a rail. His right sleeve is pinned up at the wrist, and on his left hand is a glove of good grey wool, which he keeps looking at. His spear is yours now, and he does not seem to miss it.' }],
     talk: [
       { if: [{ not: { flag: 'ivar.met' } }], say: '"Sit, if you can find something to sit on." He does not get up. "Ivar. They call me One-Glove; the other is inside a bear, and I hope it disagreed with him. I hunted this country forty years. Now I mostly watch it."', do: [{ set: 'ivar.met' }, { run: 'home', arg: 'ivar' }] },
       {

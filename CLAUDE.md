@@ -35,3 +35,7 @@ A push to `main` deploys the live game. This is to be revisited once real people
 Do not copy another game's protected material (its characters, art, music, text, or trademarks).
 
 Keep the README accurate and short: only what someone needs to run, play, and build on the game.
+
+`STORY.md` tells the game's stories, the main one and the side ones. It holds only what is in the
+game: no plans and no ideas for later. Keep it and the game in step, and leave neither with an
+unfinished storyline or plot holes.
