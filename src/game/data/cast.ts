@@ -28,7 +28,10 @@ export const chars: Record<string, CharDef> = {
       elder: '"Marta Coldhand. She has kept this village forty winters. You will find her in the hall, staring at a cold hearth as if she could shame it into lighting."',
       hall: '"The Elder\'s hall. Warmest place in Hollowmere, once. Now you can see your breath at the high table."',
       hearth: '"Every fire in the village gutters and dies. Dry wood, good flint, and still they go out, as if something were drinking the heat."',
-      barrow: '"The old mound up north. We do not go there." She lowers her voice. "It has started to glow at night. Do not tell the children I said so."',
+      barrow: [
+        { if: [{ flag: 'king.dead' }], say: '"It has stopped glowing. I went up to look, in daylight, with a stick." Sigga shrugs. "It is a hill."' },
+        { say: '"The old mound up north. We do not go there." She lowers her voice. "It has started to glow at night. Do not tell the children I said so."' },
+      ],
       wolf: '"They have come down out of the high wood, bolder every week. Toke hunts them, west of here in the pinewood, or did until one took a piece of his hand."',
       well: [
         { if: [{ flag: 'crown.unmade' }], say: '"Running. I drew a bucket this morning and stood and looked at it like a fool."' },
@@ -85,7 +88,10 @@ export const chars: Record<string, CharDef> = {
       { say: '"Thane." Marta does not look round from the fire. "You have the look of someone with idle hands."', do: [{ run: 'bountyOffer', arg: 'Elder Marta' }] },
     ],
     topics: {
-      barrow: '"It was old when the first of us came over the mountains. A king is buried there, they say, who would not share his fire in life. I always took that for a story to make children generous."',
+      barrow: [
+        { if: [{ flag: 'hearth.lit' }], say: '"It was old when the first of us came over the mountains. I took the king in it for a story to make children generous. I shall tell it differently now."' },
+        { say: '"It was old when the first of us came over the mountains. A king is buried there, they say, who would not share his fire in life. I always took that for a story to make children generous."' },
+      ],
       hearth: '"Laid, dry, and dead. Light it and it dies in a breath. Something is taking the warmth out of this village, and I mean to have it back."',
       fenn: '"Clever, rude, and older than he has any right to be. He lives by the tarn. Mind the ice there: it took his wife, forty years back."',
       work: [
@@ -100,7 +106,8 @@ export const chars: Record<string, CharDef> = {
       word: '"I know nothing of that craft and want to know less. That is what the hermit is for."',
       crown: '"A dead man\'s hat. Keep it away from me."',
       king: [
-        { if: [{ flag: 'king.dead' }], say: '"He is ended, and the fires stay lit. That is as much thought as I mean to give him."' },
+        { if: [{ flag: 'hearth.lit' }], say: '"He is ended, and the fires stay lit. That is as much thought as I mean to give him."' },
+        { if: [{ flag: 'king.dead' }], say: '"Ended, you tell me. I shall believe it when my hearth holds a flame."' },
         { say: '"If the stories are true, he let his own people freeze rather than share his fire. I would not expect him to have mellowed."' },
       ],
       thane: [
@@ -129,8 +136,8 @@ export const chars: Record<string, CharDef> = {
     lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: 'A broad, bald man in a leather apron, red to the elbows with forge-light and hammering as if the iron owed him nine days.' }],
     talk: [
       { if: [{ not: { flag: 'odd.met' } }], say: '"Forge is dead. Fire will not hold." He does not look up. "I finished one blade before it went out. Twenty-five silver. A shield is fifteen. I do not haggle and I do not chat."', do: [{ set: 'odd.met' }] },
-      { if: [{ flag: 'hearth.lit' }], say: '"Forge is lit." It is the most cheerful you have ever seen him, which is to say he very nearly looks at you. "Bring me a blade and silver and I will put a better edge on it than it came with. Mail too. Each time costs more than the last; that is how iron is."' },
       { if: [{ flag: 'crown.unmade' }], say: '"Iron works sweeter since the wind dropped. Do not ask me why. I only hit it." He jerks his head at the forge. "Edge or mail, whenever you have the silver."' },
+      { if: [{ flag: 'hearth.lit' }], say: '"Forge is lit." It is the most cheerful you have ever seen him, which is to say he very nearly looks at you. "Bring me a blade and silver and I will put a better edge on it than it came with. Mail too. Each time costs more than the last; that is how iron is."' },
       { say: '"Sword, twenty-five. Shield, fifteen. Advice is free: do not block with your face."' },
     ],
     topics: {
@@ -187,7 +194,10 @@ export const chars: Record<string, CharDef> = {
       potion: '"Fenn brews them and I sell them. Six silver. They close a wound faster than is decent."',
       torch: '"Pitch on a stick. Three silver. They burn fine anywhere but in this village."',
       bed: '"Four silver. You will sleep like the dead, which round here I hope is only a figure of speech again."',
-      barrow: '"My grandmother said a king lies there who hoarded his fire while his people froze. Now ours go out. Make of that what you like."',
+      barrow: [
+        { if: [{ flag: 'hearth.lit' }], say: '"My grandmother said a king lies there who hoarded his fire while his people froze. I used to think she made it up to get the wood chopped."' },
+        { say: '"My grandmother said a king lies there who hoarded his fire while his people froze. Now ours go out. Make of that what you like."' },
+      ],
       elder: '"Marta has not smiled since the hearths died. Mind you, she did not smile much before."',
       work: '"Marta in the hall has the big trouble. Gorm at the east farm was robbed a week back. Toke in the west wood got himself bitten. All three would pay to see the back of it."',
       name: '"Halla. Everyone here will tell you I water the ale. I do. It needs it."',
@@ -219,7 +229,7 @@ export const chars: Record<string, CharDef> = {
       },
       {
         if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }],
-        say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing would not sit still. A smith works to order. Somebody asked for that crown." He turns back a page, to the three words you read off the wall as they went dark. "Keep me warm." He reads it again, more quietly. "He asked for it himself."\n\nFenn looks at the dark window for a while. "Four thousand years under that mound, taking the warmth of this country, a little more each winter, until this winter he was down to your hearths. And the crown drank every bit of it before it reached him. He was never warm once." He shakes his head. "And the smith at his anvil all that time, trying to get the order right. Pass me the ink."',
+        say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing would not sit still. A smith works to order. Somebody asked for that crown." He turns back a page, to the three words you read off the wall as they went dark. "Keep me warm." Fenn puts down his pen. "I had it that somebody crowned him. He asked for it himself."\n\nHe looks at the dark window for a while. "And you say that with every fire in Hollowmere in his chamber, the chamber was cold. Then the crown never gave him any of it. Four thousand years, and he was never warm once." He shakes his head. "And the smith at his anvil all that time, trying to get the order right. Pass me the ink."',
         do: [{ set: 'fenn.told' }, { score: 5, id: 'crown.told' }, { run: 'study', arg: 60 }],
       },
       { if: [{ quest: 'errand', is: 1 }, { has: 'amulet' }], say: '"Is that..." He has gone very still. "You have it. You actually have it." He holds out a hand that is not quite steady.' },
@@ -228,10 +238,10 @@ export const chars: Record<string, CharDef> = {
     ],
     topics: {
       barrow: [
-        { if: [{ flag: 'king.dead' }], say: '"Empty now, by your account, and only a hill again. Good. That is all a grave should be."' },
+        { if: [{ flag: 'king.dead' }], say: '"Quiet, by your account. Good. A grave ought to be."' },
         {
           if: [{ quest: 'hearth', min: 1 }],
-          say: '"A king is in that mound who loved warmth so much he took it with him. Now he has woken, and he is taking yours." Fenn turns a page. "The door answers to a word: VETH. I cannot give it to you. Words like that are not told, they are taken, from the stones that hold them. There is one on the west ridge, above the pinewood. Lay your hand on the rune and read it, if it lets you."',
+          say: '"A king is in that mound who loved warmth so much he took it with him. Every winter of my life has been harder than the one before, and I think this one was at last cold enough to wake him. Now he is taking yours." Fenn turns a page. "The door answers to a word: VETH. I cannot give it to you. Words like that are not told, they are taken, from the stones that hold them. There is one on the west ridge, above the pinewood. Lay your hand on the rune and read it, if it lets you."',
         },
         { say: '"A grave. A big one. Leave it alone unless someone is paying you."' },
       ],
@@ -263,7 +273,10 @@ export const chars: Record<string, CharDef> = {
         { if: [{ has: 'amulet' }], say: '"Give it here. Please." It is the first time you have heard him say please, and possibly the first time he has.' },
         { say: '"Silver, with a moonstone. Hers. It is out in the middle of the tarn, where I can see it and cannot have it."' },
       ],
-      hearth: '"Mine burns because I ask it nicely, and because the King\'s reach stops at my threshold. I drew the line myself. The village has no such line."',
+      hearth: [
+        { if: [{ flag: 'king.dead' }], say: '"Mine burns because I ask it nicely. Theirs burn again because you went down and did something about it, which is the other way of going on."' },
+        { say: '"Mine burns because I ask it nicely, and because the King\'s reach stops at my threshold. I drew the line myself. The village has no such line."' },
+      ],
       tome: '"Mend is fifteen silver, Frost twenty, Ward twenty-five. The singed one on the table is free; I never liked it."',
       light: '"A small spell and a kind one. I do not sell it. I give it, to people who do me a kindness."',
       flame: '"Loud, showy, effective. It is on the table. Read it before you need it, not after."',
@@ -290,7 +303,7 @@ export const chars: Record<string, CharDef> = {
       elder: '"Marta. She was a child when I was already old. Stubborn then, too."',
       name: '"Fenn. It will do."',
       king: [
-        { if: [{ flag: 'fenn.told' }], say: '"Nobody alive knows what he was called. He kept everything else."' },
+        { if: [{ flag: 'king.dead' }], say: '"Nobody alive knows what he was called. He kept everything else."' },
         { say: '"He was called something once. He has outlived his own name, which is the kind of thing that happens when you refuse to die properly."' },
       ],
     },
@@ -392,7 +405,10 @@ export const chars: Record<string, CharDef> = {
       pelt: '"Four silver for a wolf, ten for a bear, if you can carry it. I pay better than that tight-fisted smith."',
       potion: '"Seven silver. My own brewing: frostcap, red moss, and a thing I will not name. It will close a wound."',
       name: '"Brekka. My mother had hopes for me. They did not include this."',
-      wight: '"The dead are walking, out past the old stones. I do not set traps there any more. Something kept emptying them, and it was not hungry."',
+      wight: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Still walking. But they wander now. All this winter they went one way, toward your valley, like geese. Whatever it was they wanted there, they have stopped wanting it."' },
+        { say: '"The dead are walking, out past the old stones. I do not set traps there any more. Something kept emptying them, and it was not hungry."' },
+      ],
       trap: '"Deadfalls for marten, snares for hare, and a pit for anything bigger, which I have never yet had the courage to look into. You learn to read snow like a page. Most of what it says is: something was here, and it was hungry."',
       wild: '"It goes on for ever, as far as I have ever walked. Wood, fell, water, wood again. There are old stones out there, and older things under them. It gets worse the further you go, and so does the pay, for those who hunt."',
     },
@@ -428,7 +444,7 @@ export const chars: Record<string, CharDef> = {
       work: [{ say: '"I do not walk as far as I did. But I know where things are, and things do not move much."', do: [{ run: 'rumour', arg: 'Ivar One-Glove' }] }],
       wolf: '"A wolf comes in fast, bites, and is gone before you have finished swearing. Do not chase. Let it come to you, and be ready when it does."',
       bear: '"He gave me fair warning. He stood up, and he took his time, the way they do. I was young and thought I was quicker." He holds up the hand he has left. "Watch for the moment before the blow. There is always a moment."',
-      weather: '"Forty winters, and none like this. The cold comes from the west now. It used to come from the north, like honest cold."',
+      weather: '"Forty winters, and none like this. The cold comes out of the west in this country, not the north like honest cold, and it comes harder every year."',
       village: '"Is Marta still Elder? Then it is still standing. Tell her Ivar is not dead, if she asks. She will not ask."',
       pelt: '"Four silver a wolf. Ten for a bear, and I will want to hear how you did it."',
       potion: '"Seven silver. Runa brews them, east of here or west, wherever she has got to. I only sell them on."',

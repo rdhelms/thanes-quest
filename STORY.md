@@ -12,8 +12,9 @@ freeze. His name is forgotten.
 
 Beyond the valley is the wild. It belongs to nobody, and it holds trappers, reavers, beasts, and
 the walking dead. Ruined towers stand out there, with vaults under them that somebody took pains
-to keep shut. The people of the wild say the winter has changed: Brekka says something has got
-into it, and Ivar says the cold now comes from the west, when it used to come from the north.
+to keep shut. The people of the wild say the winter is wrong. Brekka says it was never this cold
+when she was a girl, and that something has got into it. Ivar says the cold in this country comes
+out of the west, not the north, and comes harder every year.
 
 Old words of power are cut into standing stones. A word cannot be taught. A person learns it by
 reading the rune on the stone that holds it. There are four:
@@ -52,8 +53,9 @@ Fenn's fire still burns, because he has drawn a line at his threshold that the K
 not cross.
 
 Marta pays the hero ten silver to look into the barrow, and sends the hero to Fenn. Fenn says the
-king in the mound has woken and is taking the village's warmth. The barrow's door is sealed with a
-rune and answers to the word VETH.
+king in the mound has woken and is taking the village's warmth. Every winter of Fenn's life has
+been harder than the one before, and he thinks this one was at last cold enough to wake him. The
+barrow's door is sealed with a rune and answers to the word VETH.
 
 The hero reads VETH from the stone on the west ridge and speaks it at the door, and the slab sinks
 into the earth. Under the mound there are three rooms:
@@ -89,28 +91,28 @@ to Hollowmere when it is breathed on, and has a bed made up for the Thane beside
 Marta gives the Thane paid work out in the wild. When she pays for the first piece of it, the
 Thane notices that the crown, still in the pack, has grown much colder.
 
-Fenn examines the crown. It was never the King's own. It was made for a bigger head and cut down
-to fit, so somebody crowned him, four thousand years ago. The crown is not cold as iron is cold:
-it drinks. The dead come to a thing like that, wanting what is shut up in it, and now they are
-coming to the Thane. The old tales put the crowning at the Frost Gate, a pass five ridges west of
-Hollowmere. If the maker is anywhere, Fenn says, he is there, and the crown must be taken back to
-where it was made and unmade.
+Fenn examines the crown and judges that it was never the King's own. It was made for a bigger head
+and cut down to fit, so somebody crowned him, four thousand years ago. The crown is not cold as
+iron is cold: it drinks. The dead come to a thing like that, wanting what is shut up in it, and
+now they are coming to the Thane. The old tales put the crowning at the Frost Gate, a pass five
+ridges west of Hollowmere. If the maker is anywhere, Fenn says, he is there, and the crown must be
+taken back to where it was made and unmade.
 
 The Frost Gate is a wall of blue ice between two shoulders of black rock, where the west wind is
-born. Two rime-walkers guard it. ORUN uncovers a doorway in the ice. Inside is the Cold Forge.
-The Cold Smith works there at an anvil of black ice. He is half as tall again as the Thane, with
-frost where his face should be. The floor is covered with the flawed crowns he has thrown away,
-all made to one measure, which is not a man's. Three runes are cut into the back wall. The Thane
-cannot read them: they do not want reading, they want obeying.
+born. Two rime-walkers guard it. ORUN uncovers a doorway in the ice. Inside is the Cold Forge. The
+Cold Smith works there at an anvil of black ice. He is half as tall again as the Thane, with frost
+where his face should be. The floor is covered with the flawed crowns he has thrown away, all made
+to the measure of his own head. Three runes burn on the back wall. The Thane cannot read them:
+they do not want reading, they want obeying.
 
 As the Cold Smith weakens he strikes his anvil, and the dead step out of the ice of the pillars.
 The Thane breaks him, lays the crown on the anvil, and strikes it once with the Smith's own
 hammer. The crown does not break. It melts to water, and every flawed crown melts with it. The
 wind drops for the first time since the hero came north.
 
-Then the three runes go dark, one after another, and as each one goes the Thane can read it. They
-were never a spell. They were an order, three words long: "Keep me warm." Some of the warmth the
-crown had been drinking for four thousand years goes into the Thane.
+Then the three runes go dark, one after another, and as each one goes the Thane can read it.
+"Keep. Me. Warm." Some of the warmth the crown had been drinking for four thousand years goes into
+the Thane. At the Frost Gate the west wind has stopped.
 
 After that the winter is only a winter. In Hollowmere the well thaws, the eaves drip, the snow on
 Gorm's field goes soft, and a thrush sings in the pinewood. Marta gives the Thane a purse that
@@ -118,15 +120,19 @@ every household has put something into. Fenn laughs that it all ended as a puddl
 the Thane tell him the whole of it, and writes it down.
 
 Late that night Fenn comes to the one thing that would not sit still. A smith works to order, so
-somebody asked for that crown. He reads the three words again and says, "He asked for it himself."
-The King sat under the mound for four thousand years taking the warmth of the country, a little
-more each winter, until this winter he was down to the hearths of Hollowmere. The crown drank
-every bit of it before it reached him. "He was never warm once." And the Smith was at his anvil
-all that time, trying to get the order right.
+somebody asked for that crown. He turns back to the three words and puts down his pen. "I had it
+that somebody crowned him. He asked for it himself." Then he reasons from what the Thane saw:
+every fire in Hollowmere was in the King's chamber, and the chamber was cold, so the crown never
+gave him any of it. "Four thousand years, and he was never warm once." Of the Smith he says only
+that he was at his anvil all that time, trying to get the order right.
 
 A player who speaks ORUN in the Cold Forge, once the Smith is broken, sees one thing more. Under
 the three runes is the print of one hand melted into the ice: a man's hand, with a ring on every
 finger.
+
+The dead go on walking after the crown is unmade. Brekka says they wander now. All that winter
+they had gone one way, toward the valley, and whatever they wanted there they have stopped
+wanting.
 
 ## Side stories
 

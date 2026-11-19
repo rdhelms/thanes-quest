@@ -240,7 +240,7 @@ const quests: Record<string, QuestDef> = {
       2: "The crown was not the Barrow-King's own: somebody made it, and put it on him. Fenn says it was done at the Frost Gate, five ridges west of Hollowmere, behind a door that must be uncovered. It is marked on the map.",
       3: 'The Frost Gate stands open. Whoever made the crown is inside.',
       4: 'The Cold Smith is broken. The crown must be unmade on the anvil where it was made.',
-      5: 'The crown is unmade, and the winter is only a winter.',
+      5: 'The crown is unmade, and the winter is only a winter. It is a tale Fenn the hermit will want for his books.',
     },
   },
   message: {
@@ -396,6 +396,7 @@ export const content: Content = {
   cues: { title: 'valley', battle: 'battle', fallback: 'wild', night: 'night', boss: 'doom' },
   text,
   hints: [
+    { if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }], text: 'The crown is unmade. Fenn the hermit, by the tarn, will want to hear all of it.' },
     { if: [{ flag: 'crown.unmade' }], text: 'Two sagas are behind you. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
     { if: [{ flag: 'hearth.lit' }], text: 'You are Thane of Hollowmere. The Elder has work for you whenever you ask, Odd will temper your blade, and beyond the valley there are people and places you have not found yet.' },
     { if: [{ flag: 'marta.met' }], text: 'The hermit, the hunter and the farmer all had something to say. So, perhaps, does whoever you have not yet spoken to.' },

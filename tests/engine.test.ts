@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as combat from '../src/engine/combat';
 import { gainSkill, hurtPlayer, levelNeed } from '../src/engine/combat';
 import { Parser, matches } from '../src/engine/parser';
+import { all } from '../src/engine/rules';
 import { Shell } from '../src/engine/shell';
 import { Sim } from '../src/engine/sim';
 import type { ActorState, Intent } from '../src/engine/types';
@@ -2395,5 +2396,45 @@ describe('great foes in their own halls', () => {
       expect(notes.join(' '), room).toContain(want);
       expect(notes.join(' '), room).not.toContain(not);
     }
+  });
+});
+
+describe('the order in the Cold Forge', () => {
+  const forge = (): Sim => {
+    const sim = game('rimehall', 160, 150);
+    sim.rs.actors = sim.rs.actors.filter((a) => a.ref !== 'coldsmith');
+    sim.state.flags['smith.dead'] = true;
+    sim.p.inv.crown = 1;
+    return sim;
+  };
+
+  it('cannot be read until the crown is unmade, and is read as the runes go dark', () => {
+    const sim = forge();
+    expect(type(sim, 'read rune')[0]).toContain('want obeying');
+    expect(type(sim, 'put crown on anvil').join(' ')).toContain('KEEP. ME. WARM.');
+    expect(type(sim, 'read rune')[0]).toContain('KEEP ME WARM');
+    expect(type(sim, 'look at rune')[0]).toContain('bare and dark');
+  });
+
+  it('is drawn on the wall only while it stands', () => {
+    const sc = content.rooms.rimehall.scene;
+    const runes = (sim: Sim): number => [...sc.props, ...(sc.when ?? []).filter((w) => all(sim, w.if)).flatMap((w) => w.props ?? [])].filter((p) => p.t === 'rune').length;
+    const sim = forge();
+    expect(runes(sim)).toBe(3);
+    type(sim, 'put crown on anvil');
+    expect(runes(sim)).toBe(0);
+  });
+
+  it('sends the Thane to Fenn, who draws the conclusion once', () => {
+    const sim = forge();
+    type(sim, 'put crown on anvil');
+    expect(type(sim, 'think').join(' ')).toContain('Fenn');
+    sim.enterRoom('hut', 160, 140);
+    const fenn = sim.rs.actors.find((a) => a.ref === 'fenn')!;
+    sim.p.x = fenn.x - 14;
+    sim.p.y = fenn.y;
+    sim.state.flags['fenn.met'] = true;
+    expect(type(sim, 'talk to fenn').join(' ')).toContain('He asked for it himself');
+    expect(type(sim, 'think').join(' ')).toContain('Two sagas');
   });
 });

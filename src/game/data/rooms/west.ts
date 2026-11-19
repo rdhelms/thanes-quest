@@ -11,7 +11,10 @@ export const frostgate: RoomDef = {
   music: 'barrow',
   name: 'The Frost Gate',
   look: 'The land rises here between two shoulders of black rock, and where the pass should be there is a wall of blue ice, thirty feet high and smooth as a held breath. The wind comes out of it, straight at you, as if the wall were breathing. This is where the west wind is born.',
-  lookWhen: [{ if: [{ flag: 'gate.open' }], look: 'Two shoulders of black rock, and between them a wall of blue ice thirty feet high. In its foot a doorway stands open, edged with green light. The wind still comes out of it, but it has somewhere to come from now.' }],
+  lookWhen: [
+    { if: [{ flag: 'crown.unmade' }], look: 'Two shoulders of black rock, and between them a wall of blue ice thirty feet high, with a dark doorway open in its foot. No wind comes out of it. After so long, the quiet is the strangest thing here.' },
+    { if: [{ flag: 'gate.open' }], look: 'Two shoulders of black rock, and between them a wall of blue ice thirty feet high. In its foot a doorway stands open, edged with green light. The wind still comes out of it, but it has somewhere to come from now.' },
+  ],
   scene: {
     kind: 'outdoor', horizon: 64, walkTop: 118,
     layers: [
@@ -49,12 +52,15 @@ export const frostgate: RoomDef = {
   things: [
     {
       id: 'ice', nouns: ['tarn', 'door', 'inscription'], x: 160, y: 120, reach: 400, look: 'Blue ice, clear to a great depth. Far inside it something hangs frozen: a shape like a doorway, or the memory of one. Your eye will not stay on it.',
-      lookWhen: [{ if: [{ flag: 'gate.open' }], look: 'A doorway in the ice, taller than a man, its edge lit green from inside. A stair of ice goes down behind it. Walk in, if you are going.' }],
+      lookWhen: [
+        { if: [{ flag: 'crown.unmade' }], look: 'A doorway in the ice, taller than a man, and dark. Water is running down the stair behind it.' },
+        { if: [{ flag: 'gate.open' }], look: 'A doorway in the ice, taller than a man, its edge lit green from inside. A stair of ice goes down behind it. Walk in, if you are going.' },
+      ],
     },
     { id: 'crags', nouns: ['crag', 'boulder', 'mountain'], x: 62, y: 120, reach: 400, look: 'Black rock on either hand, rimed white on the side the wind comes from. Nothing grows on it, and nothing perches.' },
     { id: 'trees', nouns: ['tree'], x: 300, y: 140, reach: 400, look: 'Two dead trees, stripped to the grain by the wind. They lean away from the ice, as anything would.' },
     { id: 'snow', nouns: ['snow', 'ground'], x: 160, y: 140, reach: 400, look: 'Packed hard as stone by the wind, and scored in long lines all pointing one way: away from the wall.' },
-    { id: 'sky', nouns: ['sky', 'weather'], x: 160, y: 100, reach: 400, look: 'The wind comes out of the west, out of the ice, and it has not stopped once since you got here.' },
+    { id: 'sky', nouns: ['sky', 'weather'], x: 160, y: 100, reach: 400, look: 'The wind comes out of the west, out of the ice, and it has not stopped once since you got here.', lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'Still air. The west wind has stopped, and you keep listening for it.' }] },
   ],
   rules: [
     { enter: true, if: [{ not: { flag: 'seen.frostgate' } }], do: [{ set: 'seen.frostgate' }, { score: 5, id: 'seen.frostgate' }] },
@@ -89,20 +95,25 @@ export const rimehall: RoomDef = {
     layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
     props: [
       { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
-      { t: 'rune', x: 110, y: 52, h: 24, v: 'a' },
-      { t: 'rune', x: 160, y: 46, h: 30, v: 'c' },
-      { t: 'rune', x: 210, y: 52, h: 24, v: 'b' },
       { t: 'pillar', x: 84, y: 110, lit: 1 },
       { t: 'pillar', x: 240, y: 110, lit: -1 },
       { t: 'anvil', x: 160, y: 132, w: 36, ramp: 'water' },
-      { t: 'treasure', x: 262, y: 152, r: 16 },
-      { t: 'treasure', x: 70, y: 156, r: 12 },
     ],
     lights: [
-      { x: 160, y: 50, r: 70, i: 0.9, kind: 'glow' },
       { x: 60, y: 120, r: 60, i: 0.5, kind: 'glow' },
       { x: 262, y: 120, r: 60, i: 0.5, kind: 'glow' },
       { x: 160, y: 130, r: 60, i: 0.5, kind: 'warm' },
+    ],
+    // The three runes burn on the back wall, and the flawed crowns lie heaped, until the crown is unmade. Then they are gone.
+    when: [
+      {
+        if: [{ not: { flag: 'crown.unmade' } }],
+        props: [
+          { t: 'rune', x: 110, y: 52, h: 24, v: 'a' }, { t: 'rune', x: 160, y: 46, h: 30, v: 'c' }, { t: 'rune', x: 210, y: 52, h: 24, v: 'b' },
+          { t: 'treasure', x: 262, y: 152, r: 16 }, { t: 'treasure', x: 70, y: 156, r: 12 },
+        ],
+        lights: [{ x: 160, y: 50, r: 70, i: 0.9, kind: 'glow' }],
+      },
     ],
   },
   doors: [{ x0: 36, y0: 107, x1: 52, y1: 109, to: 'frostgate', x: 160, y: 128, dir: 'down' }],
@@ -113,11 +124,11 @@ export const rimehall: RoomDef = {
       lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'Cracked through. It will not make anything again.' }],
     },
     {
-      id: 'crowns', nouns: ['treasure', 'crown'], x: 262, y: 154, reach: 400, look: 'Crowns, heaped like kindling: five points, six points, nine, one with thirteen that must have been a bad day. All of them cracked somewhere, and all made to one measure, which is not a man\'s. He threw away every one that was not perfect.',
+      id: 'crowns', nouns: ['treasure', 'crown'], x: 262, y: 154, reach: 400, look: 'Crowns, heaped like kindling: five points, six points, nine, one with thirteen that must have been a bad day. All of them cracked somewhere, and all made to the measure of his own head. He threw away every one that was not perfect.',
       lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'Gone. There is only water on the floor, and that is freezing.' }],
     },
     { id: 'runes', nouns: ['rune', 'inscription'], x: 160, y: 108, reach: 400, look: 'Three runes cut in the back wall, each as tall as you are. You can read none of them, and you find that you are glad.',
-      lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'Three dark shapes in the back wall, where the runes were. You read them once, as they went out: KEEP ME WARM.' }],
+      lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'The back wall is bare and dark where the three runes burned. You read them once, as they went out: KEEP ME WARM.' }],
     },
     { id: 'pillars', nouns: ['pillar'], x: 84, y: 112, reach: 400, look: 'Pillars of ice, clear enough to see through. There are things frozen in them. You stop looking.' },
     { id: 'arch', nouns: ['arch', 'door'], x: 44, y: 108, reach: 400, look: 'The stair back up to the wind.' },
@@ -132,13 +143,13 @@ export const rimehall: RoomDef = {
       on: ['use crown anvil', 'use crown', 'give crown anvil', 'attack crown', 'attack crown anvil', 'drop crown', 'temper crown', 'light crown'],
       do: [
         { lose: 'crown' }, { set: 'crown.unmade' }, { set: 'goal.gate', to: false }, { run: 'thaw' }, { score: 25, id: 'crown.unmade' }, { quest: 'crown', stage: 5 }, { sound: 'win' },
-        { say: "You lay the seven-pointed crown on the anvil of black ice. It sits there, perfectly at home. Then you take up the Smith's fallen hammer in both hands (it is all you can do to lift it) and bring it down once.\n\nThe crown does not break. It melts: all at once, like frost on a window when the sun comes round, and what runs off the anvil is only water. Every flawed crown on the floor goes with it. Somewhere above you, for the first time since you came north, the wind drops.\n\nOn the back wall the three great runes go dark, one after another. As each one goes you find, for the length of a breath, that you can read it. They were never a spell. They were an order, and it was three words long: KEEP ME WARM.\n\nThe warmth that crown had been drinking for four thousand years has to go somewhere. A good deal of it goes into you.\n\nYou have finished the second saga of THANE'S QUEST. There is a great deal of country still out there, and it is a little less cold than it was." },
+        { say: "You lay the seven-pointed crown on the anvil of black ice. It sits there, perfectly at home. Then you take up the Smith's fallen hammer in both hands (it is all you can do to lift it) and bring it down once.\n\nThe crown does not break. It melts: all at once, like frost on a window when the sun comes round, and what runs off the anvil is only water. Every flawed crown on the floor goes with it. Somewhere above you, for the first time since you came north, the wind drops.\n\nOn the back wall the three great runes go dark, one after another, and as each one goes you find that you can read it. KEEP. ME. WARM.\n\nThe warmth that crown had been drinking for four thousand years has to go somewhere. A good deal of it goes into you.\n\nYou have finished the second saga of THANE'S QUEST. There is a great deal of country still out there, and it is a little less cold than it was." },
         { note: 'You are stronger: more health, and more mana.' },
       ],
     },
     { on: ['take treasure', 'take crown'], if: [{ not: { flag: 'crown.unmade' } }], do: [{ say: 'You pick one up. It is so cold that it takes the skin off your fingers, and you put it down again faster than you picked it up. One of these is already more than enough.' }] },
     { on: ['take anvil', 'push anvil', 'pet anvil'], do: [{ say: 'Your hand sticks to it. You get it back, with most of the skin.' }] },
-    { on: ['read rune', 'pet rune', 'read inscription'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'The runes have gone dark. You read them once, as they went: KEEP ME WARM. It was an order, and nobody is carrying it out any longer.' }] },
+    { on: ['read rune', 'pet rune', 'read inscription'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'The runes have gone dark. You read them once, as they went: KEEP ME WARM.' }] },
     { on: ['read rune', 'pet rune', 'read inscription'], do: [{ say: 'They do not want reading. They want obeying, and you are not minded to.' }] },
     { on: 'orun', if: [{ not: { flag: 'smith.dead' } }], do: [{ say: 'ORUN. Whatever is hidden here will have to wait until its owner has finished with you.' }] },
     { on: 'orun', if: [{ not: { flag: 'orun.rimehall' } }], do: [{ set: 'orun.rimehall' }, { run: 'study', arg: 20 }, { say: 'ORUN. The ice of the back wall clears like a window. Under the three runes, at the height of a man\'s shoulder, is the print of one hand, melted into the wall: a man\'s hand, with a ring on every finger, held there until the ice gave.' }] },
