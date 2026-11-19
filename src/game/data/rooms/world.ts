@@ -481,6 +481,10 @@ export const barrow: RoomDef = {
   music: 'barrow',
   name: 'The Barrow',
   look: 'A great mound fills the north, too regular to be a hill. A doorway of three stones is set into it, with a single slab for a door. Nothing grows here, and the snow near the stone has a faint green shine. The village lies south.',
+  lookWhen: [
+    { if: [{ flag: 'king.dead' }], look: 'A great mound fills the north, too regular to be a hill. Its doorway of three stones stands open and dark. The green shine has gone out of the snow, and it is only snow. The village lies south.' },
+    { if: [{ flag: 'barrow.open' }], look: 'A great mound fills the north, too regular to be a hill. Its doorway of three stones stands open and dark. Nothing grows here, and the snow near the stone has a faint green shine. The village lies south.' },
+  ],
   scene: {
     kind: 'outdoor', horizon: 66, walkTop: 118,
     layers: [...backdrop(66, 111, false), { t: 'path', w: 10, pts: [[166, 172], [160, 140], [160, 120]] }, { t: 'tufts', count: 8, seed: 112 }],
@@ -502,10 +506,12 @@ export const barrow: RoomDef = {
     },
   ],
   things: [
-    { id: 'door', nouns: ['door', 'rune'], x: 160, y: 120, reach: 34, try: ['read rune'], look: 'A single slab between two uprights, under a lintel as long as a boat. A rune glows on it, the same green as rot in a log.' },
-    { id: 'mound', nouns: ['barrow'], x: 160, y: 120, reach: 400, look: 'A barrow: a hill somebody built, to put somebody in. The somebody has started glowing.' },
+    { id: 'door', nouns: ['door', 'rune'], x: 160, y: 120, reach: 34, try: ['read rune'], look: 'A single slab between two uprights, under a lintel as long as a boat. A rune glows on it, the same green as rot in a log.', lookWhen: [{ if: [{ flag: 'barrow.open' }], look: 'Two uprights under a lintel as long as a boat, and a dark way down between them. The slab that closed it has sunk into the earth, and its rune has gone out.' }] },
+    { id: 'mound', nouns: ['barrow'], x: 160, y: 120, reach: 400, look: 'A barrow: a hill somebody built, to put somebody in. The somebody has started glowing.', lookWhen: [{ if: [{ flag: 'king.dead' }], look: 'A barrow: a hill somebody built, to put somebody in. The somebody has stopped glowing.' }] },
     { id: 'stones', nouns: ['menhir'], x: 96, y: 138, reach: 60, look: 'Two smaller stones flank the path like door-wardens. Their runes are worn past reading.' },
-    ...scenery('The snow near the door has a faint green shine and squeaks underfoot.', 'Even the sky seems to keep its distance from this place.'),
+    ...scenery('The snow near the door has a faint green shine and squeaks underfoot.', 'Even the sky seems to keep its distance from this place.').map((t) =>
+      t.id === 'snow' ? { ...t, lookWhen: [{ if: [{ flag: 'king.dead' }], look: 'Trodden snow, and no more than that. The green shine has gone out of it.' }] } : t,
+    ),
   ],
   rules: [
     firstVisit('barrow'),
@@ -514,7 +520,7 @@ export const barrow: RoomDef = {
     { on: 'veth', do: [{ say: 'The word goes out across the snow and is lost. You would need to be nearer the door for it to hear you.' }] },
     { on: ['open door', 'push door', 'pull door', 'knock door', 'enter barrow', 'enter door'], if: [{ not: { flag: 'barrow.open' } }], do: [{ say: 'You put your shoulder to the slab. It does not move. You have the strong impression it has not noticed you.' }] },
     { on: ['open door', 'enter barrow', 'enter door'], do: [{ say: 'It stands open. Walk in, if you are going.' }] },
-    { on: 'orun', do: [{ set: 'orun.barrow' }, { say: 'ORUN. The mound shows its bones. Beside the great doorway there was once a second, smaller one, walled up with fitted stone before the turf was ever laid over it. Whoever built this place for their king built a way out as well, and then thought better of it.' }] },
+    { on: 'orun', do: [{ say: 'ORUN. The mound shows its bones. Beside the great doorway there was once a second, smaller one, walled up with fitted stone before the turf was ever laid over it. Whoever built this place for their king built a way out as well, and then thought better of it.' }] },
     { on: ['read rune', 'pet rune', 'read door'], do: [{ say: 'The rune is the mirror of something. It asks; it does not tell. Somewhere there is a stone that carries the answer.' }] },
   ],
 };

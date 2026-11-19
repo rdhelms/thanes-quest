@@ -61,7 +61,7 @@ into the earth. Under the mound there are three rooms:
 1. **The antechamber.** A wolf, a stag, and a crown are carved on the wall, above the words "First
    the one who hunts. Then the one who is hunted. Last the one who is crowned, for all come to him
    in the end." Pressing them in that order opens the way. A wrong choice is answered with a blast
-   of cold. The pillars here are ringed with notches, a long tally.
+   of cold.
 2. **The Hall of Sleepers.** It is dark. The dead of forty generations lie here, and some of them
    get up.
 3. **The Barrow-King's chamber.** All the warmth of Hollowmere has ended up in this room, and it
@@ -70,6 +70,9 @@ into the earth. Under the mound there are three rooms:
 
 The hero kills the Barrow-King. He falls in on himself and leaves only a crown of black iron with
 seven points. The rune behind his seat is ORUN, which Fenn had searched for across sixty years.
+Spoken outside the barrow, ORUN shows a second, smaller doorway, walled up before the turf was
+laid. Whoever built the mound for their king built a way out as well, and then thought better of
+it.
 
 The hero lays the crown in front of Marta. She will not light her own hearth: the hero went down
 there, so the hero lights it. The hero lays a dry log from the woodpile and strikes a spark, and
@@ -77,9 +80,9 @@ for the first time in nine days the fire keeps burning. Marta takes the brass ri
 hand, puts it on the hero's, and names the hero Thane of Hollowmere. The hall has filled quietly
 behind them, and it roars.
 
-Afterward there is smoke from every roof, the forge is lit, and Halla sleeps. Marta gives the
-Thane a coal from the hearth in a horn box, which carries the Thane home to Hollowmere when it is
-breathed on, and has a bed made up for the Thane beside the fire.
+Afterward the barrow stops glowing, there is smoke from every roof, the forge is lit, and Halla
+sleeps. Marta gives the Thane a coal from the hearth in a horn box, which carries the Thane home
+to Hollowmere when it is breathed on, and has a bed made up for the Thane beside the fire.
 
 ## The second saga: The Seven Points
 
@@ -87,64 +90,43 @@ Marta gives the Thane paid work out in the wild. When she pays for the first pie
 Thane notices that the crown, still in the pack, has grown much colder.
 
 Fenn examines the crown. It was never the King's own. It was made for a bigger head and cut down
-to fit: somebody crowned him, four thousand years ago. The crown has been calling the dead to it
-ever since, and now it is calling them to the Thane. The old tales put the crowning at the Frost
-Gate, a pass five ridges west of Hollowmere. If the maker is anywhere, Fenn says, he is there, and
-the crown must be taken back to where it was made and unmade.
+to fit, so somebody crowned him, four thousand years ago. The crown is not cold as iron is cold:
+it drinks. The dead come to a thing like that, wanting what is shut up in it, and now they are
+coming to the Thane. The old tales put the crowning at the Frost Gate, a pass five ridges west of
+Hollowmere. If the maker is anywhere, Fenn says, he is there, and the crown must be taken back to
+where it was made and unmade.
 
 The Frost Gate is a wall of blue ice between two shoulders of black rock, where the west wind is
 born. Two rime-walkers guard it. ORUN uncovers a doorway in the ice. Inside is the Cold Forge.
 The Cold Smith works there at an anvil of black ice. He is half as tall again as the Thane, with
-frost where his face should be, and the floor is covered with the flawed crowns he has thrown
-away. Three runes are cut into the back wall. The Thane cannot read them: they do not want
-reading, they want obeying.
+frost where his face should be. The floor is covered with the flawed crowns he has thrown away,
+all made to one measure, which is not a man's. Three runes are cut into the back wall. The Thane
+cannot read them: they do not want reading, they want obeying.
 
 As the Cold Smith weakens he strikes his anvil, and the dead step out of the ice of the pillars.
 The Thane breaks him, lays the crown on the anvil, and strikes it once with the Smith's own
 hammer. The crown does not break. It melts to water, and every flawed crown melts with it. The
-wind drops for the first time since the hero came north. The three runes on the wall go dark one
-after another, and as each one goes the Thane can read it. They were an order, three words long:
-"Let him freeze." Some of the warmth the crown had been drinking for four thousand years goes
-into the Thane.
+wind drops for the first time since the hero came north.
+
+Then the three runes go dark, one after another, and as each one goes the Thane can read it. They
+were never a spell. They were an order, three words long: "Keep me warm." Some of the warmth the
+crown had been drinking for four thousand years goes into the Thane.
 
 After that the winter is only a winter. In Hollowmere the well thaws, the eaves drip, the snow on
 Gorm's field goes soft, and a thrush sings in the pinewood. Marta gives the Thane a purse that
 every household has put something into. Fenn laughs that it all ended as a puddle on a floor, has
 the Thane tell him the whole of it, and writes it down.
 
-Late that night Fenn works out the rest. A smith works to order, so somebody asked for that crown,
-and the three words say who. No king says "let him freeze" of himself. His own people said it, of
-a king who kept his fire while they buried their dead. They went to the Cold Smith for a crown
-that would keep him cold, and they set a term: one notch on the barrow's pillars for each of their
-dead, and one winter for each notch. There are four thousand.
+Late that night Fenn comes to the one thing that would not sit still. A smith works to order, so
+somebody asked for that crown. He reads the three words again and says, "He asked for it himself."
+The King sat under the mound for four thousand years taking the warmth of the country, a little
+more each winter, until this winter he was down to the hearths of Hollowmere. The crown drank
+every bit of it before it reached him. "He was never warm once." And the Smith was at his anvil
+all that time, trying to get the order right.
 
-The count ran out on the night the hearths of Hollowmere went cold. The King woke with his
-sentence served and the crown still on his head. It drank every warmth he reached for, which is
-why all the fire of the village could sit in his chamber and leave it cold. Nobody was left alive
-to tell the Smith it was enough, so the Smith never stopped. "I do not say he was owed better,"
-Fenn says. "I say they meant it to end, and it did not end, until you."
-
-The dead that the crown called up do not lie down when it is unmade. Putting them back in the
-ground is part of the work Marta goes on paying a Thane to do.
-
-## What the word of uncovering shows
-
-A player who speaks ORUN in the right places learns more of this story than the sagas tell.
-
-- **At the barrow**, a second, smaller doorway, walled up before the turf was laid. Fenn explains
-  it afterward: the King's people built him a way out, for when the count was paid, and then
-  walled it up. "I do not think they were wicked. I think they were cold, and tired, and had
-  buried too many."
-- **In the antechamber**, a name beside every notch on the pillars. They are not the names of
-  kings: Hild, Old Kell, Kell's two boys, Thora the weaver, and one scratched so small that it
-  must have been a small person's. It is a count of people, not of years. Fenn says afterward that
-  the King's own name is not among the four thousand, and that nobody alive knows it.
-- **In the Cold Forge**, hundreds of handprints pressed into the ice around the three runes, large
-  hands and small ones, the way people sign a thing who have no letters.
-
-Once Fenn has told her what was cut on the wall, Marta says she has been cold enough and angry
-enough to cut those words herself, and hopes she would have had the sense to go back and rub them
-out. She does not sound sure.
+A player who speaks ORUN in the Cold Forge, once the Smith is broken, sees one thing more. Under
+the three runes is the print of one hand melted into the ice: a man's hand, with a ring on every
+finger.
 
 ## Side stories
 

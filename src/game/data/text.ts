@@ -46,7 +46,6 @@ export const text: Record<string, string> = {
   // The Elder's work. {bounty.x} is filled in from what she has asked for.
   'bounty.offer.camp': '"Reavers. They have made a camp at a place the trappers call {bounty.name}, {bounty.way} of here, and every week they come a little nearer. I will not have them at my doors in spring. See to it, and there is {bounty.pay} silver for you."',
   'bounty.offer.deadwood': '"The dead are walking at {bounty.name}, {bounty.way} of here. A trapper saw them from the ridge and has not been right since. Put them back in the ground. {bounty.pay} silver."',
-  'bounty.offer.deadwood.after': '"The dead are still walking at {bounty.name}, {bounty.way} of here. Whatever called them up has stopped calling, and nobody has told them. Put them back in the ground. {bounty.pay} silver."',
   'bounty.offer.crags': '"Something has denned at {bounty.name}, {bounty.way} of here, and it has had two of Gorm\'s ewes already. I want it dead before it learns the way to the rest. {bounty.pay} silver."',
   'bounty.offer.ruin': '"Something has moved into the old stones at {bounty.name}, {bounty.way} of here. Nobody should be living there. Go and see that nobody is. {bounty.pay} silver."',
   'bounty.what.camp': 'the reavers driven out of',

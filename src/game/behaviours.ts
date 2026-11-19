@@ -248,9 +248,7 @@ export const behaviours: Record<string, Behaviour> = {
     f['bounty.pay'] = 25 + 15 * n;
     f.goal = def.id;
     delete f['bounty.done'];
-    // The crown that called the dead is gone; the dead it called are not.
-    const after = found.kind === 'deadwood' && f['crown.unmade'] ? '.after' : '';
-    sim.say(sim.fill(sim.text(`bounty.offer.${found.kind}${after}`)), who);
+    sim.say(sim.fill(sim.text(`bounty.offer.${found.kind}`)), who);
     f['quest:bounty'] = 0;
     sim.setQuest('bounty', 1);
     sim.note('The place is marked on your map.');

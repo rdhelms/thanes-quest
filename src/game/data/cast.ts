@@ -100,7 +100,7 @@ export const chars: Record<string, CharDef> = {
       word: '"I know nothing of that craft and want to know less. That is what the hermit is for."',
       crown: '"A dead man\'s hat. Keep it away from me."',
       king: [
-        { if: [{ flag: 'fenn.told' }], say: '"Fenn has told me what was cut on that wall." Marta looks at the fire for some time. "I have been cold enough, and angry enough, to cut those words myself. I hope I should have had the sense to go back and rub them out." She does not sound sure.' },
+        { if: [{ flag: 'king.dead' }], say: '"He is ended, and the fires stay lit. That is as much thought as I mean to give him."' },
         { say: '"If the stories are true, he let his own people freeze rather than share his fire. I would not expect him to have mellowed."' },
       ],
       thane: [
@@ -219,7 +219,7 @@ export const chars: Record<string, CharDef> = {
       },
       {
         if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }],
-        say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing would not sit still. A smith works to order. Somebody asked for that crown." He turns back a page, to the three words you read off the wall as they went dark. "Let him freeze. No king says that of himself. A people says it, of a king who kept his fire while they buried their own."\n\nHe counts something on his fingers, and gives it up. "Those notched pillars under the mound. One notch for each of their dead, I think, and one winter for each notch. Four thousand. The count ran out on the night your hearths went cold. He woke with his sentence served and the crown still on his head, drinking every warmth he reached for, because nobody was left alive to tell the smith it was enough."\n\nFenn looks at the dark window for a while. "I do not say he was owed better. I say they meant it to end, and it did not end, until you." He shakes his head. "Pass me the ink."',
+        say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing would not sit still. A smith works to order. Somebody asked for that crown." He turns back a page, to the three words you read off the wall as they went dark. "Keep me warm." He reads it again, more quietly. "He asked for it himself."\n\nFenn looks at the dark window for a while. "Four thousand years under that mound, taking the warmth of this country, a little more each winter, until this winter he was down to your hearths. And the crown drank every bit of it before it reached him. He was never warm once." He shakes his head. "And the smith at his anvil all that time, trying to get the order right. Pass me the ink."',
         do: [{ set: 'fenn.told' }, { score: 5, id: 'crown.told' }, { run: 'study', arg: 60 }],
       },
       { if: [{ quest: 'errand', is: 1 }, { has: 'amulet' }], say: '"Is that..." He has gone very still. "You have it. You actually have it." He holds out a hand that is not quite steady.' },
@@ -228,7 +228,6 @@ export const chars: Record<string, CharDef> = {
     ],
     topics: {
       barrow: [
-        { if: [{ flag: 'fenn.told' }, { flag: 'orun.barrow' }], say: '"That second door you uncovered, beside the great one. They built him a way out, for when the count was paid, and then they walled it up before the turf went on." Fenn turns a page. "I do not think they were wicked. I think they were cold, and tired, and had buried too many. It is a poor state in which to decide anything."' },
         { if: [{ flag: 'king.dead' }], say: '"Empty now, by your account, and only a hill again. Good. That is all a grave should be."' },
         {
           if: [{ quest: 'hearth', min: 1 }],
@@ -239,7 +238,7 @@ export const chars: Record<string, CharDef> = {
       crown: [
         {
           if: [{ quest: 'crown', is: 1 }, { has: 'crown' }],
-          say: '"Put it on the table. No. Not near the books." Fenn looks at the crown for a long time without touching it. "Seven points. I took it for his. It is not his. Look at the join, here: this was made for a bigger head, and cut down to fit. Somebody crowned him. Somebody gave a cold king a colder crown, four thousand years ago, and it has been calling the dead to it ever since. Now it is calling them to you."\n\nHe sits back. "The old tales put the crowning in the west, at a pass they named the Frost Gate, five ridges west of Hollowmere, out past the pinewood. If the maker is anywhere, he is there, behind a door you will not see until it is uncovered. There is a word for that. Take the crown back to where it was made, and unmake it."',
+          say: '"Put it on the table. No. Not near the books." Fenn looks at the crown for a long time without touching it. "Seven points. I took it for his. It is not his. Look at the join, here: this was made for a bigger head, and cut down to fit. Somebody crowned him. Somebody gave a cold king a colder crown, four thousand years ago. Hold your hand over it. It is not cold as iron is cold. It drinks. The dead come to a thing like that, wanting what is shut up in it, and now they are coming to you."\n\nHe sits back. "The old tales put the crowning in the west, at a pass they named the Frost Gate, five ridges west of Hollowmere, out past the pinewood. If the maker is anywhere, he is there, behind a door you will not see until it is uncovered. There is a word for that. Take the crown back to where it was made, and unmake it."',
           do: [{ quest: 'crown', stage: 2 }, { set: 'goal.gate', to: 'frostgate' }, { score: 3, id: 'crown.fenn' }, { note: 'The Frost Gate is marked on your map.' }],
         },
         { if: [{ quest: 'crown', min: 2, max: 4 }], say: '"West of the village, five ridges, out past the pinewood. The door will not show itself; it wants uncovering. And do not put that thing down in here again. My ink froze."' },
@@ -291,7 +290,7 @@ export const chars: Record<string, CharDef> = {
       elder: '"Marta. She was a child when I was already old. Stubborn then, too."',
       name: '"Fenn. It will do."',
       king: [
-        { if: [{ flag: 'fenn.told' }, { flag: 'orun.ante' }], say: '"He had a name once, and nobody alive knows it. I have looked. Four thousand names on those pillars, by your telling, and not one of them is his."' },
+        { if: [{ flag: 'fenn.told' }], say: '"Nobody alive knows what he was called. He kept everything else."' },
         { say: '"He was called something once. He has outlived his own name, which is the kind of thing that happens when you refuse to die properly."' },
       ],
     },
