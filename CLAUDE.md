@@ -1,34 +1,37 @@
 # Thane's Quest
 
-An open-world action RPG inside an early typing-adventure shell. `README.md` says how it plays and
-how it is built.
+`README.md` describes the game as it is today.
 
-## What it is meant to become
+## The vision
 
-A game people say "wow" at: for its quality, scale, depth, story, feel and fun. Popular, worth
-paying for, and one its owner is proud of and plays for pleasure.
+The quality, scale, depth, story, feel, and fun of the game should be awe-inspiring. Someone who
+plays it should say "wow". It should be popular, good enough that people would want to pay for it
+whether or not it is ever sold, and a game its owner is proud of and enjoys playing.
 
-- **For anyone.** People who remember King's Quest and Quest for Glory, people who rarely play
-  games and stumbled on this one, and players too young to know the old ones. Nobody should need
-  to know how a typing adventure works to enjoy it. Family friendly, for thirteen and up.
-- **Typing is the depth, not the toll.** The whole game can be played with the easy controls.
-  Typing is for those who want to explore the world fully and try what no button offers, and the
-  world rewards them for it: secrets, hidden puzzles, jokes, more of the story. The model is a
-  game master at a table, who has an answer for whatever a player thinks to try.
-- **Deep and wide.** The starting points are Sierra's adventures, Skyrim and D&D. A world big
-  enough to get lost in, where every place has something to find and something to say.
-- **Stories that land.** Good stories and strong feelings, not only jokes and fights.
+**It is for anyone.** That includes people who remember King's Quest and Quest for Glory, people
+who do not play many games and came across this one, and people who love games but never played
+the old ones. It is family friendly, for ages thirteen and up.
+
+**Typing lets a player explore the world fully** and try creative actions that a point-and-click
+or console game could not allow. Typing does not have to replace convenience: players may use only
+lower-friction controls if they want. Players who choose to explore the world by typing are
+rewarded for it, with Easter eggs, hidden puzzles, jokes, and more interesting stories.
+
+**The game should feel both deep and vast.** The Sierra adventure games, Skyrim, and D&D are
+examples of games that achieve that feeling of depth and scale, each in a different way.
+
+**Its stories should affect players deeply** and stay with them after they stop playing.
 
 ## How to work here
 
 There is no backlog, on purpose. Play the game before changing it (`npm run dev`, or `npm run shot`
-and `npm run qa` without a browser), decide for yourself what stands furthest from the above or
-would bring it closest, and work on that. What an earlier session thought, and how the game is
-built today, are where you start, not instructions.
+and `npm run qa` without a browser), and decide for yourself what would do most to bring it closer
+to the vision. You are free to change how the game is built today and to disagree with what an
+earlier session decided.
 
 Nobody is playing the game yet, so merge your own work into `main` when you are satisfied with it.
 A push to `main` deploys the live game. This is to be revisited once real people are playing.
 
-Do not copy another game's protected material (its characters, art, music, text or trademarks).
+Do not copy another game's protected material (its characters, art, music, text, or trademarks).
 
-Keep the README true and short: only what someone needs to run, play and build on the game.
+Keep the README accurate and short: only what someone needs to run, play, and build on the game.
