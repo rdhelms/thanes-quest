@@ -9,17 +9,18 @@ There is no backlog, on purpose. Play the game before changing it (`npm run dev`
 and `npm run qa` without a browser), decide for yourself what is weakest or most promising, and
 work on that. What an earlier session thought is not an instruction.
 
+Nobody is playing the game yet, so merge your own work into `main` once it passes the checks below.
+A push to `main` deploys the live game. This is to be revisited once real people are playing.
+
 ## What must hold
 
 - **Everything stays original.** The world, names, characters, art, sound and text are the game's
   own. Nothing is taken from, or recognisably modelled on, an existing game.
 - **The four rules under "How it is built" in the README.** The simulation is headless and
   deterministic, input is messages, state is plain data, content is data.
-- **`npm test` passes before anything is pushed.** Fix the game, or fix a test that is wrong; never
-  skip or weaken one to get to green.
-- **`main` is the live game.** A push there deploys to players. Work on a branch; the owner merges.
-- **Players have saves.** Prefer changes that old saves still load under. When saved state has to
-  change shape, raise `saveVersion` in `src/game/content.ts` so old saves read as empty instead of
-  loading wrongly, and say so when handing the work over.
-- **The README stays true.** When how the game plays or how it is built changes, change the README
-  in the same piece of work.
+- **Every check the project has passes before anything is merged.** Today that is `npm test` and
+  `npm run build`, which type-checks. Fix the code, or fix a check that is wrong; never skip or
+  weaken one to get to green. Then see the change working in the game itself, not only in tests.
+- **The README stays true and stays short.** It holds only what someone needs to run, play and
+  build on the game. Change it in the same piece of work as the game, and cut what has stopped
+  being essential.
