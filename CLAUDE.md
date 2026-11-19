@@ -24,10 +24,9 @@ examples of games that achieve that feeling of depth and scale, each in a differ
 
 ## How to work here
 
-There is no backlog, on purpose. Play the game before changing it (`npm run dev`, or `npm run shot`
-and `npm run qa` without a browser), and decide for yourself what would do most to bring it closer
-to the vision. You are free to change how the game is built today and to disagree with what an
-earlier session decided.
+There is no backlog, on purpose. Play the game before changing it, and decide for yourself what
+would do most to bring it closer to the vision. You are free to change how the game is built today
+and to disagree with what an earlier session decided.
 
 Nobody is playing the game yet, so merge your own work into `main` when you are satisfied with it.
 A push to `main` deploys the live game. This is to be revisited once real people are playing.
