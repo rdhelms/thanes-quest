@@ -11,7 +11,6 @@ start, not instructions.
 Nobody is playing the game yet, so merge your own work into `main` when you are satisfied with it.
 A push to `main` deploys the live game. This is to be revisited once real people are playing.
 
-References, homages and jokes about other games are welcome. The only line is the legal one: do
-not copy another game's protected material (its characters, art, music, text or trademarks).
+Do not copy another game's protected material (its characters, art, music, text or trademarks).
 
 Keep the README true and short: only what someone needs to run, play and build on the game.
