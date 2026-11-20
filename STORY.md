@@ -7,9 +7,32 @@ the game.
 
 Hollowmere is a village of eleven roofs in a frozen valley in the north. Elder Marta Coldhand has
 kept it for forty winters. North of the village stands a barrow, a burial mound four thousand
-years old. The village's stories say only that a king lies in it who could never get warm. In
-Hollowmere, anybody who takes the seat nearest the fire is said to be sitting like the King. His
-name is forgotten, and so is anything he did.
+years old.
+
+The people who were in the valley before Hollowmere left a tale about the barrow, and Hollowmere
+has kept it without quite believing it. A king went into the west one bad winter to fetch the
+summer home, and has not brought it yet. He sleeps under the hill until the winter that needs
+him. There is a cradle rhyme:
+
+> West went the King when the snow lay deep,
+> to wake the summer out of her sleep.
+> Set him a cup and bank the fire:
+> he will be home when the sun is higher.
+
+So at every feast in Hollowmere one cup is filled and set at the end of the table, and nobody
+drinks it. Nobody remembers the King's name, or why the cup. Half the old tales have him lost in
+the west and half have him asleep in the mound; Fenn spent ten years, when he was young, on the
+fact that a man cannot be both.
+
+What happened is found out over the three sagas, and nobody in the valley knows it at the start.
+He was both. In the worst winter of his age the King walked five ridges into the west wind, with
+his whole people waiting behind him, to the Frost Gate, where the cold is made. He meant to ask
+for the summer back. But he was old, and he had been cold for five ridges, and what he said to the
+Cold Smith was: keep me warm. A smith works to order. The crown he was given drank the warmth out
+of everything near him, and never once gave him any. His people had laid a feast against his
+coming home. The fire went out as he came in at the door. He walked past his own seat and up the
+stair, and they sat on at their tables, waiting for it to take again. Those who were left raised
+the mound over hall and king together, walled up the way out, and went away.
 
 Beyond the valley is the wild. It belongs to nobody, and it holds trappers, reavers, beasts, and
 the walking dead. Ruined towers stand out there, with vaults under them that somebody took pains
@@ -54,8 +77,9 @@ Fenn's fire still burns, because he has drawn a line at his threshold that the K
 not cross.
 
 Marta pays the hero ten silver to look into the barrow, and sends the hero to Fenn. Fenn says the
-king in the mound has woken and is taking the village's warmth. Every winter of Fenn's life has
-been harder than the one before, and he thinks this one was at last cold enough to wake him. The
+king in the mound has woken. Every winter of Fenn's life has been harder than the one before, and
+this one, it seems, was hard enough: and the first thing the King has done, like any old man
+waking in a cold room, is reach for the fire. The
 barrow's door is sealed with a rune and answers to the word VETH.
 
 The hero reads VETH from the stone on the west ridge and speaks it at the door, and the slab sinks
@@ -139,9 +163,13 @@ the Thane tell him the whole of it, and writes it down.
 
 Late that night Fenn comes to the one thing that would not sit still. A smith works to order, so
 somebody asked for that crown. He turns back to the three words and puts down his pen. "I had it
-that somebody crowned him. He asked for it himself." Then he reasons from what the Thane saw:
-every fire in Hollowmere was in the King's chamber, and the chamber was cold, so the crown never
-gave him any of it. "Four thousand years, and he was never warm once." Of the Smith he says only
+that somebody crowned him. He asked for it himself." And then the rhyme every child in the valley
+can sing comes back to him. The King went west to wake the summer, with a whole people waiting
+behind him, and stood in front of the one thing in the world that could have given it to him; and
+he was old, and had been cold for five ridges, and what came out of his mouth was: me. "One word.
+I have read a great many tragedies. That is the shortest." Then he reasons from what the Thane
+saw: every fire in Hollowmere was in the King's chamber, and the chamber was cold, so the crown
+did not even give him that. "Four thousand years, and he was never warm once." Of the Smith he says only
 that he was at his anvil all that time, trying to get the order right.
 
 A player who speaks ORUN in the Cold Forge, once the Smith is broken, sees one thing more. Under
@@ -161,9 +189,10 @@ wanted to be walking, and she sends the Thane to ask Fenn what they are waiting 
 
 Fenn sees that he has had it backward. The dead who walk are not Hollowmere's: those lie in the
 Hall of Sleepers, forty generations of them. These are older. They are the Barrow-King's own
-people: the ones who sat nearest him the night he put the crown on, and so the first thing it
-drank. They never wanted the crown. They wanted to be warm, and they
-still do. A king's mound is raised over his own hall, and nobody carries that many dead up a
+people. Somebody set the first cup: when he went west for the summer, they laid a feast against
+his coming home, and he came home wearing the crown, and they were the first thing it drank. They
+never wanted a crown. They wanted to be warm, and they are waiting yet for what he went to fetch.
+A king's mound is raised over his own hall, and nobody carries that many dead up a
 stair, so they will be where they sat down. A hall has more than one door.
 
 At the barrow, ORUN shows the second door for what it is: narrow, low in the flank of the mound,
@@ -173,21 +202,23 @@ tally marks in one hand, which grows less steady as it goes. The count stops at 
 eleven, with the last bar half cut, and a mason's chisel lies under it where a hand let it fall.
 ORUN shows one more thing cut there, low down: an open hand, the sign for THIS FAR, without rings.
 
-At the foot of the stair is the Winter Hall, a king's hall buried whole. The benches are full.
-The King's people sit in their rows with the frost on them, every face turned to a great hearth
-that is laid with logs and stone cold. The last fire there went out in the middle of a feast, and
-they sat on, waiting for it to take again. The high seat is the only empty place: its owner got up
-from it one night with a new crown on his head, went up the stair, and did not come down. ORUN shows the paths worn in the floor: thousands
-from the benches to the hearth and back, and one from the high seat, to the stair and up, that
-does not come back. They do not lift a hand to the Thane.
+At the foot of the stair is the Winter Hall, a king's hall buried whole, with its tables laid
+for a homecoming. The benches are full. The King's people sit in their rows with the frost on
+them, every face turned to a great hearth that is laid with logs and stone cold, as people sit who
+are waiting to be told the feast may begin. Nothing was ever put on the platters. The high seat is
+the only empty place, with the best cup in the house set ready on its arm. He came home, and
+walked past it. ORUN shows the paths worn in the floor: thousands from the benches to the hearth
+and back, and one laid over them all, in from the great door, past the high seat without a turn,
+to the stair and up, that does not come back. They do not lift a hand to the Thane.
 
 Fire struck in that hearth will not hold. The cold has been in those logs four thousand years,
 and a spark is no argument against it; fire has to be brought there alive, from a hearth where one
-is burning. The word SOL,
-spoken to them cold, is only a blow: they turn from it. The Thane tips the coal from Marta's
-hearth onto the old logs, and it takes as the Elder's hearth took, and every face lifts to it.
-They are warm, and they still do not leave. Then the Thane says SOL quietly, as one tells somebody
-the time. It was never that they could not bear the word. They could not bear it cold. One by one
+is burning. The word SOL, spoken to them cold, is only a blow: they turn from it. The Thane tips
+the coal from Marta's hearth onto the old logs, and it takes as the Elder's hearth took, and every
+face lifts to it. They are warm, and they still do not leave. Then the Thane says SOL quietly, as
+one tells somebody the time: the sun's own name, the thing the King went west to fetch. It is four
+thousand years late, and it is one word and a coal from somebody else's hearth, but it is what the
+tables were laid for, and it has come. It was never that they could not bear the word. They could not bear it cold. One by one
 they lay their heads on their arms, as people do at the end of a long feast when the fire is good,
 and the benches are empty.
 
@@ -196,8 +227,10 @@ trap-lines by moonlight for the first time in her life. Smoke rises from the cro
 Marta, told where her coal went, lifts another out of her hearth into the horn box: it is only a
 coal, she has a hearthful, and that was rather the point. She will see that wood is taken up to
 the barrow, since she never yet let a fire go out that she could keep in. Fenn finds he has had
-the fourth word wrong in three books. A fire cannot be struck in a place like that, he says, only
-handed on from one that is burning, and he supposes that is all a hearth ever was.
+the fourth word wrong in three books. The King went west with a kingdom behind him, he says, and
+the best he could bring them was that crown; the Thane went down a back stair with one word and a
+borrowed coal. He will be home when the sun is higher: well, it was, and somebody came. Marta
+looks down her table at the cup, and says they will go on setting it. She knows now who it is for.
 
 A Thane who goes back to the stair can take up the chisel and finish the half-cut bar. Nine
 thousand and eleven, and done.

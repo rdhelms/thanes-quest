@@ -53,8 +53,8 @@ export const hall: RoomDef = {
     { id: 'throne', nouns: ['throne'], x: 252, y: 112, reach: 40, look: "The Elder's chair, carved with knotwork and capped with brass. Nobody but the Elder sits in it, and lately not even she." },
     { id: 'banner', nouns: ['banner'], x: 160, y: 106, reach: 400, look: 'Two banners, purple and red, each with a gold lozenge: the mark of Hollowmere. They hang very still.' },
     {
-      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle and one mug. Feasts were held here. The table remembers; you can tell by the stains.',
-      lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the far end lies the seven-pointed crown, where you put it down in front of Marta. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
+      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle, and at the far end one mug, filled and not touched. Feasts were held here. The table remembers; you can tell by the stains.',
+      lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the far end, beside the cup that is always set there and never drunk, lies the seven-pointed crown, where you put it down in front of Marta. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
     },
     { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: three shelves of it, and a good third about sheep." },
     { id: 'door', nouns: ['door'], x: 60, y: 106, reach: 400, look: 'The way out, back to the square.' },
@@ -90,6 +90,7 @@ export const hall: RoomDef = {
       do: [{ lose: 'bearskin' }, { set: 'hall.rug' }, { gold: 20 }, { heal: 10 }, { sound: 'take' }, { say: 'You unroll the white bearskin in front of the Elder\'s chair. Marta looks at it for a while. "My father had one of those," she says. "It went for boots, the winter I was nine." She puts her feet on it, experimentally, and her face does something it has not done in your hearing. "Twenty silver. Do not tell the smith what I paid; he will want the same for nails."' }],
     },
     { on: ['take crown', 'look crown'], if: [{ flag: 'hall.feast' }], do: [{ say: 'It lies at the end of the long table, black against the wood. The feast has left a clear space round it, the way a crowd leaves room for a dog it does not know.' }] },
+    { on: ['drink table', 'take table'], do: [{ say: '"That one is not for you," says Marta, without turning round. "It is not for anybody, so far as I was ever able to learn. Leave it be."' }] },
     { on: ['sit throne', 'sit'], do: [{ say: 'Marta looks at you. You discover you were only admiring the carving.' }] },
     { on: ['sleep', 'sleep *'], if: [{ flag: 'hall.feast' }], do: [{ say: 'With half of Hollowmere standing round the bed? They would only watch. See them out first.' }] },
     { on: ['sleep', 'sleep *'], if: [{ flag: 'hearth.lit' }], do: [{ run: 'rest' }, { say: 'Marta has had a bench made up for you by the hearth, with a bearskin over it. Nobody has said anything about it; it is simply there. You sleep nine hours without moving, and wake warm, which you had forgotten was possible.' }] },
@@ -420,7 +421,7 @@ export const winterhall: RoomDef = {
   id: 'winterhall',
   music: 'barrow',
   name: 'The Winter Hall',
-  look: "A king's hall, buried whole: long tables, a high seat, and at the far end a hearth of river-stone bigger than the Elder's, laid with logs and stone cold. The benches are full. They sit in their rows with the frost on them, every face turned to the hearth, as people sit who are waiting for a fire to take.",
+  look: "A king's hall, buried whole: long tables laid for a feast, a high seat, and at the far end a hearth of river-stone bigger than the Elder's, laid with logs and stone cold. The benches are full. They sit in their rows with the frost on them, every face turned to the hearth, as people sit who are waiting to be told the feast may begin.",
   lookWhen: [
     { if: [RESTED], look: 'A long hall under the hill, warm from end to end. The fire in the great hearth has burned down to a steady red, and somebody has stacked fresh logs beside it. The benches are empty. The tables are only tables.' },
     { if: [LIT], look: "The hall is lit from end to end by its own hearth, for the first time. Along the tables the frost is running off them like sweat, and every face is turned to the fire. Nobody gets up. They are warm, and they are still here. Something more than fire is owed them, and they do not know its name either." },
@@ -458,22 +459,22 @@ export const winterhall: RoomDef = {
       ],
     },
     {
-      id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, set for a feast: horn cups, wooden platters, knives laid straight. Nothing was ever put on the platters. The fire went out before the meat was done, and they sat on, waiting for it to take again.',
+      id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, laid for a homecoming: horn cups, wooden platters, knives set straight, and at every place a sprig of something that was green once. Nothing was ever put on the platters. The fire went out as he came in at the door, and they sat on, waiting for it to take again.',
       lookWhen: [{ if: [RESTED], look: 'Long tables, and empty benches, and horn cups set out in rows for a feast that was four thousand years late.' }],
     },
-    { id: 'highseat', nouns: ['throne'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth. It is the only empty place in the room. Its owner got up from it one night with a new crown on his head, and went up the stair, and did not come down.' },
+    { id: 'highseat', nouns: ['throne'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth, with the best cup in the house set ready on its arm. It is the only empty place in the room. He came home, and walked past it.' },
     { id: 'arch', nouns: ['arch'], x: 44, y: 108, reach: 400, look: "The foot of the servants' stair. It is the only way out, and it goes up." },
   ],
   rules: [
     { enter: true, if: [{ not: { flag: 'seen.winterhall' } }], do: [{ set: 'seen.winterhall' }, { score: 5, id: 'seen.winterhall' }, { quest: 'rest', stage: 4 }] },
-    { on: 'orun', do: [{ say: 'ORUN. The floor shows its wear. From every bench a path is trodden into the stone, to the hearth and back: thousands of them, crossing and recrossing, the way people go to a fire. From the high seat there is one path only. It goes to the stair, and up, and it does not come back.' }] },
+    { on: 'orun', do: [{ say: 'ORUN. The floor shows its wear. From every bench a path is trodden into the stone, to the hearth and back: thousands of them, the way people go to a fire. And one more, laid over all the rest: in from where the great door stood, straight up the middle of the hall between the tables, past the high seat without a turn, to the stair, and up. It does not come back.' }] },
     // SOL: a blow, while they are cold. A kindness, once they are warm.
     { on: 'sol', if: [RESTED], do: [{ say: 'Day. There is nobody left in the hall to need telling.' }] },
     {
       on: 'sol', if: [LIT],
       do: [
         { set: 'dead.rested' }, { muster: true }, { sound: 'win' }, { score: 25, id: 'rest.done' }, { quest: 'rest', stage: 6 },
-        { say: "SOL. You say it quietly, the way you would tell somebody the time. Day.\n\nAlong the tables the last of the frost goes out of nine thousand faces, and what is under it is only people: tired, and warm, and finished with waiting. It was never that they could not bear the word. They could not bear it cold. One by one they lay their heads down on their arms, as people do at the end of a long feast when the fire is good.\n\nWhen you look again the benches are empty. The fire burns on. Somebody ought to keep it in.\n\nYou have finished the third saga of THANE'S QUEST. Tonight, for the first time in four thousand years, nothing is walking in the north that ought to be asleep." },
+        { say: "SOL. You say it quietly, the way you would tell somebody the time. Day. The sun's own name: the thing he went west to fetch.\n\nIt is four thousand years late, and it is not much. One word, and a coal from somebody else's hearth. But it is what these tables were laid for, and it has come. Along the benches the last of the frost goes out of nine thousand faces, and what is under it is only people: tired, and warm, and finished with waiting. It was never that they could not bear the word. They could not bear it cold. One by one they lay their heads down on their arms, as people do at the end of a long feast when the fire is good.\n\nWhen you look again the benches are empty. The fire burns on. Somebody ought to keep it in.\n\nYou have finished the third saga of THANE'S QUEST. Tonight, for the first time in four thousand years, nothing is walking in the north that ought to be asleep." },
       ],
     },
     { on: 'sol', do: [{ say: 'SOL. The word goes down the hall like a slap, and nine thousand heads turn away from it together. It is day you are offering them, and they have nothing yet to be warm with. You find that you are ashamed.' }] },
