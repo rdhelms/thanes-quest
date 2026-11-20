@@ -21,13 +21,13 @@ him. There is a cradle rhyme:
 
 So at every feast in Hollowmere one cup is filled and set at the end of the Elder's table nearest
 the door, and nobody drinks it. Halla fills it fresh every feast-day with the best she has, as her
-grandmother did, and what was left in it from the last feast goes back in the cask. Marta once
-asked her mother why, and was told: for him. Nobody remembers the King's name, or why the cup. Spoken in the
-Elder's hall, ORUN shows the board worn into a ring under it, and round that the fainter rings of
-other cups on other tables older than the hall, always in the same place: where somebody coming
-in out of the cold would sit down first. Half the old tales have him lost in
-the west and half have him asleep in the mound; Fenn spent ten years, when he was young, on the
-fact that a man cannot be both.
+grandmother did, and what was left in it from the last feast goes back in the cask. Nobody
+remembers the King's name, or why the cup: when Marta asked her mother, she was told only that it
+was for him. Spoken in the Elder's hall, ORUN shows the board worn into a ring under it, and round
+that the fainter rings of other cups on other tables older than the hall, always in the same
+place: where somebody coming in out of the cold would sit down first. Half the old tales have him
+lost in the west and half have him asleep in the mound; Fenn spent ten years, when he was young,
+on the fact that a man cannot be both.
 
 What happened is found out over the three sagas, and nobody in the valley knows it at the start.
 He was both. In the worst winter of his age the King walked five ridges into the west wind, with

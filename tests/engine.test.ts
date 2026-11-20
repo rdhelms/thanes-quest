@@ -379,12 +379,12 @@ describe("the King's cup", () => {
     sim.teach('word:orun');
     expect(type(sim, 'orun')[0]).toContain('nearest the door');
     const end = hall(...SAGAS[3]);
-    expect(type(end, 'sing the rhyme')[0]).toContain('do not know the rhymes');
+    expect(type(end, 'sing the rhyme')[0]).toContain('do not know any rhymes');
     [end.p.x, end.p.y] = [206, 120];
     expect(type(end, 'ask elder about the king')[0]).toContain('The cup stays');
     end.state.flags['rhyme.heard'] = true;
     expect(type(end, 'sing the rhyme')[0]).toContain('says the last line with you');
-    expect(type(game('ford'), 'sing the rhyme')[0]).toContain('do not know the rhymes');
+    expect(type(game('ford'), 'sing the rhyme')[0]).toContain('do not know any rhymes');
     // Nobody speaks of what they have not yet been told: the third saga is over before Marta hears of it.
     const unheard = hall('hearth.lit', 'king.dead', 'crown.unmade', 'dead.rested');
     expect(type(unheard, 'drink the cup')[0]).toContain('Not even you');

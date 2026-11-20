@@ -64,7 +64,7 @@ export const chars: Record<string, CharDef> = {
         { say: '"West went the King, and so on. Every child in Hollowmere has it before they can walk. I sang it to my little brothers to get them off to sleep. It never worked. It is a song about somebody not coming home, and they lay awake waiting for him."' },
       ],
       cup: [
-        { if: [{ flag: 'marta.rest' }], say: '"Marta stood and looked at that cup for as long as it takes a loaf to prove. Marta, standing and looking at a cup." Sigga lowers her voice. "Something has happened to her, and I think it is a good thing, and I am not going to ask."' },
+        { if: [{ flag: 'marta.rest' }], say: '"Halla says Marta stood and looked at that cup for as long as it takes a loaf to prove. Marta, standing and looking at a cup." Sigga lowers her voice. "Something has happened to her, and I think it is a good thing, and I am not going to ask."' },
         { say: '"The cup at the end of the Elder\'s table? Nobody touches it. When I was small my brother dared me to, and I got as far as reaching, and Marta\'s mother said my name from the other end of the hall without looking up. I have not reached for anything since."' },
       ],
       crown: [
@@ -218,6 +218,7 @@ export const chars: Record<string, CharDef> = {
       elder: '"That is me. Do try to keep up."',
       word: '"I know nothing of that craft and want to know less. That is what the hermit is for."',
       crown: [
+        { if: [{ flag: 'crown.unmade' }, { not: { flag: 'marta.thaw' } }], say: '"Gone?" Marta looks at the fire. "Good."' },
         { if: [{ flag: 'crown.unmade' }], say: '"I said I would not ask what you did out there, and I shall not." Marta looks at the fire. "But I am glad it is gone."' },
         { say: '"A dead man\'s hat. Keep it away from me."' },
       ],
@@ -374,6 +375,7 @@ export const chars: Record<string, CharDef> = {
       ],
       rhyme: '"My grandmother sang it at the end of every feast, when it was time for people to go home. West went the King when the snow lay deep. It clears a room faster than shouting."',
       king: [
+        { if: [{ flag: 'marta.rest' }], say: '"I fill his cup every day now, on Marta\'s word." Halla wipes the counter. "Whatever he was by the end, he was somebody\'s king once, and somebody poured for him."' },
         { if: [{ flag: 'king.dead' }], say: '"I shall still fill his cup on feast-days. My grandmother would have." Halla wipes the counter. "Whatever he was by the end, he was somebody\'s king once, and somebody poured for him."' },
         { say: '"My grandmother set a cup for him every feast-day: the King under the hill. I still do." Halla wipes the counter. "If he ever comes in for it, I have been told to be civil, and count the spoons afterward."' },
       ],
@@ -381,6 +383,7 @@ export const chars: Record<string, CharDef> = {
         { if: [{ flag: 'crown.unmade' }], say: '"Gone, is it? Good. I watched the candle beside it go out three times the night of the feast, and I was asleep on my feet for two of them."' },
         { if: [{ flag: 'king.dead' }, { not: { flag: 'hearth.lit' } }], say: '"Keep it wrapped, whatever it is. I have one fire to mind, and I do not want that near it."' },
         { if: [{ flag: 'king.dead' }, { not: { flag: 'hall.feast' } }], say: '"Keep it wrapped. I watched the candle beside it go out three times the night of the feast, and I was asleep on my feet for two of them."' },
+        { if: [{ flag: 'hall.feast' }], say: 'Halla opens one eye, finds the crown at the end of the table, and shuts the eye again. "Not my fire," she says, to nobody, "not my trouble."' },
         { say: '"A crown? Not in here. The best thing in this inn is the kettle, and it is only the second best kettle in the village."' },
       ],
       chest: '"For lodgers. Put in it what you like and take it out when you like. Nobody in this village steals, and anybody who started would have to carry it out past me."',
@@ -590,6 +593,7 @@ export const chars: Record<string, CharDef> = {
         { if: [{ flag: 'crown.unmade' }], say: '"Melted, Halla says. Good. A thing like that is bad for the hunting." Toke watches the trees. "Everything for a mile round went quiet when you carried it past."' },
         { if: [{ flag: 'king.dead' }, { not: { flag: 'hearth.lit' } }], say: '"Keep it wrapped. Everything goes quiet round a thing like that."' },
         { if: [{ flag: 'king.dead' }, { not: { flag: 'hall.feast' } }], say: '"I saw you carry it out of the hall. Everything in the wood went quiet when you came by with it." Toke watches the trees. "Keep it wrapped."' },
+        { if: [{ flag: 'hall.feast' }], say: 'Toke looks down the table at it, and then away, as he would from a track he did not like. "Keep it wrapped, after," he says.' },
         { say: '"I hunt deer, not kings."' },
       ],
       wight: [
@@ -826,6 +830,7 @@ export const chars: Record<string, CharDef> = {
         { if: [{ flag: 'crown.unmade' }], say: '"Gone? Good. I had it in my head that it was why the snow would not soften. I had no reason to think so. I thought it anyway, and now look at my field."' },
         { if: [{ flag: 'king.dead' }, { not: { flag: 'hearth.lit' } }], say: '"I would not stand near it, if I were you. Nobody will, you will see."' },
         { if: [{ flag: 'king.dead' }, { not: { flag: 'hall.feast' } }], say: '"I stood at the far end of the hall from it all night. So did everybody. It is the first feast I ever saw where the crowd was all at one end."' },
+        { if: [{ flag: 'hall.feast' }], say: '"Look at us," says Gorm. "A whole village in one hall, and all of it at the one end."' },
         { say: '"The King under the hill can keep his crown. I would sooner have a spring."' },
       ],
       cup: [

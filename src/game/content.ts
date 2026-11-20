@@ -354,7 +354,7 @@ const rules: Rule[] = [
   { on: ['light *', 'light'], do: [{ say: 'You have nothing to light it with, and it would not thank you.' }] },
   { on: ['dance', 'dance *'], do: [{ say: 'You dance a few steps. Nobody applauds, but nobody stops you either.' }] },
   { on: ['sing rhyme', 'sing king', 'sing cup'], if: [{ flag: 'rhyme.heard' }], do: [{ say: 'West went the King when the snow lay deep, to wake the summer out of her sleep. Set him a cup and bank the fire: he will be home when the sun is higher. It comes out better sung than Marta said it. Most things would.' }] },
-  { on: ['sing rhyme', 'sing king', 'sing cup'], do: [{ say: 'You do not know the rhymes of these parts. Somebody in Hollowmere will: it looks the kind of place that has one.' }] },
+  { on: ['sing rhyme', 'sing king', 'sing cup'], do: [{ say: 'You do not know any rhymes from these parts. Somebody in Hollowmere would.' }] },
   { on: ['sing', 'sing *'], if: [{ flag: 'rhyme.heard' }], do: [{ say: 'You sing the one verse you know, which is the one about the King. The echo improves it slightly.' }] },
   { on: ['sing', 'sing *'], do: [{ say: 'You sing the one verse you know. The echo improves it slightly.' }] },
   { on: ['pray', 'pray *'], do: [{ say: 'You offer a few words to whoever is listening. The cold does not let up, but you feel a little better.' }] },
