@@ -18,7 +18,8 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   // The ford, then into Hollowmere.
   bot.walkTo(196, 162, 20);
   expect(bot.say('read sign')).toContain('HOLLOWMERE');
-  bot.exit('n');
+  // Up the road to the village: a screen of it, with perhaps a wolf on it.
+  bot.travel('village');
   expect(sim.state.room).toBe('village');
   bot.walkTo(172, 126, 12);
   bot.say('take hatchet');
@@ -42,10 +43,10 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.door('village');
 
   // East: the farmer, the hermit and his free spell book.
-  bot.exit('e');
+  bot.travel('farm');
   bot.meet('gorm');
   expect(bot.say('talk to farmer')).toContain('seed grain');
-  bot.exit('n');
+  bot.travel('tarn');
   expect(sim.state.room).toBe('tarn');
   bot.door('hut');
   bot.walkTo(122, 150, 14);
@@ -58,43 +59,40 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.door('tarn');
 
   // South-east: the watchtower, its lookout, and the word ISKA.
-  bot.exit('s');
-  bot.exit('s');
+  bot.travel('tower');
   expect(sim.state.room).toBe('tower');
   bot.fight();
   bot.walkTo(100, 138, 12);
   expect(bot.say('read the stone')).toContain('ISKA');
 
   // West along the river to the bandit camp.
-  bot.exit('w');
-  bot.exit('w');
+  bot.travel('camp');
   expect(sim.state.room).toBe('camp');
   bot.fight();
   bot.walkTo(56, 162, 14);
   expect(bot.say('open chest')).toContain('seed grain');
 
   // North through the pinewood to the ridge for VETH, killing wolves for Toke on the way.
-  bot.exit('n');
+  bot.travel('pinewood');
   expect(sim.state.room).toBe('pinewood');
   bot.fight();
   bot.meet('toke');
   expect(bot.say('talk to hunter')).toContain('Kill three');
-  bot.exit('n');
+  bot.travel('ridge');
   expect(sim.state.room).toBe('ridge');
   bot.fight();
   bot.walkTo(152, 132, 12);
   expect(bot.say('touch the rune')).toContain('VETH');
-  bot.exit('s');
+  bot.travel('pinewood');
   bot.meet('toke');
   expect(bot.say('talk to hunter')).toContain('A bargain is a bargain');
   expect(has('bow')).toBe(true);
 
   // Back east: return the grain, freeze the tarn, fetch the amulet.
-  bot.exit('e');
-  bot.exit('e');
+  bot.travel('farm');
   bot.meet('gorm');
   expect(bot.say('talk to farmer')).toContain('twenty-five silver');
-  bot.exit('n');
+  bot.travel('tarn');
   bot.waitFor('word:iska');
   expect(bot.say('iska')).toContain('thickens');
   bot.walkTo(124, 137, 4);
@@ -111,8 +109,7 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.door('tarn');
 
   // Arm up in the village.
-  bot.exit('s');
-  bot.exit('w');
+  bot.travel('village');
   bot.meet('odd');
   expect(bot.say('buy sword')).toContain('iron sword');
   bot.say('equip sword');
@@ -122,7 +119,7 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.door('village');
 
   // The barrow.
-  bot.exit('n');
+  bot.travel('barrow');
   bot.walkTo(160, 126, 8);
   bot.waitFor('word:veth');
   expect(bot.say('veth')).toContain('slides down');
@@ -153,7 +150,7 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.door('sleepers');
   bot.door('ante');
   bot.door('barrow');
-  bot.exit('s');
+  bot.travel('village');
   bot.door('hall');
   bot.meet('marta');
   expect(bot.say('talk to elder')).toContain('You light it');
@@ -168,13 +165,11 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.door('village');
   expect(bot.log.join(' ')).toContain("So ends the first saga of THANE'S QUEST");
   expect(has('ember') && has('crown')).toBe(true);
-  bot.exit('e');
-  bot.exit('s');
+  bot.travel('tower');
   bot.say('orun');
   bot.walkTo(150, 160, 12);
   expect(bot.say('open chest')).toContain('forty silver');
-  bot.exit('n');
-  bot.exit('n');
+  bot.travel('tarn');
   bot.door('hut');
   bot.say('buy frost');
   bot.say('read tome');
@@ -199,11 +194,11 @@ describe('walkthrough', () => {
       const p = state.player;
       console.log(JSON.stringify({ minutes: Math.round(state.tick / 1200), level: p.level, maxHp: p.maxHp, gold: p.gold, score: state.score, skills: Object.fromEntries(Object.entries(p.skills).map(([k, v]) => [k, v.lv])), minHp: bot.minHp }));
     }
-  });
+  }, 20000);
 
   it('plays out identically every time', () => {
     expect(playThrough().sim.state).toEqual(playThrough().sim.state);
-  });
+  }, 30000);
 
   it('plays out identically when saved and restored every few seconds along the way', () => {
     // Nothing the game knows may live anywhere but in what is saved.
@@ -217,7 +212,7 @@ describe('a slower hand', () => {
     const bot = playThrough(0, 14);
     expect(bot.sim.state.won).toBe(true);
     if ((globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.QA) console.log('SLOW ' + JSON.stringify(bot.minHp));
-  });
+  }, 20000);
 });
 
 describe('a Thane', () => {
@@ -397,13 +392,12 @@ describe('a Thane', () => {
     // The third saga: the dead still walk. Marta asks, Fenn reasons it out, and the barrow has a second door.
     expect(bot.say('talk to elder')).toContain('what they are waiting for');
     bot.door('village');
-    bot.exit('n');
-    bot.exit('e');
+    bot.travel('tarn');
     bot.door('hut');
     bot.meet('fenn');
     expect(bot.say('talk to fenn')).toContain('whose dead they are');
     bot.door('tarn');
-    bot.exit('w');
+    bot.travel('barrow');
     bot.walkTo(140, 132, 10);
     expect(bot.say('veth')).toContain('see it before it can hear you');
     bot.waitFor('word:orun');
@@ -432,7 +426,7 @@ describe('a Thane', () => {
     expect(bot.say('use the chisel')).toContain('Nine thousand and eleven, and done');
     bot.door('barrow');
     expect(bot.say('look')).toContain('a thread of smoke');
-    bot.exit('s');
+    bot.travel('village');
     bot.door('hall');
     bot.meet('marta');
     expect(bot.say('talk to elder')).toContain('I have a hearthful');
@@ -468,7 +462,8 @@ describe('beyond the map', () => {
         expect(bot.say('open chest')).toContain('silver');
       }
     }
-    expect(visited).toEqual(['wild_2_1', 'wild_3_1', 'wild_4_1']);
+    // Off the east edge of the valley, one ring further out each time.
+    expect(visited).toEqual(['wild_3_2', 'wild_4_2', 'wild_5_2']);
     expect(sim.state.score).toBeGreaterThanOrEqual(5);
     for (let i = 0; i < 3; i++) bot.exit('w');
     expect(sim.state.room).toBe('tower');

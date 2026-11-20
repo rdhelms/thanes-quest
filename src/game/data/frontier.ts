@@ -344,10 +344,11 @@ const sights: SightDef[] = [
 
 export const frontier: FrontierDef = {
   seed: 4127,
+  // The valley: nine places, with a screen of road between each and the next.
   grid: {
-    ridge: [-1, -1], barrow: [0, -1], tarn: [1, -1],
-    pinewood: [-1, 0], village: [0, 0], farm: [1, 0],
-    camp: [-1, 1], ford: [0, 1], tower: [1, 1],
+    ridge: [-2, -2], barrow: [0, -2], tarn: [2, -2],
+    pinewood: [-2, 0], village: [0, 0], farm: [2, 0],
+    camp: [-2, 2], ford: [0, 2], tower: [2, 2],
     // Far out to the west, where the second saga ends.
     frostgate: [-5, 0],
     // Landmarks for those who walk east and north instead.
@@ -355,8 +356,25 @@ export const frontier: FrontierDef = {
     hangtree: [0, -5],
     dolmen: [1, 5],
   },
-  // The barrow's mound closes off its north side; every other outer edge is open country.
-  gates: { ridge: 'nw', pinewood: 'w', camp: 'ws', ford: 's', tower: 'es', farm: 'e', tarn: 'ne', frostgate: 'se', bellmere: 'nsew', hangtree: 'nsew', dolmen: 'nsew' },
+  // The barrow's mound closes off its north side; every other edge opens onto the valley's roads
+  // or the country beyond.
+  gates: {
+    ridge: 'nsew', barrow: 'sew', tarn: 'nsew',
+    pinewood: 'nsew', village: 'nsew', farm: 'nsew',
+    camp: 'nsew', ford: 'nsew', tower: 'nsew',
+    frostgate: 'se', bellmere: 'nsew', hangtree: 'nsew', dolmen: 'nsew',
+  },
+  valley: {
+    reach: 2,
+    odds: { pines: 4, open: 4, mere: 3 },
+    music: 'valley',
+    // The four roads into Hollowmere are too near its doors for wolves.
+    quiet: 1,
+    called: {
+      village: 'Hollowmere', barrow: 'the barrow', tarn: 'the tarn', ridge: 'the ridge', pinewood: 'the pinewood',
+      farm: "Gorm's farm", camp: 'the bandit camp', ford: 'the ford', tower: 'the old watchtower',
+    },
+  },
   music: 'wild',
   calm: 'haven',
   under: 'barrow',
@@ -370,6 +388,8 @@ export const frontier: FrontierDef = {
     crags: [['wolf', 'bear'], ['bear', 'wolf'], ['bear', 'rimewalker', 'bear']],
     deadwood: [['wight'], ['wight', 'wight'], ['rimewalker', 'wight', 'wight']],
     shrine: [[]],
+    // A wolf crossing a valley road by day, now and then. Nothing walks there after dark.
+    valley: [['wolf']],
     // What walks in any country after dark.
     night: [['wight'], ['wight'], ['rimewalker']],
     crypt: [['wight'], ['wight', 'wight'], ['wight', 'rimewalker', 'wight']],
@@ -466,6 +486,30 @@ export const frontier: FrontierDef = {
         'A steading, small and stubborn, where the path gives out.',
       ],
     },
+    valley: {
+      first: ['The Low', 'The Long', "Drovers'", "Shepherd's", 'The Sledge', 'Alder', 'Rowan', 'Birch', 'The Peat', "Hayward's", 'The Common'],
+      second: ['Lane', 'Way', 'Track', 'Bottom', 'Brow', 'Holm', 'Path', 'Road'],
+      look: [
+        'A stretch of the valley between one place and the next. The snow is trodden into a path by boots and sledge-runners, all of them on their way somewhere else.',
+        'Nobody lives here, but everybody passes through. The path is wide and packed hard, the way paths are that are walked every day.',
+        'Quiet country between places with names. Wolf tracks cross the path now and then. They do not follow it.',
+        'The valley floor, drifted deep on either side of a beaten path. The wind has been at the drifts, and somebody has been at the path with a shovel since.',
+      ],
+      snow: [
+        'Trodden flat on the path and knee-deep either side of it.',
+        'Snow, marked with boots, runners and the odd hoof, all going one way or the other along the path.',
+      ],
+      sky: [
+        'The mountains round the valley, the same ones Hollowmere has looked at for as long as there has been a Hollowmere.',
+        'A white sky, low over the valley, with more snow in it.',
+      ],
+      trees: [
+        'Pines, heavy with snow. The lower boughs have been lopped for firewood as far up as a man can reach.',
+        'Dark boughs, white loads, and now and then the thump of one letting go.',
+      ],
+    },
+    road: 'The path runs %s.',
+    crossroads: 'Two paths cross here. %s.',
     crypt: {
       first: ['The Low', 'The Sealed', 'The Cold', 'The Forgotten', 'The Drowned', 'The Nameless'],
       second: ['Vault', 'Crypt', 'Undercroft', 'Cellar', 'Hollow'],

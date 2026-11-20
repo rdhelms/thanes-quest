@@ -103,7 +103,8 @@ describe('simulation', () => {
     sim.p.y = 160;
     sim.step([{ t: 'move', dx: 0, dy: -1 }]);
     for (let i = 0; i < 200 && sim.state.room === 'ford'; i++) sim.step();
-    expect(sim.state.room).toBe('village');
+    // Over the bridge and onto the road north to Hollowmere.
+    expect(sim.state.room).toBe('wild_0_1');
     expect(sim.p.y).toBeGreaterThan(150);
   });
 
@@ -391,13 +392,15 @@ describe('things found in QA', () => {
 
   it('answers compass words and lists exits', () => {
     const sim = game();
-    expect(type(sim, 'north')[0]).toContain('Hollowmere');
-    expect(type(sim, 'go west')[0]).toContain('Bandit Camp');
+    // Between the ford and its neighbours lie the valley's roads.
+    const road = (id: string): string => roomOf(content, id)!.name;
+    expect(type(sim, 'north')[0]).toContain(road('wild_0_1'));
+    expect(type(sim, 'go west')[0]).toContain(road('wild_-1_2'));
     expect(type(sim, 's')[0]).toContain('To the south lies');
     expect(type(game('barrow', 160, 130), 'n')).toEqual([content.text.noWay.replace('%s', 'north')]);
     const exits = type(sim, 'exits')[0];
-    expect(exits).toContain('North: Hollowmere.');
-    expect(exits).toContain('East: The Old Watchtower.');
+    expect(exits).toContain(`North: ${road('wild_0_1')}.`);
+    expect(exits).toContain(`East: ${road('wild_1_2')}.`);
     expect(type(game('hall', 160, 130), 'leave')[0]).toContain('A door to: Hollowmere.');
   });
 
@@ -566,7 +569,7 @@ describe('the frontier', () => {
     const parser = new Parser(content.vocab);
     const back = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
     const names = new Set<string>();
-    for (const [x, y] of [[0, 2], [-2, 0], [2, 1], [1, -2], [-2, -2], [3, 3], [0, 5], [-7, 2], [12, -9], [40, 40]]) {
+    for (const [x, y] of [[0, 3], [-3, 0], [2, 1], [1, -2], [-1, -1], [-3, -3], [3, 3], [0, 5], [-7, 2], [12, -9], [40, 40]]) {
       const id = wildId(x, y);
       const r = roomOf(content, id)!;
       expect(r, id).toBeDefined();
@@ -588,7 +591,7 @@ describe('the frontier', () => {
     }
     expect(names.size).toBeGreaterThan(6);
     // Further out is harder.
-    expect(roomOf(content, wildId(0, 2))!.spawns![0].level).toBe(0);
+    expect(roomOf(content, wildId(0, 3))!.spawns![0].level).toBe(0);
     expect(roomOf(content, wildId(0, 9))!.spawns![0].level).toBeGreaterThan(4);
     // Cells that hold a hand-made room are not generated over.
     expect(roomOf(content, wildId(0, 0))).toBeUndefined();
@@ -599,7 +602,7 @@ describe('the frontier', () => {
     expect(type(sim, 'exits')[0]).toContain('South:');
     sim.step([{ t: 'move', dx: 0, dy: 1 }]);
     for (let i = 0; i < 40 && sim.state.room === 'ford'; i++) sim.step();
-    expect(sim.state.room).toBe('wild_0_2');
+    expect(sim.state.room).toBe('wild_0_3');
     const score = sim.state.score;
     expect(score).toBeGreaterThan(0);
     // ...and back again, to the same place.
@@ -817,7 +820,7 @@ describe('the map', () => {
     cells = chart(content, sim.state.flags, sim.state.room);
     // Indoors, you are shown where the door leads out.
     expect(cells.find((c) => c.here)?.name).toBe('Hollowmere');
-    expect(cellOf(content, 'throne')).toEqual([0, -1]);
+    expect(cellOf(content, 'throne')).toEqual([0, -2]);
     sim.enterRoom('wild_2_1', 20, 140);
     cells = chart(content, sim.state.flags, sim.state.room);
     expect(cells.find((c) => c.here)).toMatchObject({ x: 2, y: 1 });
@@ -1308,7 +1311,8 @@ describe('ways back', () => {
     sim.rs.actors = [];
     sim.drain();
     walk(sim, 1, 0, 12);
-    expect(sim.state.room).toBe('wild_2_1');
+    // Off the edge of the valley, that is: its own roads are on everybody's map.
+    expect(sim.state.room).toBe('wild_3_2');
     expect(sim.drain().some((e) => e.t === 'note' && e.text.includes('MAP'))).toBe(true);
   });
 });
@@ -2174,7 +2178,7 @@ describe('spare things', () => {
 
 describe('the word of uncovering, tried everywhere', () => {
   it('has something to show in every outdoor screen of the valley', () => {
-    const outdoors = Object.values(content.rooms).filter((r) => r.scene.kind === 'outdoor' && Math.max(...content.frontier!.grid[r.id].map(Math.abs)) <= 1);
+    const outdoors = Object.values(content.rooms).filter((r) => r.scene.kind === 'outdoor' && Math.max(...content.frontier!.grid[r.id].map(Math.abs)) <= content.frontier!.valley!.reach);
     expect(outdoors.length).toBe(9);
     for (const room of outdoors) {
       const sim = game(room.id, 160, 150);
@@ -2311,7 +2315,8 @@ describe('pointing at the picture', () => {
         }
     }
     expect(walked).toBeGreaterThan(200);
-  });
+    // Six rooms of it take about six seconds, more on a busy machine.
+  }, 20000);
 
   it('goes through a door only when the door is what was pointed at', () => {
     const shell = fresh('village', 160, 160);
@@ -2352,7 +2357,7 @@ describe('pointing at the picture', () => {
     const south = fresh('ford', 160, 150);
     south.walkTo(160, 166);
     for (let i = 0; i < 300 && south.sim.state.room === 'ford'; i++) south.tick();
-    expect(south.sim.state.room).toBe('wild_0_2');
+    expect(south.sim.state.room).toBe('wild_0_3');
   });
 
   it('walks there, stops on arrival, and gives up against something solid', () => {

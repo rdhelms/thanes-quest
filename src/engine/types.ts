@@ -363,6 +363,10 @@ export interface BiomeText {
   first: string[];
   second: string[];
   look: string[];
+  /** How its snow, sky and trees look, where they differ from the wild's. */
+  snow?: string[];
+  sky?: string[];
+  trees?: string[];
 }
 
 /** What a prop is, without where: the country decides the where. */
@@ -379,7 +383,7 @@ export interface SightDef {
   name: string;
   /** Kinds of country it may stand in. */
   biomes: string[];
-  /** At least this far beyond the hand-made map: 1 is the first ring of country. */
+  /** At least this far beyond the valley: 1 is the first ring of country outside it, 0 the valley itself. */
   minDepth?: number;
   /** Only in country lying mostly this way from home. */
   side?: 'n' | 's' | 'e' | 'w';
@@ -407,6 +411,23 @@ export interface FrontierDef {
   under: string;
   /** How common each kind of country is, as weights. */
   odds: Record<string, number>;
+  /**
+   * The valley: the middle of the map, where the hand-made places stand with a screen of road
+   * between each and the next. Cells this close that are not hand-made are "valley" country:
+   * gentle, never dark with the dead, and always with a path through. Difficulty is counted from
+   * its edge. Without this, the hand-made places are taken to sit edge to edge.
+   */
+  valley?: {
+    /** How far it reaches from the middle, in cells: 2 makes it five by five. */
+    reach: number;
+    /** What its roads run through, as weights: any of pines, open and mere. */
+    odds: Record<string, number>;
+    music: string;
+    /** Roads this few steps (not counting diagonals) from the middle never have anything on them. */
+    quiet?: number;
+    /** How each hand-made place is named in a sentence when a road points the way to it. */
+    called: Record<string, string>;
+  };
   /** What is met in each kind of country: lists to draw from, the later ones further from home. */
   life: Record<string, string[][]>;
   /** Characters who live at lone steadings: one each, at the steadings nearest home, in this order. */
@@ -440,6 +461,12 @@ export interface FrontierDef {
     steading: BiomeText;
     /** The vaults under ruined towers. */
     crypt: BiomeText;
+    /** The roads between the places of the valley. */
+    valley: BiomeText;
+    /** Where a valley road leads, %s being "north to the barrow and south to Hollowmere". */
+    road: string;
+    /** A valley crossing with no place beside it, %s being "the barrow lies north-west, the tarn north-east". */
+    crossroads: string;
     snow: string[];
     sky: string[];
     trees: string[];

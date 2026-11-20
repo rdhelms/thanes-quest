@@ -3,7 +3,7 @@
 
 import { charSprite, type Facing, type Sprite } from './doll';
 import { drawText, wrap } from './font';
-import { chart, parseWild } from './frontier';
+import { chart, depthOf, parseWild } from './frontier';
 import { ICONS } from './icons';
 import { bayer4, clamp, hash2, mix, vnoise } from './noise';
 import { R, UI, blendThreshold, sceneColour, spriteColour } from './palette';
@@ -628,7 +628,7 @@ export class Renderer {
     if (outdoors) {
       const t = shell.uiTick;
       const at = parseWild(st.room);
-      const far = at ? Math.max(0, Math.max(Math.abs(at[0]), Math.abs(at[1])) - 2) : 0;
+      const far = at ? Math.max(0, depthOf(sim.content, at[0], at[1]) - 1) : 0;
       // Once the weather has broken, the wind is gone, and at home there is hardly a flake.
       const still = !!sim.content.calm && all(sim, sim.content.calm);
       const wind = still ? 0 : Math.min(2.4, far * 0.4);

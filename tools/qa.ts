@@ -125,8 +125,9 @@ const KITS: Kit[] = [
 ];
 
 function fights(): void {
-  // The story's fights, then the frontier at one, three, five and eight screens out.
-  const rooms = ['pinewood', 'ridge', 'tower', 'camp', 'sleepers', 'throne', 'frostgate', 'rimehall', 'wild_2_1', 'wild_2_0', 'wild_4_1', 'wild_-4_2', 'wild_1_-5', 'wild_6_2', 'wild_-6_-3', 'wild_9_0', 'wild_0_9'];
+  // The story's fights, two of the valley's roads, then the frontier at one, two, three, four
+  // and seven screens beyond the valley.
+  const rooms = ['pinewood', 'ridge', 'tower', 'camp', 'sleepers', 'throne', 'frostgate', 'rimehall', 'wild_2_1', 'wild_1_-2', 'wild_3_1', 'wild_3_0', 'wild_4_1', 'wild_-4_2', 'wild_1_-5', 'wild_6_2', 'wild_-6_-3', 'wild_9_0', 'wild_0_9'];
   const row = (cells: string[]): void => console.log(cells.map((c, i) => c.padEnd(i ? 17 : 12)).join(''));
   for (const who of [NOVICE, DECENT]) {
     console.log(`\n${who === NOVICE ? 'NOVICE: slow, never guards' : 'DECENT: guards when a blow is coming'}   (wins/10, health left, seconds)`);

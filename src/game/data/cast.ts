@@ -308,7 +308,7 @@ export const chars: Record<string, CharDef> = {
         },
         {
           if: [{ flag: 'hearth.lit' }],
-          say: '"Now there is a fire worth sitting by, people sit, and talk. There are three out in the wild who know that country better than anyone under a roof. Brekka the trapper, north beyond the barrow. Old Ivar One-Glove, north-west past the ridge, if the bears have not finished what they started. And Runa, who was born in this village, gathering her mushrooms south-east past the watchtower." She fills a horn. "If you mean to walk out there, find one of them first."',
+          say: '"Now there is a fire worth sitting by, people sit, and talk. There are three out in the wild who know that country better than anyone under a roof. Brekka the trapper, north beyond the barrow. Old Ivar One-Glove, north-west past the ridge, if the bears have not finished what they started. And Runa, who was born in this village, gathering her mushrooms south-east, out past the ford." She fills a horn. "If you mean to walk out there, find one of them first."',
           do: [{ run: 'mark', arg: 'brekka' }, { run: 'mark', arg: 'ivar' }, { run: 'mark', arg: 'runa' }, { note: 'Three steadings are marked on your map.' }],
         },
         { say: '"Marta in the hall has the big trouble. Gorm at the east farm was robbed a week back. Toke in the west wood got himself bitten. All three would pay to see the back of it."' },
