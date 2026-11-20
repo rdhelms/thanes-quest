@@ -11,7 +11,7 @@ import { validate } from '../src/engine/validate';
 import { mainGround } from '../src/engine/walk';
 import { behaviours } from '../src/game/behaviours';
 import { content } from '../src/game/content';
-import { game, type, walk } from './helpers';
+import { game, says, type, walk } from './helpers';
 
 function memoryStore(): { get(k: string): string | null; set(k: string, v: string): void } {
   const m = new Map<string, string>();
@@ -2844,4 +2844,62 @@ describe('found by playing on past the first saga', () => {
         expect(rest.some((w) => w.length > 3 && first.toLowerCase().includes(w.toLowerCase())), name).toBe(false);
       }
   }, 30000);
+});
+
+describe('the thaw, where it can be seen', () => {
+  const shown = (sim: Sim, room: string): string[] => {
+    const sc = content.rooms[room].scene;
+    return [...sc.props, ...(sc.when ?? []).filter((w) => all(sim, w.if)).flatMap((w) => w.props ?? [])].map((p) => `${p.t}${p.v ? ':' + p.v : ''}`);
+  };
+
+  it('keeps a cold roof cold, lights it with the hearth, and thaws it with the winter', () => {
+    const sim = game('village');
+    expect(shown(sim, 'village')).toContain('hall:cold');
+    expect(shown(sim, 'village')).not.toContain('hall:smoke');
+    expect(shown(sim, 'farm')).not.toContain('hall:smoke');
+    sim.state.flags['hearth.lit'] = true;
+    expect(shown(sim, 'village')).toContain('hall:smoke');
+    expect(shown(sim, 'village')).not.toContain('melt');
+    sim.state.flags['crown.unmade'] = true;
+    for (const room of ['village', 'farm']) {
+      expect(shown(sim, room), room).toContain('hall:thaw');
+      expect(shown(sim, room), room).toContain('melt');
+    }
+    // A thawed picture is a different picture, and can still be walked about in.
+    const before = game('village').scene('village');
+    const after = sim.scene('village');
+    let changed = 0;
+    for (let i = 0; i < after.ramp.length; i++) if (after.ramp[i] !== before.ramp[i]) changed++;
+    expect(changed).toBeGreaterThan(2000);
+    sim.enterRoom('village', 160, 150);
+    expect(type(sim, 'look')[0]).toContain('brown and wet');
+  });
+
+  it('lets the children out, who are busy, and have built the Elder', () => {
+    const winter = game('village', 160, 150);
+    expect(winter.rs.actors.map((a) => a.ref).sort()).toEqual(['odd', 'sigga']);
+    expect(type(winter, 'look at snowman')[0]).toBe(content.text.notHere);
+
+    const sim = game();
+    sim.state.flags['crown.unmade'] = true;
+    sim.enterRoom('village', 250, 160);
+    sim.drain();
+    expect(sim.rs.actors.map((a) => a.ref).sort()).toEqual(['boy', 'girl', 'odd', 'sigga']);
+    sim.step([{ t: 'say', line: 'talk to the girl' }]);
+    const ev = sim.drain();
+    expect(says(ev)[0]).toContain('It is the Elder');
+    // Said in passing: children do not hold conversations with menus.
+    expect(ev.some((e) => e.t === 'talk')).toBe(false);
+    expect(type(sim, 'talk to boy')[0]).toContain('Are you the Thane');
+    expect(type(sim, 'look at the snowman')[0]).toContain('straight back is unmistakable');
+    expect(type(sim, 'kick the snowman')[0]).toContain('you cannot');
+    expect(type(sim, 'ask girl about elder')[0]).toContain('She gave us the wool');
+  });
+
+  it('stills the air once the winter has broken', () => {
+    const sim = game();
+    expect(all(sim, content.calm)).toBe(false);
+    sim.state.flags['crown.unmade'] = true;
+    expect(all(sim, content.calm)).toBe(true);
+  });
 });

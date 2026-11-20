@@ -156,7 +156,10 @@ export const vocab: VocabDef = {
     village: ['hollowmere', 'town', 'square'],
     camp: ['hollow'],
     // People and creatures
-    sigga: ['woman', 'villager', 'girl', 'lady', 'baker'],
+    sigga: ['woman', 'villager', 'lady', 'baker'],
+    girl: ['child', 'children', 'kid', 'kids', 'lass'],
+    boy: ['lad'],
+    snowman: ['snow figure', 'figure', 'snow man', 'snow elder'],
     elder: ['chief', 'marta', 'coldhand'],
     odd: ['smith', 'blacksmith'],
     halla: ['innkeeper', 'keeper', 'landlady'],

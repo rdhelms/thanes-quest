@@ -7,6 +7,7 @@ import { chart, parseWild } from './frontier';
 import { ICONS } from './icons';
 import { bayer4, clamp, hash2, mix, vnoise } from './noise';
 import { R, UI, blendThreshold, sceneColour, spriteColour } from './palette';
+import { all } from './rules';
 import { PH, PW, flameAt, type Scene } from './scene';
 import type { Shell } from './shell';
 import { DAY_LENGTH } from './sim';
@@ -452,8 +453,10 @@ export class Renderer {
       const t = shell.uiTick;
       const at = parseWild(st.room);
       const far = at ? Math.max(0, Math.max(Math.abs(at[0]), Math.abs(at[1])) - 2) : 0;
-      const wind = Math.min(2.4, far * 0.4);
-      for (let i = 0, n = 54 + Math.min(120, far * 20); i < n; i++) {
+      // Once the weather has broken, the wind is gone, and at home there is hardly a flake.
+      const still = !!sim.content.calm && all(sim, sim.content.calm);
+      const wind = still ? 0 : Math.min(2.4, far * 0.4);
+      for (let i = 0, n = still ? (at ? 40 + Math.min(60, far * 8) : 7) : 54 + Math.min(120, far * 20); i < n; i++) {
         const near = i % 3 === 0;
         const speed = (near ? 1.5 : 0.8) + hash2(i, 3, 7) * 0.5;
         const x = Math.floor(hash2(i, 1, 7) * PW + Math.sin((t + i * 37) * 0.04) * 5 + t * ((hash2(i, 4, 7) - 0.5) * 0.4 - wind * (near ? 1 : 0.6)));

@@ -128,8 +128,11 @@ Then the three runes go dark, one after another, and as each one goes the Thane 
 "Keep. Me. Warm." Some of the warmth the crown had been drinking for four thousand years goes into
 the Thane. At the Frost Gate the west wind has stopped.
 
-After that the winter is only a winter. In Hollowmere the well thaws, the eaves drip, the snow on
-Gorm's field goes soft, and a thrush sings in the pinewood. Marta gives the Thane a purse that
+After that the winter is only a winter. In Hollowmere the well thaws, the eaves drip, the snow
+slides off the thatch and draws back from the doors, the snow on Gorm's field goes soft, and a
+thrush sings in the pinewood. Two children who were kept indoors all winter are let out. They
+build a figure from the last good snow, with a straight back and a scrap of purple wool at its
+neck. It is the Elder, and nobody has dared to tell her; she gave them the wool. Marta gives the Thane a purse that
 every household has put something into. Fenn laughs that it all ended as a puddle on a floor, has
 the Thane tell him the whole of it, and writes it down.
 

@@ -497,6 +497,8 @@ export interface Content {
    * place of the battle tune while something of the boss kind is in the fight.
    */
   cues: { title: string; battle: string; fallback: string; night?: string; boss?: string };
+  /** When these hold the air is still: snow no longer drives sideways out in the wild, and little falls in the hand-made rooms. */
+  calm?: Cond[];
   /** What THINK says when no task is open: the first whose conditions hold. */
   hints?: { if?: Cond[]; text: string }[];
   /** Things worth having done, listed (once done) by the DEEDS command. {flag.name} is filled in. */

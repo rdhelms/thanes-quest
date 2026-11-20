@@ -407,6 +407,7 @@ export const content: Content = {
   rules,
   music,
   cues: { title: 'valley', battle: 'battle', fallback: 'wild', night: 'night', boss: 'doom' },
+  calm: [{ flag: 'crown.unmade' }],
   text,
   hints: [
     { if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }], text: 'The crown is unmade. Fenn the hermit, by the tarn, will want to hear all of it.' },

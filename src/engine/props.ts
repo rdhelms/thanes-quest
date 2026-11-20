@@ -2,7 +2,7 @@
 // and collision footprint, so placing one in a room's data is all it takes.
 
 import { R } from './palette';
-import { PW, Scene, line } from './scene';
+import { PH, PW, Scene, line } from './scene';
 import { clamp, fbm, hash2, lerp, vnoise } from './noise';
 import type { PropDef, SceneDef } from './types';
 
@@ -74,8 +74,15 @@ function boulder(sc: Scene, p: { x: number; y: number; r: number; seed: number; 
   sc.blockEllipse(x, y - 1, rx * 0.95, Math.max(2, r * 0.3));
 }
 
-function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
+/**
+ * A log hall under a thatched roof. `v` picks a look: as winter has it (the default), 'cold'
+ * for a house with no fire in it, 'thaw' for one the snow is letting go of, and 'smoke' for the
+ * smoke alone, to be added to a cold house once its fire is lit.
+ */
+function hall(sc: Scene, p: { x: number; y: number; w: number; v?: string }): void {
   const { x, y, w } = p;
+  const thaw = p.v === 'thaw';
+  if (p.v === 'smoke') return hallSmoke(sc, p);
   const wallH = 40;
   const roofH = Math.min(50, Math.round(w * 0.45));
   const over = 10;
@@ -97,7 +104,7 @@ function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
 
   // Stone footing and the snow banked against it
   for (let px = x - 1; px < x + w + 1; px++) {
-    const bank = 2 + Math.floor(vnoise(px * 0.18, 1, 8) * 3.5);
+    const bank = thaw ? Math.floor(vnoise(px * 0.18, 1, 8) * 1.7) : 2 + Math.floor(vnoise(px * 0.18, 1, 8) * 3.5);
     for (let py = y - 5; py < y; py++) {
       if (y - py <= bank) sc.put(px, py, R.snow, 0.82 + 0.14 * hash2(px, py, 3), y);
       else sc.put(px, py, R.rock, 0.3 + 0.28 * hash2(Math.floor((px + (py & 2 ? 3 : 0)) / 7), py >> 1, 3), y);
@@ -142,7 +149,7 @@ function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
       const lyy = py - wy;
       const glass = lx >= 0 && lx < ww && lyy >= 0 && lyy < wh;
       if (py === wy + wh + 1) {
-        if (lx >= -2 && lx < ww + 2) sc.put(px, py, R.snow, 0.96, y);
+        if (lx >= -2 && lx < ww + 2) sc.put(px, py, thaw ? R.wood : R.snow, thaw ? 0.5 : 0.96, y);
       } else if (glass) {
         if (lx === 5 || lx === 6 || lyy === 5) sc.put(px, py, R.wood, 0.16, y);
         else sc.put(px, py, R.fire, 0.62 + 0.3 * (1 - Math.hypot(lx - 5.5, lyy - 5) / 8), y);
@@ -177,7 +184,8 @@ function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
     const r = lerp(rr0, x + w + over, Math.pow(t, 0.9));
     for (let px = Math.floor(l); px < r; px++) {
       const u = (px - l) / (r - l);
-      const sl = 0.68 + 0.4 * (fbm(px * 0.06, 2.2, 6, 3) - 0.5) + (px % 29 < 4 ? 0.1 : 0);
+      // How far down from the ridge the snow still lies: most of the way in winter, a ragged cap in a thaw.
+      const sl = thaw ? 0.26 + 0.5 * (fbm(px * 0.09, 2.2, 6, 3) - 0.5) : 0.68 + 0.4 * (fbm(px * 0.06, 2.2, 6, 3) - 0.5) + (px % 29 < 4 ? 0.1 : 0);
       if (t < sl) {
         let s = 0.88 + 0.1 * vnoise(px * 0.08, py * 0.2, 2) - 0.3 * clamp((u - 0.42) / 0.58) - 0.05 * t;
         if (t > sl - 0.05) s = 0.5;
@@ -185,13 +193,18 @@ function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
         if (py === ry || px - l < 1 || r - px <= 1) s = 0.3;
         sc.put(px, py, R.snow, s, y);
       } else {
-        sc.put(px, py, R.thatch, px - l < 1 || r - px <= 1 ? 0.1 : 0.34 + 0.4 * vnoise(px * 0.8, py * 0.12, 21) - 0.5 * (t - sl), y);
+        // Thatch, darker where it is wet.
+        const wet = thaw ? 0.84 - 0.1 * vnoise(px * 0.3, py * 0.5, 23) : 1;
+        sc.put(px, py, R.thatch, px - l < 1 || r - px <= 1 ? 0.1 : (0.34 + 0.4 * vnoise(px * 0.8, py * 0.12, 21) - (thaw ? 0.12 : 0.5) * (t - sl)) * wet, y);
       }
     }
   }
   for (let px = Math.floor(x - over + 1); px < x + w + over - 1; px++) {
     sc.put(px, ey, R.wood, 0.12, y);
-    if (hash2(px, 0, 41) > 0.6) {
+    // Icicles along the eave; in a thaw, drops falling from it instead.
+    if (thaw) {
+      if (hash2(px, 0, 41) > 0.82) sc.put(px, ey + 2 + Math.floor(hash2(px, 2, 41) * 9), R.ice, 0.95, y);
+    } else if (hash2(px, 0, 41) > 0.6) {
       const len = 1 + Math.floor(hash2(px, 1, 41) * 6);
       for (let k = 0; k < len; k++) sc.put(px, ey + 1 + k, R.snow, k === len - 1 ? 0.72 : 0.98, y);
     }
@@ -200,10 +213,20 @@ function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
   for (const ex of [rl0, rr0]) {
     line(sc, ex - 6, ry + 7, ex + 5, ry - 8, R.wood, 0.3, y, 2.2);
     line(sc, ex + 6, ry + 7, ex - 5, ry - 8, R.wood, 0.42, y, 2.2);
-    sc.put(ex + 5, ry - 9, R.snow, 1, y);
-    sc.put(ex - 5, ry - 9, R.snow, 1, y);
+    if (!thaw) {
+      sc.put(ex + 5, ry - 9, R.snow, 1, y);
+      sc.put(ex - 5, ry - 9, R.snow, 1, y);
+    }
   }
-  // Smoke from the roof vent
+  if (p.v !== 'cold') hallSmoke(sc, p);
+
+  sc.blockRect(x - 3, y - 7, x + w + 3, y + 1);
+}
+
+/** Smoke from a hall's roof vent. */
+function hallSmoke(sc: Scene, p: { x: number; y: number; w: number }): void {
+  const { x, y, w } = p;
+  const ry = y - 40 - Math.min(50, Math.round(w * 0.45));
   const vx = x + w * 0.5;
   for (let k = 0; k < 30; k++) {
     const cx = vx + k * 0.9 + Math.sin(k * 0.45) * 2.5;
@@ -213,8 +236,58 @@ function hall(sc: Scene, p: { x: number; y: number; w: number }): void {
       for (let px = Math.floor(cx - rad); px <= cx + rad; px++)
         if (Math.hypot(px - cx, py - cy) < rad && hash2(px, py, 50) > 0.3 + k * 0.02) sc.put(px, py, R.rock, 0.78 + 0.2 * hash2(px, py, 51));
   }
+}
 
-  sc.blockRect(x - 3, y - 7, x + w + 3, y + 1);
+/**
+ * Ground the snow has let go of: wet earth and flattened grass, a puddle or two, slush at the
+ * rim. Only snow lying on open ground is changed, so it can be laid over anything.
+ */
+function melt(sc: Scene, p: { x: number; y: number; w: number; h: number; seed: number }): void {
+  const rx = p.w / 2;
+  const ry = p.h / 2;
+  for (let py = Math.floor(p.y - ry - 3); py <= p.y + ry + 3; py++)
+    for (let px = Math.floor(p.x - rx - 4); px <= p.x + rx + 4; px++) {
+      if (px < 0 || px >= PW || py < 0 || py >= PH) continue;
+      const i = py * PW + px;
+      if (sc.pri[i] !== 0 || sc.ramp[i] !== R.snow) continue;
+      const d = Math.hypot((px - p.x) / rx, (py - p.y) / ry) + (fbm(px * 0.13, py * 0.3, p.seed, 3) - 0.5) * 0.9;
+      if (d >= 1) continue;
+      // Whatever shadow already lay on the snow lies on the mud as well.
+      const lit = clamp(sc.shade[i] / 0.86, 0.55, 1);
+      const m = fbm(px * 0.21, py * 0.4, p.seed + 7, 3);
+      // Broad shapes, so that grass lies in swathes and water stands in pools rather than in specks.
+      const grass = fbm(px * 0.07, py * 0.16, p.seed + 11, 2);
+      const pool = fbm(px * 0.05, py * 0.14, p.seed + 19, 2);
+      if (d > 0.8) sc.shade[i] = (0.5 + 0.16 * m) * lit;
+      else if (pool < 0.3 && d < 0.6) [sc.ramp[i], sc.shade[i]] = [R.water, 0.62 + 0.3 * m];
+      else if (grass > 0.58) [sc.ramp[i], sc.shade[i]] = [R.thatch, (0.24 + 0.3 * m) * lit];
+      else [sc.ramp[i], sc.shade[i]] = [R.earth, (0.3 + 0.45 * m) * lit];
+    }
+}
+
+/** A figure of snow, built by somebody short: three lumps, two stones for eyes, and a scrap of cloth. */
+function snowman(sc: Scene, p: { x: number; y: number; ramp: number }): void {
+  const { x, y } = p;
+  const ball = (cy: number, r: number): void => {
+    for (let dy = -Math.ceil(r); dy <= Math.ceil(r); dy++)
+      for (let dx = -Math.ceil(r); dx <= Math.ceil(r); dx++) {
+        const d = Math.hypot(dx, dy * 1.08);
+        if (d > r) continue;
+        sc.put(x + dx, cy + dy, R.snow, d > r - 0.9 ? 0.42 : 0.92 - 0.3 * clamp((dx + dy) / (r * 1.6) + 0.35) + 0.06 * hash2(x + dx, cy + dy, 77), y);
+      }
+  };
+  ball(y - 6, 6.4);
+  ball(y - 15, 4.8);
+  ball(y - 22, 3.4);
+  // Arms, which were firewood this morning.
+  line(sc, x - 4, y - 16, x - 11, y - 20, R.wood, 0.3, y, 1.2);
+  line(sc, x + 4, y - 16, x + 11, y - 21, R.wood, 0.4, y, 1.2);
+  sc.put(x - 1, y - 23, R.rock, 0.05, y);
+  sc.put(x + 2, y - 23, R.rock, 0.05, y);
+  // A scrap of wool at the neck, and its tail.
+  for (let dx = -3; dx <= 3; dx++) sc.put(x + dx, y - 19, p.ramp, dx > 1 ? 0.45 : 0.7, y);
+  for (let k = 0; k < 4; k++) sc.put(x + 3, y - 18 + k, p.ramp, 0.6 - 0.08 * k, y);
+  sc.blockRect(x - 5, y - 3, x + 5, y + 1);
 }
 
 function hallShadow(sc: Scene, p: { x: number; y: number; w: number }): void {
@@ -493,9 +566,12 @@ export const PROPS: Record<string, PropImpl> = {
   },
   hall: {
     needs: ['w'],
-    draw: (sc, p) => hall(sc, { x: p.x, y: p.y, w: p.w ?? 120 }),
-    shadow: (sc, p) => hallShadow(sc, { x: p.x, y: p.y, w: p.w ?? 120 }),
+    draw: (sc, p) => hall(sc, { x: p.x, y: p.y, w: p.w ?? 120, v: p.v }),
+    // Only the house itself casts a shadow, and once: its smoke and its thawed look are laid over it.
+    shadow: (sc, p) => void ((p.v ?? 'cold') === 'cold' && hallShadow(sc, { x: p.x, y: p.y, w: p.w ?? 120 })),
   },
+  melt: { needs: ['w', 'h'], draw: (sc, p) => melt(sc, { x: p.x, y: p.y, w: p.w ?? 40, h: p.h ?? 12, seed: p.seed ?? 1 }) },
+  snowman: { draw: (sc, p) => snowman(sc, { x: p.x, y: p.y, ramp: R[p.ramp ?? 'purple'] }), shadow: (sc, p) => sc.shadowEllipse(p.x + 5, p.y, 9, 2.5) },
   well: { draw: (sc, p) => well(sc, p), shadow: (sc, p) => sc.shadowEllipse(p.x + 9, p.y + 1, 19, 4.5) },
   woodpile: { draw: (sc, p) => woodpile(sc, p), shadow: (sc, p) => sc.shadowEllipse(p.x + 24, p.y, 18, 3) },
   fence: { needs: ['x1', 'y1'], draw: (sc, p) => fence(sc, { x: p.x, y: p.y, x1: p.x1 ?? p.x + 40, y1: p.y1 ?? p.y }) },

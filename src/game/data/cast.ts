@@ -62,6 +62,40 @@ export const chars: Record<string, CharDef> = {
     ],
   },
 
+  // Two of Hollowmere's children, kept indoors until the winter broke.
+  girl: {
+    id: 'girl',
+    name: 'The girl',
+    nouns: ['girl'],
+    spec: { size: 0.72, skin: 'skin', hair: 'blond', hairStyle: 'long', tunic: 'red', legs: 'red', boots: 'fur', dress: true },
+    look: 'A girl of eight or nine in a red wool dress, with snow to both elbows and the frown of a craftsman.',
+    talk: [
+      { if: [{ not: { flag: 'girl.met' } }], brief: true, say: '"It is the Elder," says the girl, without looking up from her work. "She does not know yet. You are not to tell her."', do: [{ set: 'girl.met' }] },
+      { brief: true, say: '"We were not let out all winter. Not once. Mother said the cold would have our noses." She packs another handful on. "It did not get mine."' },
+    ],
+    topics: {
+      snowman: '"The back has to be straighter," says the girl. "She never bends. I have watched."',
+      elder: '"She gave us the wool for its neck. She did not ask what it was for. I think she knows."',
+      weather: '"It is warm," says the girl, in the snow, with blue hands, meaning every word.',
+    },
+    shrug: '"I am busy," says the girl, kindly.',
+  },
+  boy: {
+    id: 'boy',
+    name: 'The boy',
+    nouns: ['boy'],
+    spec: { size: 0.66, skin: 'skin', hair: 'brown', hairStyle: 'short', tunic: 'green', legs: 'leather', boots: 'fur' },
+    look: 'A boy of six or so, in a tunic he has not grown into, holding two stones and waiting to be told where the eyes go.',
+    talk: [
+      { if: [{ not: { flag: 'boy.met' } }], brief: true, say: 'The boy looks at your sword, and then all the way up at you. "Are you the Thane? Sigga says you made the fires go. Did it hurt?"', do: [{ set: 'boy.met' }] },
+      { brief: true, say: '"I am doing the eyes," says the boy. It is clearly the most important job, and he has clearly been told so.' },
+    ],
+    topics: {
+      snowman: '"It is going to have a sword," says the boy. "The Elder has not got a sword but it is going to have one."',
+    },
+    shrug: 'The boy considers the question, and holds up a stone instead.',
+  },
+
   marta: {
     id: 'marta',
     name: 'Elder Marta',

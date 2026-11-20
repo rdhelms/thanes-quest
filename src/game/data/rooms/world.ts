@@ -84,7 +84,7 @@ export const village: RoomDef = {
   name: 'Hollowmere',
   look: "Hollowmere. The Elder's hall squats to the west under a hat of snow; the inn stands east of it with a sign by its door. Between them are a well, a smith's anvil, and people pretending not to stare at you.",
   lookWhen: [
-    { if: [{ flag: 'crown.unmade' }], look: "Hollowmere, with smoke at every roof and a drip at every eave. The Elder's hall is to the west, the inn east of it. The forge is roaring, the well has a queue at it, and two children are doing something to a snowdrift that the snowdrift will not survive." },
+    { if: [{ flag: 'crown.unmade' }], look: "Hollowmere, with smoke at every roof and a drip at every eave. The snow has drawn back from the doors and left the square brown and wet. The Elder's hall is to the west, the inn east of it. The forge is roaring, the well-rope is running, and two children are building something out of the last good snow." },
     { if: [{ flag: 'hearth.lit' }], look: "Hollowmere, with smoke standing straight up from every roof. The Elder's hall is to the west, the inn east of it; between them the smith's forge is roaring, and people look up as you pass and nod. Somebody has swept the snow from the well." },
   ],
   scene: {
@@ -102,7 +102,8 @@ export const village: RoomDef = {
       { t: 'pine', x: 150, y: 93, h: 48, seed: 2 },
       { t: 'pine', x: 184, y: 96, h: 56, seed: 3 },
       { t: 'pine', x: 314, y: 98, h: 64, seed: 7 },
-      { t: 'hall', x: 14, y: 116, w: 112 },
+      // The Elder's hall has no smoke at its roof until its hearth is lit; the inn's fire never quite went out.
+      { t: 'hall', x: 14, y: 116, w: 112, v: 'cold' },
       { t: 'hall', x: 204, y: 112, w: 96 },
       { t: 'signpost', x: 236, y: 117 },
       { t: 'woodpile', x: 130, y: 117 },
@@ -114,8 +115,26 @@ export const village: RoomDef = {
       { t: 'fence', x: 8, y: 150, x1: 50, y1: 156 },
       { t: 'pine', x: 316, y: 186, h: 96, seed: 12 },
     ],
-    // Once the hearths will hold a flame again, the smith's forge is alight.
-    when: [{ if: [{ flag: 'hearth.lit' }], props: [{ t: 'brazier', x: 68, y: 150 }] }],
+    when: [
+      // Once the hearths will hold a flame again, the smith's forge is alight and the hall has smoke at its roof.
+      { if: [{ flag: 'hearth.lit' }], props: [{ t: 'brazier', x: 68, y: 150 }, { t: 'hall', x: 14, y: 116, w: 112, v: 'smoke' }] },
+      // When the winter breaks: wet thatch showing, the snow drawn back from the doors and the
+      // well, and something being built out of what is left of it.
+      {
+        if: [{ flag: 'crown.unmade' }],
+        props: [
+          { t: 'hall', x: 14, y: 116, w: 112, v: 'thaw' },
+          { t: 'hall', x: 204, y: 112, w: 96, v: 'thaw' },
+          { t: 'melt', x: 70, y: 124, w: 120, h: 12, seed: 3 },
+          { t: 'melt', x: 250, y: 120, w: 104, h: 12, seed: 5 },
+          { t: 'melt', x: 190, y: 156, w: 70, h: 16, seed: 8 },
+          { t: 'melt', x: 96, y: 156, w: 76, h: 14, seed: 11 },
+          { t: 'melt', x: 160, y: 138, w: 90, h: 20, seed: 14 },
+          { t: 'melt', x: 30, y: 164, w: 50, h: 8, seed: 17 },
+          { t: 'snowman', x: 252, y: 166, ramp: 'purple' },
+        ],
+      },
+    ],
   },
   exits: { n: 'barrow', s: 'ford', e: 'farm', w: 'pinewood' },
   doors: [
@@ -131,7 +150,16 @@ export const village: RoomDef = {
       id: 'bucket', nouns: ['bucket', 'rope'], x: 196, y: 154, reach: 36, look: 'The rope is frozen stiff. So, presumably, is the bucket.',
       lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'The rope runs, and the bucket comes up full. Nobody in Hollowmere has got tired of that yet.' }],
     },
-    { id: 'hall', nouns: ['hall', 'roof'], x: 69, y: 120, reach: 70, look: "The Elder's hall: old logs, a deep roof, and crossed beams at each gable to keep ill luck off. It has not worked lately." },
+    {
+      id: 'hall', nouns: ['hall', 'roof'], x: 69, y: 120, reach: 70, look: "The Elder's hall: old logs, a deep roof, and crossed beams at each gable to keep ill luck off. It has not worked lately.",
+      lookWhen: [
+        { if: [{ flag: 'crown.unmade' }], look: "The Elder's hall, with the thatch showing dark and wet where the snow has slid off it, and water running from the eaves in a row of bright threads." },
+        { if: [{ flag: 'hearth.lit' }], look: "The Elder's hall: old logs, a deep roof, and crossed beams at each gable to keep ill luck off. There is smoke at the roof again. Perhaps they work after all." },
+      ],
+    },
+    {
+      id: 'snowman', nouns: ['snowman'], x: 252, y: 164, reach: 34, hidden: true, look: 'A lumpy figure of snow with two stones for eyes and a scrap of purple wool at its neck. The straight back is unmistakable. Nobody has yet dared to tell her.',
+    },
     { id: 'inn', nouns: ['inn', 'sign'], x: 252, y: 116, reach: 70, look: 'The inn. The sign shows a kettle, or possibly a helmet. Either way it means "warm inside", which these days is a boast.' },
     { id: 'door', nouns: ['door'], x: 69, y: 120, reach: 400, look: 'Two doors face the square: the hall to the west, the inn to the east. Neither is locked. Nobody here has anything left to steal.' },
     { id: 'shield', nouns: ['shield'], x: 36, y: 120, reach: 50, look: 'A painted shield hangs on the hall wall, red and white in quarters. The paint is older than anyone living.' },
@@ -151,6 +179,9 @@ export const village: RoomDef = {
   ],
   npcs: [
     { char: 'sigga', x: 236, y: 154, wander: [214, 150, 270, 162] },
+    // Kept indoors all winter, and out at last.
+    { char: 'girl', x: 240, y: 165, dir: 'right', if: [{ flag: 'crown.unmade' }] },
+    { char: 'boy', x: 266, y: 164, dir: 'left', if: [{ flag: 'crown.unmade' }] },
     { char: 'odd', x: 124, y: 154, wander: [116, 152, 140, 158] },
   ],
   rules: [
@@ -166,6 +197,9 @@ export const village: RoomDef = {
     { on: 'veth', do: [{ say: 'VETH. Shutters bang, a dog starts up three roofs away, and the snow slides off the inn in one piece. You resolve to practise somewhere with fewer witnesses.' }] },
     { on: 'sol', do: [{ say: 'SOL. For the space of a breath it is noon in Hollowmere: hard shadows, bright roofs, a child laughing out loud at it. Then it is winter again. But people stand a little straighter for a while afterwards.' }] },
     { on: 'orun', do: [{ say: 'ORUN. The word shows you the village as it is, which is mostly as it looks. But tucked up under the gable-beam of the hall there is a bundle of rowan twigs bound with red thread, to keep ill luck off; and another over the inn door; and one, very small and very new, tied to the well-rope. Somebody here still believes. You find you are glad of it.' }] },
+    { enter: true, if: [{ flag: 'crown.unmade' }], do: [{ show: 'snowman' }] },
+    { on: ['attack snowman', 'push snowman'], do: [{ say: 'You are Thane of Hollowmere. You find, slightly to your surprise, that this means you cannot.' }] },
+    { on: ['use snowman', 'pet snowman', 'take snowman', 'take snow'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'You roll a head for it. The girl inspects the head and pronounces it too small for the Elder, but about right for you. It goes on a second, shorter figure, which gets a stick for a sword.' }] },
     { on: ['wish', 'wish well'], if: [{ near: 'well' }], do: [{ say: 'You lean over the well and wish. Your wish goes a long way down and does not come back. Promising.' }] },
     { on: ['climb well', 'enter well', 'jump well'], do: [{ die: 'You climb into the well to see how deep it is. It is deeper than you are tall, colder than you are brave, and nobody is coming with a rope.' }] },
     { on: ['buy sword', 'buy'], if: [{ near: 'odd' }, { has: 'sword' }], do: [{ say: '"You have a sword. Use that one until it breaks," says Odd. "Then come back."' }] },
@@ -263,6 +297,7 @@ export const farm: RoomDef = {
   music: 'valley',
   name: "Gorm's Farm",
   look: 'A low farmhouse, two haystacks and a pen of sheep that have seen better winters. The fields beyond are under a yard of snow. The village lies west; a track runs north to a frozen tarn and south toward a ruin.',
+  lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'A low farmhouse, two haystacks and a pen of sheep with their heads up. The snow on the fields has gone grey and soft, and at the furrows the brown is showing through. The village lies west; a track runs north to the tarn and south toward a ruin.' }],
   scene: {
     kind: 'outdoor', horizon: 68, walkTop: 90,
     layers: [
@@ -275,7 +310,7 @@ export const farm: RoomDef = {
     props: [
       { t: 'pine', x: 300, y: 98, h: 66, seed: 61 },
       { t: 'pine', x: 20, y: 96, h: 54, seed: 62 },
-      { t: 'hall', x: 196, y: 112, w: 78 },
+      { t: 'hall', x: 196, y: 112, w: 78, v: 'cold' },
       { t: 'barrel', x: 284, y: 114 },
       { t: 'haystack', x: 110, y: 110, r: 15 },
       { t: 'haystack', x: 138, y: 116, r: 11 },
@@ -288,6 +323,20 @@ export const farm: RoomDef = {
       { t: 'boulder', x: 250, y: 156, r: 8, seed: 63 },
       { t: 'pine', x: 310, y: 184, h: 92, seed: 64 },
     ],
+    when: [
+      { if: [{ flag: 'hearth.lit' }], props: [{ t: 'hall', x: 196, y: 112, w: 78, v: 'smoke' }] },
+      // The thaw: the south field going soft, as Gorm says.
+      {
+        if: [{ flag: 'crown.unmade' }],
+        props: [
+          { t: 'hall', x: 196, y: 112, w: 78, v: 'thaw' },
+          { t: 'melt', x: 236, y: 120, w: 96, h: 12, seed: 21 },
+          { t: 'melt', x: 110, y: 160, w: 150, h: 14, seed: 24 },
+          { t: 'melt', x: 250, y: 150, w: 110, h: 18, seed: 27 },
+          { t: 'melt', x: 60, y: 122, w: 80, h: 10, seed: 30 },
+        ],
+      },
+    ],
   },
   exits: { w: 'village', n: 'tarn', s: 'tower' },
   npcs: [{ char: 'gorm', x: 168, y: 142, wander: [140, 136, 200, 150] }],
@@ -295,7 +344,7 @@ export const farm: RoomDef = {
     { id: 'sheep', nouns: ['sheep'], x: 100, y: 142, reach: 60, look: 'Three ewes, huddled together and chewing at nothing. They regard you without hope.' },
     { id: 'fence', nouns: ['fence'], x: 100, y: 142, reach: 60, look: 'A sheep pen, mended many times with whatever was to hand.' },
     { id: 'hay', nouns: ['haystack'], x: 124, y: 118, reach: 40, look: 'Two haystacks under caps of snow. The smaller one has been pulled at; winter is eating into the stores.' },
-    { id: 'house', nouns: ['hall', 'door', 'roof'], x: 236, y: 116, reach: 60, look: "Gorm's farmhouse. The door is shut and the chimney is cold. He is out here with the sheep, where at least there is company." },
+    { id: 'house', nouns: ['hall', 'door', 'roof'], x: 236, y: 116, reach: 60, look: "Gorm's farmhouse. The door is shut and the chimney is cold. He is out here with the sheep, where at least there is company.", lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: "Gorm's farmhouse, with smoke at the roof again. He still spends his days out here with the sheep. A man gets used to company." }] },
     { id: 'barrel', nouns: ['barrel'], x: 284, y: 116, reach: 34, look: 'An empty seed barrel. Very empty. Scraped.' },
     { id: 'trees', nouns: ['tree'], x: 300, y: 100, reach: 400, look: 'A few pines at the edge of the fields, keeping their distance.' },
     ...scenery('Somewhere under this are fields. You will have to take that on trust.', 'The sky is wide out here, and none of it is warm.'),
