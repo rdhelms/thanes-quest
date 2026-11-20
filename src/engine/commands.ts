@@ -4,9 +4,11 @@
 import { playerAttack } from './combat';
 import { beyond, parseWild, roomOf } from './frontier';
 import { cast, invoke } from './magic';
-import { fire, questKey, reach, run, speak, test } from './rules';
+import { all, fire, questKey, reach, run, speak, test } from './rules';
+import { PH, PW } from './scene';
 import { DAY_LENGTH, type Sim } from './sim';
 import type { ActorState, CharDef, EnemyDef, ItemDef, ThingDef } from './types';
+import { reachable } from './walk';
 
 type Target =
   | { k: 'thing'; def: ThingDef }
@@ -287,6 +289,93 @@ function wayText(sim: Sim, dir: string): string {
   return to ? sim.text('wayTo', dir).replace('%r', wayName(sim, to, DIRS[dir])) : sim.text('noWay', dir);
 }
 
+/**
+ * Walk off one side of the picture, as a click at that edge would: at the nearest place on it
+ * that can be walked to from here.
+ */
+function goWay(sim: Sim, dir: string): boolean {
+  const side = DIRS[dir];
+  if (!sim.room.exits?.[side]) {
+    sim.say(sim.text('noWay', dir));
+    return true;
+  }
+  const sc = sim.scene();
+  const p = sim.p;
+  // Never by way of a door: walking north past the inn is not going into it.
+  const doors = (sim.room.doors ?? []).filter((d) => !(p.x >= d.x0 && p.x <= d.x1 && p.y >= d.y0 && p.y <= d.y1));
+  const seen = reachable(sc, p.x, p.y, (x, y) => doors.some((d) => x >= d.x0 - 2 && x <= d.x1 + 2 && y >= d.y0 - 2 && y <= d.y1 + 2));
+  let best = null as [number, number] | null;
+  const consider = (x: number, y: number): void => {
+    if (!seen[y * PW + x]) return;
+    if (!best || Math.hypot(x - p.x, (y - p.y) * 2) < Math.hypot(best[0] - p.x, (best[1] - p.y) * 2)) best = [x, y];
+  };
+  if (side === 'n' || side === 's') for (let x = 7; x < PW - 7; x++) consider(x, side === 'n' ? sc.walkTop + 1 : PH - 3);
+  else for (let y = sc.walkTop + 1; y < PH - 2; y++) consider(side === 'w' ? 7 : PW - 8, y);
+  const found = best as [number, number] | null;
+  if (!found) {
+    sim.say(sim.text('wayTo', dir).replace('%r', wayName(sim, sim.room.exits[side]!, side)));
+    return true;
+  }
+  const [x, y] = found;
+  // Aimed just past the edge, so the walk carries on off it.
+  sim.walk(x, y, undefined, side);
+  return true;
+}
+
+/** The doors there are to be seen here, by their place in the room's list: open, or shut and said to be. */
+function doorsHere(sim: Sim): number[] {
+  return (sim.room.doors ?? []).flatMap((d, i) => (all(sim, d.if) || d.locked ? [i] : []));
+}
+
+/**
+ * Go in at a door: the one a word names (the place it leads to, or a thing that stands at it,
+ * as "hall" names the hall's door from the square), or with no word, the only or nearest door.
+ */
+function goIn(sim: Sim, noun?: string): boolean {
+  const doors = doorsHere(sim);
+  if (!doors.length) return false;
+  const all = sim.room.doors!;
+  const mid = (i: number): [number, number] => [(all[i].x0 + all[i].x1) / 2, (all[i].y0 + all[i].y1) / 2];
+  const p = sim.p;
+  const near = (i: number): number => Math.hypot(mid(i)[0] - p.x, (mid(i)[1] - p.y) * 2);
+  let pick: number[];
+  if (!noun || noun === 'door') pick = doors;
+  else {
+    const at = sim.things().filter((t) => t.nouns.includes(noun));
+    pick = doors.filter((i) => {
+      const to = roomOf(sim.content, all[i].to);
+      const words = (to?.name ?? '').toLowerCase().split(/[^a-z']+/);
+      return all[i].to === noun || words.includes(noun) || at.some((t) => Math.abs(t.x - mid(i)[0]) <= 24 && Math.abs(t.y - mid(i)[1]) <= 12);
+    });
+  }
+  if (!pick.length) return false;
+  const i = pick.reduce((a, b) => (near(b) < near(a) ? b : a));
+  sim.walk(...mid(i), i);
+  return true;
+}
+
+/** Leave a place with a roof on by its way out; out of doors, say which ways there are. */
+function goOut(sim: Sim): boolean {
+  if (sim.room.scene.kind !== 'indoor') {
+    sim.say(exitsText(sim));
+    return true;
+  }
+  const doors = doorsHere(sim);
+  const all = sim.room.doors!;
+  // The way out is the door to somewhere under the sky, or failing that the nearest.
+  const out = doors.filter((i) => roomOf(sim.content, all[i].to)?.scene.kind !== 'indoor');
+  const pick = out.length ? out : doors;
+  if (!pick.length) {
+    sim.say(exitsText(sim));
+    return true;
+  }
+  const p = sim.p;
+  const mid = (i: number): [number, number] => [(all[i].x0 + all[i].x1) / 2, (all[i].y0 + all[i].y1) / 2];
+  const i = pick.reduce((a, b) => (Math.hypot(mid(b)[0] - p.x, mid(b)[1] - p.y) < Math.hypot(mid(a)[0] - p.x, mid(a)[1] - p.y) ? b : a));
+  sim.walk(...mid(i), i);
+  return true;
+}
+
 /** A neighbouring screen by name; a road is also told by where it is going. */
 function wayName(sim: Sim, to: string, side: 'n' | 's' | 'e' | 'w'): string {
   const name = roomOf(sim.content, to)?.name ?? to;
@@ -539,9 +628,22 @@ function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null, 
       return true;
     }
     case 'enter':
-      if (!DIRS[nouns[0]]) return false;
-      sim.say(wayText(sim, nouns[0]));
+      if (DIRS[nouns[0]]) return goWay(sim, nouns[0]);
+      return goIn(sim, nouns[0]);
+    case 'approach': {
+      if (DIRS[nouns[0]]) return goWay(sim, nouns[0]);
+      if (nouns[0] && goIn(sim, nouns[0])) return true;
+      // Going to somebody or something here is walking over to it.
+      const t = nouns[0] ? find(sim, nouns[0]) : null;
+      if (t?.k === 'thing' && (t.def.reach ?? 30) < 200) sim.walk(t.def.x, t.def.y + 4);
+      else if (t?.k === 'char') sim.walk(t.actor.x + (sim.p.x < t.actor.x ? -16 : 16), t.actor.y);
+      else return false;
       return true;
+    }
+    case 'leave':
+      // "Leave the sword" is putting it down; "leave", or "leave the hut", is going out.
+      if (nouns[0] && carriedItem(sim, nouns[0])) return builtin(sim, 'drop', nouns, afoot, qty);
+      return goOut(sim);
     case 'think': {
       // A nudge: whatever the journal says is next.
       const open = Object.values(sim.content.quests)
@@ -653,7 +755,7 @@ export function command(sim: Sim, line: string, afoot = false): void {
   } else if (r.ok && COUNTED.includes(r.verb) && typed.some((w) => ALL.includes(w) || sim.parser.plural(w))) qty = 'all';
   if (!r.ok) {
     if (r.why === 'unknown') sim.say(mentioned(sim, r.word) ? sim.text(looking(sim, line) ? 'nothingSpecial' : 'scenery', r.word) : sim.text('unknownWord', r.word));
-    else if (r.why === 'noverb') sim.say(DIRS[r.nouns[0]] ? wayText(sim, r.nouns[0]) : sim.text('noVerb'));
+    else if (r.why === 'noverb') DIRS[r.nouns[0]] ? goWay(sim, r.nouns[0]) : sim.say(sim.text('noVerb'));
     return;
   }
   const { verb, nouns } = r;

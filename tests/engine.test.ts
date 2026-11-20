@@ -394,14 +394,23 @@ describe('things found in QA', () => {
     const sim = game();
     // Between the ford and its neighbours lie the valley's roads.
     const road = (id: string): string => roomOf(content, id)!.name;
-    expect(type(sim, 'north')[0]).toContain(road('wild_0_1'));
-    expect(type(sim, 'go west')[0]).toContain(road('wild_-1_2'));
-    expect(type(sim, 's')[0]).toContain('To the south lies');
+    expect(type(sim, 'look north')[0]).toContain(road('wild_0_1'));
+    expect(type(sim, 'look south')[0]).toContain('To the south lies');
+    // A compass word, bare or gone, is a walk off that edge, which the player's side carries out.
+    for (const line of ['north', 'go west', 's', 'walk east']) {
+      sim.step([{ t: 'say', line }]);
+      const walk = sim.drain().find((e) => e.t === 'walk');
+      expect(walk, line).toMatchObject({ side: { north: 'n', 'go west': 'w', s: 's', 'walk east': 'e' }[line] });
+    }
     expect(type(game('barrow', 160, 130), 'n')).toEqual([content.text.noWay.replace('%s', 'north')]);
     const exits = type(sim, 'exits')[0];
     expect(exits).toContain(`North: ${road('wild_0_1')}, the road to Hollowmere.`);
     expect(exits).toContain(`East: ${road('wild_1_2')}, the road to the old watchtower.`);
-    expect(type(game('hall', 160, 130), 'leave')[0]).toContain('A door to: Hollowmere.');
+    // Outside, leaving is a matter of which way; under a roof, it is the door.
+    expect(type(game('ford'), 'leave')[0]).toContain('North:');
+    const hall = game('hall', 160, 130);
+    hall.step([{ t: 'say', line: 'leave' }]);
+    expect(hall.drain().find((e) => e.t === 'walk')).toMatchObject({ door: 0 });
   });
 
   it('reminds the player what to do next', () => {
@@ -2478,6 +2487,63 @@ function typed(shell: Shell, line: string): string[] {
 }
 
 describe('typed lines and walking', () => {
+  it('goes where it is told: off an edge, in at a door, and out again', () => {
+    const shell = playing('village', 160, 160);
+    const room = (): string => shell.sim.state.room;
+    typed(shell, 'go to the hall');
+    expect(room()).toBe('hall');
+    typed(shell, 'leave');
+    expect(room()).toBe('village');
+    typed(shell, 'enter the inn');
+    expect(room()).toBe('inn');
+    typed(shell, 'go out');
+    expect(room()).toBe('village');
+    typed(shell, 'n');
+    expect(room()).toBe('wild_0_-1');
+    typed(shell, 'go south');
+    expect(room()).toBe('village');
+    for (const line of ['east', 'w', 'walk west', 'go north']) {
+      const from = room();
+      typed(shell, line);
+      expect(room(), `${line} from ${from}`).not.toBe(from);
+    }
+    // Walking over to something is not climbing into it.
+    const at = playing('village', 100, 160);
+    typed(at, 'walk to the well');
+    expect(at.sim.p.dead).toBe(false);
+    expect(at.sim.within(196, 154, 30)).toBe(true);
+    typed(at, 'go to sigga');
+    expect(at.sim.within(236, 154, 30)).toBe(true);
+  });
+
+  it('goes through a door that opens while it is being stood in', () => {
+    // Standing on the barrow's threshold, told it is shut, the door is opened with its word.
+    const shell = playing('barrow', 160, 130);
+    shell.sim.teach('word:veth');
+    shell.keyDown('ArrowUp');
+    for (let i = 0; i < 200 && !shell.modal; i++) shell.tick();
+    shell.keyUp('ArrowUp');
+    expect(shell.modal?.k === 'msg' && shell.modal.text).toContain('The slab is one piece of stone');
+    shell.keyDown('Enter');
+    expect(typed(shell, 'veth').join(' ')).toContain('slides down');
+    expect(shell.sim.state.room).toBe('barrow');
+    // Pressing on into it is enough, without stepping back off the threshold first.
+    shell.keyDown('ArrowUp');
+    for (let i = 0; i < 10 && shell.sim.state.room === 'barrow'; i++) shell.tick();
+    shell.keyUp('ArrowUp');
+    expect(shell.sim.state.room).toBe('ante');
+    // And typing it, from where one stands, goes in as well.
+    const again = playing('barrow', 160, 130);
+    again.sim.teach('word:veth');
+    again.keyDown('ArrowUp');
+    for (let i = 0; i < 200 && !again.modal; i++) again.tick();
+    again.keyUp('ArrowUp');
+    again.keyDown('Enter');
+    typed(again, 'veth');
+    typed(again, 'go in');
+    expect(again.sim.state.room).toBe('ante');
+  });
+
   it('walks over to what a line names, and then does it', () => {
     const shell = playing();
     const from = shell.sim.p.x;

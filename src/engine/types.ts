@@ -768,6 +768,8 @@ export type Intent =
    */
   | { t: 'say'; line: string; afoot?: boolean }
   | { t: 'level'; pool: 'hp' | 'mp' | 'sp' }
+  /** Go on through the door (by its place in the room's list) the player stands at. */
+  | { t: 'through'; door: number }
   /** How hard the world hits: gentle takes two fifths off every blow the player takes. */
   | { t: 'ease'; gentle: boolean };
 
@@ -787,4 +789,9 @@ export type SimEvent =
   /** The player has asked to see the map. */
   | { t: 'map' }
   /** A typed line wants the player within `d` of a point first; the line is to be sent again there. */
-  | { t: 'approach'; x: number; y: number; d: number; line: string };
+  | { t: 'approach'; x: number; y: number; d: number; line: string }
+  /**
+   * A typed line asks to be walked somewhere, as a click on that point of the picture would: to a
+   * door (`door`, its place in the room's list) to go through it, or to an edge to walk off it.
+   */
+  | { t: 'walk'; x: number; y: number; door?: number; side?: 'n' | 's' | 'e' | 'w' };

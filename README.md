@@ -51,7 +51,9 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
 - **Everything else is typed.** Enter sends the line; Enter on an empty line repeats the last one.
   Naming something across the picture (`talk to smith`, `read sign`) walks you over to it first,
   round whatever is in the way and never onto ground that would hurt you; an arrow key stops the
-  walk. Looking is done from where you stand.
+  walk. Looking is done from where you stand. Walking can be typed too: `go north` (or `n`) walks
+  off that side of the picture, `go to the inn` or `enter hall` goes in at its door, `leave` goes
+  back out, and `go to sigga` walks over to her.
 - **F1** is help, **F2** turns sound on and off, **F3** brings back your last line to edit, **F4**
   is the map.
 - **The mouse** also answers a message (click it), picks a row from a menu, and looks about the
