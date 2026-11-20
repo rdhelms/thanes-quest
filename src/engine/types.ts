@@ -681,7 +681,8 @@ export type SimEvent =
   | { t: 'room'; id: string }
   | { t: 'died'; text: string }
   | { t: 'won'; text: string }
-  | { t: 'page'; title: string; lines: string[] }
+  /** `heads`: which lines head a section. A line that is only "\f" starts a new box. */
+  | { t: 'page'; title: string; lines: string[]; heads?: number[] }
   /** The player has asked to see the map. */
   | { t: 'map' }
   /** A typed line wants the player within `d` of a point first; the line is to be sent again there. */

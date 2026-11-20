@@ -40,9 +40,12 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
   when the typing line is empty.
 - **Shift** (held) raises a guard: you cannot walk, but you can turn, and blows from the front
   mostly bounce.
-- **Tab** shows what you carry. **Esc** opens the menu (map, journal, skills, deeds, save, restore,
-  how to play, start again, and settings: music, sound effects, how walking works, and whether
-  fights are fair or gentle).
+- **Tab** opens your bag (so does typing `inventory`): a row for each thing carried, and your
+  silver. Choose a thing to read about it and to drink, eat, read, use, ready, wear or take it off.
+  **Esc** opens the menu (bag, map, journal, character, deeds, save, restore, settings, how to
+  play, start again; the settings are music, sound effects, how walking works, and whether fights
+  are fair or gentle). Whatever the menu opens comes back to the menu when it is closed; Resume,
+  or Esc on the menu itself, goes back to the game.
 - **Everything else is typed.** Enter sends the line; Enter on an empty line repeats the last one.
   Naming something across the picture (`talk to smith`, `read sign`) walks you over to it first,
   round whatever is in the way and never onto ground that would hurt you; an arrow key stops the
@@ -50,14 +53,14 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
 - **F1** is help, **F2** turns sound on and off, **F3** brings back your last line to edit, **F4**
   is the map.
 - **The mouse** also answers a message (click it), picks a row from a menu, and looks about the
-  map: a click on a square names it, and a click off the map closes it.
+  map: a click on a place names it, and a click off the map closes it.
 - **Looking away pauses the game.** When the window or tab loses focus the world stops; any key,
   click or tap goes on.
 
 Some things to type: `look`, `look at sign`, `take hatchet`, `equip hatchet`, `talk to woman`,
 `ask elder about barrow`, `read tome`, `cast flame`, `buy sword`, `wear torc`, `swap` (changes
-between your last two weapons), `map`, `exits`, `think`, `journal`, `skills`, `deeds`, `time`,
-`save`, `help`.
+between your last two weapons), `map`, `exits`, `think`, `journal`, `skills` (the character
+sheet), `deeds`, `time`, `save`, `help`.
 
 There are six skills, and they rise only by use: swing to raise Blade, shoot to raise Archery,
 block to raise Block, cast to raise Sorcery, heal yourself to raise Mending, read runes and books
@@ -75,7 +78,7 @@ screen, the game opens full screen.
 Fights reward timing. An enemy about to strike shows a gold `!`; raise your guard while it shows
 and the blow is parried, leaving the attacker open. The health bar flashes when you are badly
 hurt, and swinging with no breath left lands weak blows until you catch it. Each skill grants a
-perk at three levels (the `skills` page lists what you have earned). The line under the typing
+perk at three levels (the character sheet, `skills`, lists what you have earned). The line under the typing
 line shows what is in your hands, the runewords you know, and any boon still on you (Ward, Might,
 Light).
 
@@ -83,7 +86,9 @@ The nine hand-made outdoor screens are only the middle of the map. Walk off any 
 new country is generated a screen at a time: the same place every time you return, and tougher
 the further you go. It comes in nine kinds (pinewoods, open fells, frozen meres, ruins, reaver
 camps, crags, dead woods, shrines and lone steadings), with their own creatures, people to trade
-with, and things to find. `map` shows everywhere you have been. There is a day and a night, it
+with, and things to find. `map` shows everywhere you have been, as one sheet of country with
+the places that have names of their own drawn large, where you stand framed in red, and anywhere
+you have been sent marked with a gold pennant; the arrow keys look about it. There is a day and a night, it
 snows, and there is music (Esc opens the menu to switch music or sound effects off).
 
 Finishing the first saga does not finish the game:
@@ -102,7 +107,8 @@ Finishing the first saga does not finish the game:
 - **Hunting.** By day there are deer in the woods and by the meres. They bolt if you come close;
   a bow does not have to.
 - **Night.** It comes round every few minutes, and more walks in the wild after dark. `time`
-  tells the hour; the status line shows a sun or a moon.
+  tells the hour; the line across the top shows a sun or a moon at its left-hand end, then the
+  score, the silver you carry, and health, mana and stamina.
 - **A second saga**, for anyone still carrying the Barrow-King's crown once the Elder's first
   task is done. **And a third**, which the Elder begins when the second is over, and which has no
   fights in it. And three places with names of their own, a long way north, east and south; one

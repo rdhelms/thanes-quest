@@ -100,10 +100,10 @@ export const text: Record<string, string> = {
   help:
     'Arrow keys walk; so does a click or a tap on the place you want to go. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
     'Hold Shift to guard. Raise it when a foe shows a gold ! and the blow is turned aside, leaving them open.\n\n' +
-    'Tab shows what you carry. Esc opens the menu; its Settings can make fights gentler.\n\n' +
+    'Tab opens your bag: choose a thing to see it, and to drink, eat, read, use, ready or wear it. Esc opens the menu; its Settings can make fights gentler. Whatever the menu opens goes back to it when closed.\n\n' +
     'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. Name something across the picture and you walk over to it first; an arrow key stops you. SWAP changes between your last two weapons.\n\n' +
-    'MAP shows where you have been, and the arrow keys look about it. JOURNAL lists your tasks, SKILLS what you have learned, and DEEDS what you have done. EXITS lists the ways out. THINK reminds you what to do next, and what is within reach. SAVE and RESTORE do what they say.\n\n' +
-    'On a touch screen: the pad walks, Hit and Guard fight, OK answers, and the buttons above the pad offer what can be done where you stand.\n\n' +
+    'MAP shows where you have been, and the arrow keys look about it. JOURNAL lists your tasks, SKILLS shows your character (health, skills, perks, spells), and DEEDS what you have done. EXITS lists the ways out. THINK reminds you what to do next, and what is within reach. SAVE and RESTORE do what they say.\n\n' +
+    'On a touch screen: the pad walks, Hit and Guard fight, OK answers, Bag opens your bag, Menu goes back, and the buttons above the pad offer what can be done where you stand.\n\n' +
     'Enter on an empty line repeats your last command. F1 is this help, F2 turns sound on and off, F3 brings back your last line to change, F4 is the map.',
 };
 
