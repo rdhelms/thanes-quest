@@ -11,7 +11,8 @@
     "test": "vitest run",
     "deploy": "npm run build && wrangler deploy",
     "qa": "esbuild tools/qa.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/thanes-quest/qa.mjs --log-level=warning && node node_modules/.cache/thanes-quest/qa.mjs",
-    "shot": "esbuild tools/shot.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/thanes-quest/shot.mjs --log-level=warning && node node_modules/.cache/thanes-quest/shot.mjs"
+    "shot": "esbuild tools/shot.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/thanes-quest/shot.mjs --log-level=warning && node node_modules/.cache/thanes-quest/shot.mjs",
+    "play": "esbuild tools/play.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/thanes-quest/play.mjs --log-level=warning && node node_modules/.cache/thanes-quest/play.mjs"
   },
   "devDependencies": {
     "typescript": "^7.0.2",

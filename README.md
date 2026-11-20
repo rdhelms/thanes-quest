@@ -174,11 +174,13 @@ Four rules shape the code, so that a larger, shared, growing world stays possibl
 
 ## QA tools
 
-Two scripts stand in for hours of play. (They are bundled with the esbuild that Vite brings.)
+Three scripts stand in for hours of play. (They are bundled with the esbuild that Vite brings.)
 
 ```
 npm run shot -- out.png sheet village inn wild_2_1 --night   # screens as a PNG, no browser
 npm run shot -- out.png room camp 200 150 --spawn bear --cmd "look" --keep
+
+npm run play -- :new look ":go north" "talk to sigga" ":pick 2"   # play in text; tools/play.ts lists the commands
 
 npm run qa -- fights     # how players of two skill levels fare in each fight, by kit
 npm run qa -- campaign   # a mortal bot takes the Elder's work again and again: does growth keep pace?
