@@ -3,6 +3,7 @@
 import { LAYERS } from './layers';
 import { PROPS } from './props';
 import './scenery';
+import './indoors';
 import { Scene, lightPass } from './scene';
 import type { LightDef, PropDef, SceneDef } from './types';
 
