@@ -151,6 +151,10 @@ export const inn: RoomDef = {
     { id: 'counter', nouns: ['counter'], x: 250, y: 132, reach: 44, look: 'A plank counter, scrubbed white. Behind it: red draughts for the hurt, pitch torches for the dark, and ale for everything else.' },
     { id: 'barrel', nouns: ['barrel', 'ale'], x: 306, y: 116, reach: 40, look: 'The ale barrel. It is the one thing in Hollowmere that has not run short.' },
     { id: 'bed', nouns: ['bed'], x: 31, y: 106, reach: 40, look: 'A box bed with a fur blanket. Four silver a night, fleas at no extra charge.' },
+    {
+      id: 'chest', nouns: ['chest'], x: 44, y: 112, reach: 30, icon: 'chest', store: true, try: ['open chest'],
+      look: "A plank chest at the foot of the bed, with a hasp and no lock, for lodgers' things. In Hollowmere nobody steals: partly from virtue, and partly because everybody would know by supper.",
+    },
     { id: 'table', nouns: ['table'], x: 74, y: 148, reach: 44, look: 'One table. The regulars carved their names in it. Several of the names have been crossed out.' },
     { id: 'shelf', nouns: ['shelf'], x: 252, y: 106, reach: 400, look: 'Bottles, crocks, and a row of red draughts with wax stoppers.' },
     { id: 'door', nouns: ['door'], x: 160, y: 106, reach: 400, look: 'The way out, back to the square.' },
@@ -230,6 +234,12 @@ export const hut: RoomDef = {
     { on: ['buy ward'], if: [{ gold: 25 }], do: [{ gold: -25 }, { give: 'tomeWard' }, { sound: 'take' }, { say: 'Twenty-five silver. The book is bound in grey iron-cloth. "Ward. It halves what hits you, for a little while."' }] },
     { on: ['buy frost', 'buy mend', 'buy ward', 'buy', 'buy tome', 'buy light', 'buy magic', 'learn', 'learn magic'], do: [{ say: '"Books cost silver," says Fenn. "Mend is fifteen, Frost twenty, Ward twenty-five. Light I do not sell. Light I give, to people who do me a kindness."' }] },
     { on: ['give crown', 'give crown fenn', 'give fenn crown'], if: [{ has: 'crown' }], do: [{ cmd: 'ask fenn about crown' }] },
+    // A book read is a book that can go back on the shelf.
+    {
+      on: ['give tome', 'give tome fenn', 'give fenn tome', 'sell tome', 'give shelf', 'give shelf fenn', 'use tome shelf', 'give tome shelf', 'drop tome shelf', 'store tome shelf'],
+      if: [{ any: [{ has: 'tomeFlame' }, { has: 'tomeFrost' }, { has: 'tomeMend' }, { has: 'tomeLight' }, { has: 'tomeWard' }] }],
+      do: [{ run: 'shelve' }],
+    },
     { on: ['give amulet', 'give amulet fenn'], if: [{ has: 'amulet' }], do: [{ lose: 'amulet' }, { give: 'tomeLight' }, { score: 2, id: 'errand.start' }, { score: 8, id: 'errand.done' }, { say: 'Fenn takes the amulet in both hands and says nothing for a while. "Forty years I have looked at this from the shore, every morning," he says at last. "I had forgotten it was so small." He closes his hand on it. Then, briskly, as if you had caught him at something, he puts a slim white book in yours. "Light. You will want it under the barrow."' }, { quest: 'errand', stage: 2 }] },
     { on: ['sleep', 'sleep bed'], do: [{ say: '"That is my bed," says Fenn, "and I may want it some day."' }] },
   ],

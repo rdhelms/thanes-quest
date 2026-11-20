@@ -10,7 +10,7 @@ import { all, questKey, run } from './rules';
 import { PH, PW, type Scene } from './scene';
 import { nearestGround } from './walk';
 import type {
-  ActorState, Content, Dir, GameState, Intent, LookWhen, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
+  ActorState, Content, Dir, GameState, Intent, ItemDef, LookWhen, Pile, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
 } from './types';
 
 /** How close to a side edge the player gets before stepping into the next room. */
@@ -30,10 +30,24 @@ export type Behaviour = (sim: Sim, arg?: Value) => void;
 
 export const SKILLS = ['blade', 'block', 'archery', 'sorcery', 'mending', 'lore'] as const;
 
+/** The stamina every player starts with: what can be carried grows with stamina beyond this. */
+const FIRST_SP = 30;
+
+/** What lies on the ground is a thing whose id is this and the item's. */
+export const PILE = 'ground:';
+
+/** The small picture for a thing lying on the ground: its own, or one that suits its kind. */
+export function iconOf(it: ItemDef): string {
+  const byKind: Record<ItemDef['kind'], string> = {
+    misc: 'sack', weapon: 'sword', shield: 'shield', bow: 'bow', armor: 'sack', trinket: 'amulet', potion: 'potion', tome: 'tome', key: 'key', food: 'sack',
+  };
+  return it.icon ?? byKind[it.kind];
+}
+
 function newPlayer(c: Content): PlayerState {
   return {
     x: c.start.x, y: c.start.y, dir: c.start.dir, act: 'idle', frame: 0, t: 0, mdx: 0, mdy: 0, blocking: false,
-    hp: 40, mp: 20, sp: 30, maxHp: 40, maxMp: 20, maxSp: 30,
+    hp: 40, mp: 20, sp: FIRST_SP, maxHp: 40, maxMp: 20, maxSp: FIRST_SP,
     level: 1, xp: 0, pendingLevels: 0,
     skills: Object.fromEntries(SKILLS.map((s) => [s, { lv: 5, xp: 0 }])),
     inv: {}, weapon: null, shield: null, spells: [], words: [], cd: {}, gold: 0, inside: [], dead: false, hurtT: 0,
@@ -78,7 +92,12 @@ export class Sim {
     this.state = structuredClone(saved);
     const rs = this.rs;
     if (rs) rs.actors = rs.actors.filter((a) => (a.kind === 'npc' ? this.content.chars[a.ref] : this.content.enemies[a.ref]));
+    // Things the content no longer knows are no longer anywhere.
+    for (const r of Object.values(this.state.rooms)) if (r.ground) r.ground = r.ground.filter((g) => this.content.items[g.item]);
     this.settle(this.scene());
+    // A game saved before packs had limits may be carrying more than a pack holds now. It can
+    // still walk; it only cannot pick up more until something is put down.
+    if (this.load() > this.limit()) this.note(this.text('overladen'));
   }
 
   // -------------------------------------------------------------------------------------------
@@ -170,26 +189,144 @@ export class Sim {
     this.out.push({ t: 'map' });
   }
 
-  give(item: string, n = 1): void {
+  /**
+   * Into the pack, as many as it will hold. A first or better weapon goes straight into the hand,
+   * a first shield onto the arm, and so on, and does not weigh on the pack there. Whatever will
+   * not fit is left on the ground (where `dropAt` says, or at the player's feet) to be fetched
+   * later. `took` is said in passing only if all of it was taken. Returns how many were.
+   */
+  give(item: string, n = 1, took?: string): number {
     const p = this.p;
-    p.inv[item] = (p.inv[item] ?? 0) + n;
-    // A first or better weapon goes straight into the hand, a first shield onto the arm.
     const def = this.content.items[item];
+    // What goes into the hand always fits. What it displaces goes into the pack, even if that
+    // leaves the pack too full to take anything more.
+    const slot = def ? this.slotFor(def) : null;
+    const fit = Math.min(n, (slot ? 1 : 0) + this.space(item));
+    if (fit > 0) {
+      p.inv[item] = (p.inv[item] ?? 0) + fit;
+      if (slot === 'weapon') {
+        if (p.weapon) p.other = p.weapon;
+        p.weapon = item;
+        this.note(this.text('equipped', def!.name));
+      } else if (slot === 'shield') {
+        p.shield = item;
+        this.note(this.text('shieldHint'));
+      } else if (slot === 'armor') {
+        p.armor = item;
+        this.note(this.text('equipped', def!.name));
+      } else if (slot === 'trinket') {
+        p.trinket = item;
+        this.note(this.text('wearing', def!.name));
+      } else if (def?.kind === 'tome') this.note(this.text('tomeHint'));
+      if (def?.carry) this.note(this.text('canCarry', String(this.limit())));
+    }
+    if (fit < n) {
+      const at = this.dropAt ?? { x: p.x + (p.dir === 'left' ? -14 : 14), y: p.y + 1 };
+      this.putDown(item, n - fit, at.x, at.y);
+      this.note(this.text(n - fit > 1 ? 'leftBehindMany' : 'leftBehind', this.named(item, n - fit, true)));
+    } else if (took) this.note(took);
+    return fit;
+  }
+
+  /** Where a thing given goes of its own accord: into the hand, onto the arm or the back; or, if null, into the pack. */
+  private slotFor(def: ItemDef): 'weapon' | 'shield' | 'armor' | 'trinket' | null {
+    const p = this.p;
     const held = p.weapon ? this.content.items[p.weapon] : null;
-    if (def?.kind === 'weapon' && (!held || (held.kind === 'weapon' && (def.power ?? 0) > (held.power ?? 0)))) {
-      if (p.weapon) p.other = p.weapon;
-      p.weapon = item;
-      this.note(this.text('equipped', def.name));
-    } else if (def?.kind === 'shield' && !p.shield) {
-      p.shield = item;
-      this.note(this.text('shieldHint'));
-    } else if (def?.kind === 'armor' && (def.power ?? 0) > (p.armor ? this.content.items[p.armor]?.power ?? 0 : 0)) {
-      p.armor = item;
-      this.note(this.text('equipped', def.name));
-    } else if (def?.kind === 'trinket' && !p.trinket) {
-      p.trinket = item;
-      this.note(this.text('wearing', def.name));
-    } else if (def?.kind === 'tome') this.note(this.text('tomeHint'));
+    if (def.kind === 'weapon' && (!held || (held.kind === 'weapon' && (def.power ?? 0) > (held.power ?? 0)))) return 'weapon';
+    if (def.kind === 'shield' && !p.shield) return 'shield';
+    if (def.kind === 'armor' && (def.power ?? 0) > (p.armor ? this.content.items[p.armor]?.power ?? 0 : 0)) return 'armor';
+    if (def.kind === 'trinket' && !p.trinket) return 'trinket';
+    return null;
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Carrying
+
+  /** Set while a fallen foe's belongings are handed over: what will not fit stays where it fell. */
+  dropAt: { x: number; y: number } | null = null;
+
+  /** How heavy one of a thing is. A thing a story needs weighs nothing. */
+  weight(item: string): number {
+    const def = this.content.items[item];
+    return !def || def.keep ? 0 : def.weight;
+  }
+
+  /** Is this carried thing in hand or worn? Then it is on the player, not in the pack. */
+  onPerson(item: string): boolean {
+    const p = this.p;
+    return p.weapon === item || p.shield === item || p.armor === item || p.trinket === item;
+  }
+
+  /** How much is in the pack: everything carried but what is in hand or worn. */
+  load(): number {
+    let sum = 0;
+    for (const [id, n] of Object.entries(this.p.inv)) sum += this.weight(id) * Math.max(0, n - (this.onPerson(id) ? 1 : 0));
+    return sum;
+  }
+
+  /** How much the pack can hold: more with stamina, and more with whatever the pack is carried in. */
+  limit(): number {
+    const carry = this.content.carry;
+    if (!carry) return Infinity;
+    let extra = 0;
+    for (const [id, n] of Object.entries(this.p.inv)) if (n > 0) extra += this.content.items[id]?.carry ?? 0;
+    return carry.base + Math.floor(Math.max(0, this.p.maxSp - FIRST_SP) * carry.stamina) + extra;
+  }
+
+  /** How many more of a thing the pack has room for (as many as are wanted, of a thing that weighs nothing). */
+  space(item: string): number {
+    const each = this.weight(item);
+    return each > 0 ? Math.max(0, Math.floor((this.limit() - this.load()) / each)) : Infinity;
+  }
+
+  /** Would this many more of a thing be taken? Something that goes straight into the hand always is. */
+  fits(item: string, n = 1): boolean {
+    const def = this.content.items[item];
+    return (def && this.slotFor(def) ? 1 : 0) + this.space(item) >= n;
+  }
+
+  /** "a wolf pelt", "3 wolf pelts"; or, with `the`, "the wolf pelt". */
+  named(item: string, n: number, the = false): string {
+    const def = this.content.items[item];
+    const name = def?.name ?? item;
+    if (n !== 1) return `${n} ${def?.plural ?? `${name}s`}`;
+    // "Gorm's cheese" is already particular.
+    if (/^[A-Z]|'s /.test(name)) return name;
+    return the ? `the ${name}` : `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`;
+  }
+
+  /** Leave some of a thing on the ground here, with any of the same already lying here. */
+  putDown(item: string, n: number, x: number, y: number): void {
+    if (n <= 0) return;
+    const ground = (this.rs.ground ??= []);
+    const pile = ground.find((g) => g.item === item);
+    if (pile) pile.n += n;
+    else {
+      // Beside whatever else is lying there, not on top of it.
+      const sc = this.scene();
+      const away = x >= this.p.x ? 1 : -1;
+      const spots = [0, 10, 20, 30, -10, -20].map((dx) => nearestGround(sc, Math.round(x + dx * away), Math.round(y), 12));
+      const [px, py] = spots.find(([sx, sy]) => !ground.some((g) => Math.abs(g.x - sx) < 9 && Math.abs(g.y - sy) < 5)) ?? spots[0];
+      ground.push({ item, n, x: px, y: py });
+    }
+  }
+
+  /** What of a thing lies on the ground here. */
+  pile(item: string): Pile | undefined {
+    return this.rs.ground?.find((g) => g.item === item && g.n > 0);
+  }
+
+  /** Take up to `n` of what lies here, as many as the pack will hold. Returns how many. */
+  pickUp(item: string, n: number): number {
+    const pile = this.pile(item);
+    if (!pile) return 0;
+    const def = this.content.items[item];
+    const fit = Math.min(n, pile.n, (def && this.slotFor(def) ? 1 : 0) + this.space(item));
+    if (fit <= 0) return 0;
+    pile.n -= fit;
+    this.rs.ground = this.rs.ground!.filter((g) => g.n > 0);
+    this.give(item, fit);
+    return fit;
   }
 
   lose(item: string, n = 1): void {
@@ -288,7 +425,13 @@ export class Sim {
   /** Things currently present in the room. */
   things(): ThingDef[] {
     const rs = this.rs;
-    return (this.room.things ?? []).filter((t) => !rs.gone.includes(t.id) && (!t.hidden || rs.shown.includes(t.id)));
+    const here = (this.room.things ?? []).filter((t) => !rs.gone.includes(t.id) && (!t.hidden || rs.shown.includes(t.id)));
+    // Whatever has been put down here is a thing like any other, to be looked at and taken up again.
+    for (const g of rs.ground ?? []) {
+      const it = this.content.items[g.item];
+      if (it && g.n > 0) here.push({ id: PILE + g.item, nouns: it.nouns, x: g.x, y: g.y, reach: 26, look: it.look, take: g.item, icon: iconOf(it), pile: g.n });
+    }
+    return here;
   }
 
   /** Is the player within reach of a point? Depth counts double, as the ground is foreshortened. */
@@ -465,7 +608,12 @@ export class Sim {
         p.pendingLevels--;
         if (it.pool === 'hp') p.hp = p.maxHp += 10;
         else if (it.pool === 'mp') p.mp = p.maxMp += 10;
-        else p.sp = p.maxSp += 10;
+        else {
+          // A deeper wind makes a broader back.
+          const could = this.limit();
+          p.sp = p.maxSp += 10;
+          if (this.limit() > could) this.note(this.text('strongerBack', String(this.limit())));
+        }
       }
       if (p.dead) return;
     }

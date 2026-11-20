@@ -101,7 +101,8 @@ export type Effect =
   | { note: string }
   | { set: string; to?: Value }
   | { add: string; n: number }
-  | { give: string; n?: number }
+  /** Into the pack; whatever will not fit is left on the ground, to be fetched. `took` is a passing hint, given only if all of it was taken. */
+  | { give: string; n?: number; took?: string }
   | { lose: string; n?: number }
   | { gold: number }
   | { score: number; id: string }
@@ -161,6 +162,10 @@ export interface ThingDef {
   lift?: number;
   /** Commands worth offering when the player stands by it (shown as tappable suggestions). */
   try?: string[];
+  /** A place to keep things in: PUT them IN it, TAKE them FROM it. One to a room. */
+  store?: boolean;
+  /** Set on the things the engine makes of what lies on the ground: how many there are. */
+  pile?: number;
 }
 
 export interface LookWhen {
@@ -260,6 +265,8 @@ export interface CharDef {
   shrug?: Topic;
   /** What the conversation menu offers: a label and the command it stands for. */
   menu?: { label: string; say: string; if?: Cond[] }[];
+  /** Said by a seller when what is being bought would not fit in the pack. %s is the thing ("the iron sword"). */
+  full?: string;
 }
 
 export interface ItemDef {
@@ -283,6 +290,19 @@ export interface ItemDef {
   don?: Effect[];
   /** A ready-made command to offer (on touch screens) while this is carried and the conditions hold. */
   offer?: { label: string; say: string; if?: Cond[] };
+  /** How heavy one is, against what a pack holds (Content.carry). Every item has one. */
+  weight: number;
+  /**
+   * Never to be put down, stored or left behind: a thing a story needs. Such a thing weighs
+   * nothing. A string is what is said when somebody tries.
+   */
+  keep?: boolean | string;
+  /** Carrying it lets the player carry this much more: a better pack, a frame to carry it on. */
+  carry?: number;
+  /** The name of more than one, where adding an s will not do. */
+  plural?: string;
+  /** Which small picture stands for it lying on the ground, if not the one its kind suggests. */
+  icon?: string;
 }
 
 export interface EnemyDef {
@@ -548,6 +568,11 @@ export interface Content {
   frontier?: FrontierDef;
   /** Rules tried in every room, after the room's own. */
   rules: Rule[];
+  /**
+   * How much a player can carry: `base` to begin with, and `stamina` more for every point of
+   * stamina beyond the first thirty. Items carried may add to it (ItemDef.carry). No limit if absent.
+   */
+  carry?: { base: number; stamina: number };
   /** System messages, by key. %s is replaced with a word. */
   text: Record<string, string>;
   /** Tunes by id, and which to play on the title screen and in a fight. */
@@ -604,6 +629,17 @@ export interface RoomState {
   deadAt?: Record<string, number>;
   /** Arrows and bolts in flight. */
   shots: Shot[];
+  /** Things put down here, or left here because there was no room for them: where, and how many. */
+  ground?: Pile[];
+  /** What is kept in the room's store (a ThingDef with `store`), by item. */
+  stored?: Record<string, number>;
+}
+
+export interface Pile {
+  item: string;
+  n: number;
+  x: number;
+  y: number;
 }
 
 export interface Shot {

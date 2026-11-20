@@ -2,7 +2,7 @@
 // sheet, the map, and the line across the top.
 
 import { describe, expect, it } from 'vitest';
-import { inventoryPage, itemActions } from '../src/engine/commands';
+import { inventoryPage, itemActions, weighed } from '../src/engine/commands';
 import { Renderer } from '../src/engine/render';
 import { Shell, type Modal } from '../src/engine/shell';
 import { behaviours } from '../src/game/behaviours';
@@ -186,9 +186,12 @@ describe('the bag', () => {
       const m = list(shell);
       expect(m.title).toContain('Your bag');
       expect(m.title).toContain('Silver: 37');
+      // And how full the pack is: what is in hand or worn is not in it.
+      expect(m.title).toContain(`Load: ${shell.sim.load()}/${shell.sim.limit()}`);
       expect(m.title).not.toMatch(/gold/i);
-      // One row per kind, with the count, then a row to leave by.
-      expect(m.items).toContain('red draught x2');
+      // One row per kind, with the count and what they weigh, then a row to leave by.
+      expect(m.items).toContain(weighed('red draught x2', 2));
+      expect(m.items).toContain(weighed('wolf pelt', 3));
       expect(m.items.filter((it) => it.startsWith('red draught')).length).toBe(1);
       expect(m.items).toContain('iron sword (in hand)');
       expect(m.items).toContain('round shield (in hand)');
@@ -215,19 +218,20 @@ describe('the bag', () => {
     shell.sim.give('glove');
     const sim = shell.sim;
     const acts = (id: string): string[] => itemActions(sim, id).map((a) => `${a.label}: ${a.line}`);
-    expect(acts('potion')).toEqual(['Drink: drink potion']);
-    expect(acts('cheese')).toEqual(['Eat: eat cheese']);
-    expect(acts('tomeFlame')).toEqual(['Read: read tome']);
+    expect(acts('potion')).toEqual(['Drink: drink potion', 'Drop: drop potion', 'Drop them all: drop all potion']);
+    expect(acts('cheese')).toEqual(['Eat: eat cheese', 'Drop: drop cheese']);
+    expect(acts('tomeFlame')).toEqual(['Read: read tome', 'Drop: drop tome']);
+    expect(acts('torch')).toEqual(['Use: use torch', 'Drop: drop torch']);
+    expect(acts('sword')).toEqual(['Put away: unequip sword', 'Drop: drop sword']);
+    expect(acts('bow')).toEqual(['Ready: equip bow', 'Drop: drop bow']);
+    expect(acts('shield')).toEqual(['Put away: unequip shield', 'Drop: drop shield']);
+    expect(acts('mail')).toEqual(['Take off: unequip mail', 'Drop: drop mail']);
+    expect(acts('torc')).toEqual(['Take off: unequip torc', 'Drop: drop torc']);
+    expect(acts('token')).toEqual(['Wear: equip token', 'Drop: drop token']);
+    // Things with no use can only be put down.
+    expect(acts('pelt')).toEqual(['Drop: drop pelt']);
+    // What a story needs is never to be put down, and offers nothing but what it is for.
     expect(acts('ember')).toEqual(['Use: use ember']);
-    expect(acts('torch')).toEqual(['Use: use torch']);
-    expect(acts('sword')).toEqual(['Put away: unequip sword']);
-    expect(acts('bow')).toEqual(['Ready: equip bow']);
-    expect(acts('shield')).toEqual(['Put away: unequip shield']);
-    expect(acts('mail')).toEqual(['Take off: unequip mail']);
-    expect(acts('torc')).toEqual(['Take off: unequip torc']);
-    expect(acts('token')).toEqual(['Wear: equip token']);
-    // Things with no use have nothing to offer but going back.
-    expect(acts('pelt')).toEqual([]);
     expect(acts('glove')).toEqual([]);
   });
 
@@ -236,13 +240,13 @@ describe('the bag', () => {
     shell.sim.give('sword');
     shell.sim.give('longsword');
     // Both are swords: the iron one, first in the pack, is "sword", and the steel one has to be called a longsword.
-    expect(itemActions(shell.sim, 'sword').map((a) => a.line)).toEqual(['equip sword']);
-    expect(itemActions(shell.sim, 'longsword').map((a) => a.line)).toEqual(['unequip longsword']);
+    expect(itemActions(shell.sim, 'sword').map((a) => a.line)).toEqual(['equip sword', 'drop sword']);
+    expect(itemActions(shell.sim, 'longsword').map((a) => a.line)).toEqual(['unequip longsword', 'drop longsword']);
     // And with two books, each is called by the word that means it and not the other.
     shell.sim.give('tomeFlame');
     shell.sim.give('tomeFrost');
-    expect(itemActions(shell.sim, 'tomeFlame').map((a) => a.line)).toEqual(['read tome']);
-    expect(itemActions(shell.sim, 'tomeFrost').map((a) => a.line)).toEqual(['read frost']);
+    expect(itemActions(shell.sim, 'tomeFlame').map((a) => a.line)).toEqual(['read tome', 'drop tome']);
+    expect(itemActions(shell.sim, 'tomeFrost').map((a) => a.line)).toEqual(['read frost', 'drop frost']);
   });
 
   it('shows a thing, and its actions do just what typing them does', () => {
@@ -305,10 +309,10 @@ describe('the bag', () => {
     const shell = packed();
     shell.keyDown('Tab');
     choose(shell, 'wolf pelt');
-    expect(list(shell).items).toEqual(['Back']);
+    expect(list(shell).items).toEqual(['Drop', 'Back']);
     choose(shell, 'Back');
     expect(list(shell).title).toContain('Your bag');
-    expect(list(shell).items[list(shell).sel]).toBe('wolf pelt');
+    expect(list(shell).items[list(shell).sel]).toBe(weighed('wolf pelt', 3));
     choose(shell, 'mail shirt');
     shell.keyDown('Escape');
     expect(list(shell).items[list(shell).sel]).toBe('mail shirt (worn)');

@@ -3,7 +3,7 @@
 // Still no DOM here, so tests can drive it.
 
 import { hostile } from './combat';
-import { bagRows, itemActions } from './commands';
+import { bagRows, groundRows, itemActions, loadText, storedRows, storeHere, weighed } from './commands';
 import { wrap } from './font';
 import { chart, roomOf } from './frontier';
 import { all } from './rules';
@@ -45,6 +45,7 @@ interface SaveFile {
 }
 
 const SLOTS = ['Slot 1', 'Slot 2', 'Slot 3'];
+const cap = (s: string): string => s[0].toUpperCase() + s.slice(1);
 const MAX_INPUT = 37;
 /** Lines of text a box can hold before it must continue on another. */
 const BOX_LINES = 13;
@@ -641,23 +642,71 @@ export class Shell {
     const sim = this.sim;
     const rows = bagRows(sim);
     const close = this.backToMenu ? 'Back' : 'Close';
-    const title = `Your bag\n${rows.length ? '' : sim.text('emptyHanded') + '\n'}Silver: ${sim.p.gold}`;
+    // How full the pack is, beside the silver: a full pack is worth knowing about before a fight, not after.
+    const load = `Load: ${loadText(sim)}${sim.load() > sim.limit() ? ' (too full)' : ''}`;
+    const title = `Your bag\n${rows.length ? '' : sim.text('emptyHanded') + '\n'}${load.padEnd(18)}Silver: ${sim.p.gold}`;
+    // What lies on the ground here, and what is kept in a chest here, can be gone through from the bag too.
+    const ground = groundRows(sim);
+    const store = storeHere(sim);
+    const kept = store ? storedRows(sim) : [];
+    const extra: [string, () => void][] = [];
+    if (ground.length) extra.push([`On the ground here (${ground.reduce((n, g) => n + g.n, 0)})`, () => this.heap('ground')]);
+    if (store) extra.push([`In the ${store.nouns[0]} (${kept.reduce((n, g) => n + g.n, 0)})`, () => this.heap('store')]);
     this.modals.unshift({
-      k: 'list', title, lead: true, items: [...rows.map((r) => r.label), close], cancel: true,
-      sel: Math.max(0, rows.findIndex((r) => r.id === item)),
-      pick: (i) => rows[i] && this.itemMenu(rows[i].id),
+      k: 'list', title, lead: true, items: [...rows.map((r) => weighed(r.label, r.weight)), ...extra.map((e) => e[0]), close], cancel: true,
+      sel: Math.max(0, item?.startsWith(':') ? rows.length + extra.findIndex((e) => e[0].startsWith(item === ':ground' ? 'On the ground' : 'In the')) : rows.findIndex((r) => r.id === item)),
+      pick: (i) => (rows[i] ? this.itemMenu(rows[i].id) : extra[i - rows.length]?.[1]()),
     });
   }
 
-  /** One thing from the bag: what it is, and the things that can be done with it. */
+  /**
+   * What lies on the ground here, or what is kept in the chest here: a row for each kind, and
+   * choosing one takes it (one, or all of them) into the pack.
+   */
+  private heap(where: 'ground' | 'store'): void {
+    const sim = this.sim;
+    const rows = where === 'ground' ? groundRows(sim) : storedRows(sim);
+    const store = storeHere(sim);
+    const back = where === 'ground' ? ':ground' : ':store';
+    const from = where === 'store' && store ? ` from ${store.nouns[0]}` : '';
+    const title = where === 'ground' ? 'On the ground here' : `In the ${store?.nouns[0] ?? 'chest'}`;
+    const empty = rows.length ? '' : `\n${sim.text(where === 'ground' ? 'nothingDown' : 'storeEmpty')}`;
+    this.modals.unshift({
+      k: 'list', title: `${title}${empty}\nLoad: ${loadText(sim)}`, lead: true, items: [...rows.map((r) => weighed(r.label, r.weight)), 'Back'], sel: 0, cancel: true,
+      onCancel: () => this.bag(back),
+      pick: (i) => {
+        const r = rows[i];
+        if (!r) return this.bag(back);
+        // A word for it that nothing else lying there answers to.
+        const nouns = this.content.items[r.id].nouns;
+        const noun = nouns.find((w) => rows.every((o) => o.id === r.id || !this.content.items[o.id].nouns.includes(w))) ?? nouns[0];
+        const acts = [{ label: 'Take one', line: `take ${noun}${from}` }, ...(r.n > 1 ? [{ label: `Take all ${r.n}`, line: `take all ${noun}${from}` }] : [])];
+        this.modals.unshift({
+          k: 'list', title: `${cap(r.label)}\nWeighs ${sim.weight(r.id)}${r.n > 1 ? ' each' : ''}. Load: ${loadText(sim)}`, lead: true,
+          items: [...acts.map((a) => a.label), 'Back'], sel: 0, cancel: true,
+          onCancel: () => this.heap(where),
+          pick: (j) => {
+            const a = acts[j];
+            if (!a) return this.heap(where);
+            // Back to the bag afterwards, to go on sorting.
+            this.after.push({ to: 'bag', item: back, room: sim.state.room });
+            this.send(a.line);
+          },
+        });
+      },
+    });
+  }
+
+  /** One thing from the bag: what it is, what it weighs, and the things that can be done with it. */
   private itemMenu(id: string): void {
     const sim = this.sim;
-    const cap = (s: string): string => s[0].toUpperCase() + s.slice(1);
     const it = this.content.items[id];
     const acts = itemActions(sim, id);
     const n = sim.p.inv[id] ?? 0;
+    const each = sim.weight(id);
+    const weight = it?.keep ? 'Weighs nothing to speak of.' : each === 0 ? 'Weighs next to nothing.' : `Weighs ${each}${n > 1 ? ` each, ${each * n} in all` : ''}.`;
     this.modals.unshift({
-      k: 'list', title: `${cap(it?.name ?? id)}${n > 1 ? ` x${n}` : ''}\n${it ? sim.lookOf(it) : ''}`, lead: true,
+      k: 'list', title: `${cap(it?.name ?? id)}${n > 1 ? ` x${n}` : ''}\n${weight}${sim.onPerson(id) && n === 1 ? (sim.p.weapon === id || sim.p.shield === id ? ' In hand, not in the pack.' : ' Worn, not in the pack.') : ''}\n${it ? sim.lookOf(it) : ''}`, lead: true,
       items: [...acts.map((a) => a.label), 'Back'], sel: 0, cancel: true,
       onCancel: () => this.bag(id),
       pick: (i) => {

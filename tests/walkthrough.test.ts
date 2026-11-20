@@ -108,14 +108,19 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   expect(sim.p.spells).toContain('mend');
   bot.door('tarn');
 
-  // Arm up in the village.
+  // Arm up in the village. The pelts go to the smith first: a pack has only so much room.
   bot.travel('village');
   bot.meet('odd');
+  sellAll(bot, 'pelt');
   expect(bot.say('buy sword')).toContain('iron sword');
   bot.say('equip sword');
   bot.door('inn');
+  // The hatchet has done its work. It can wait in the chest at the foot of the bed.
+  bot.walkTo(44, 118, 16);
+  expect(bot.say('put the hatchet in the chest')).toContain('You put the hatchet in the chest');
+  expect(has('hatchet')).toBe(false);
   bot.walkTo(250, 112, 14);
-  while (sim.p.gold >= 6) bot.say('buy potion');
+  while (sim.p.gold >= 6 && sim.fits('potion')) bot.say('buy potion');
   bot.door('village');
 
   // The barrow.
@@ -171,11 +176,23 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   expect(bot.say('open chest')).toContain('forty silver');
   bot.travel('tarn');
   bot.door('hut');
+  // The books already read go back on Fenn's shelf, where they weigh on nobody.
+  bot.meet('fenn');
+  expect(bot.say('return the books to fenn')).toContain('on a shelf is a book');
+  expect(has('tomeFlame') || has('tomeLight') || has('tomeMend')).toBe(false);
   bot.say('buy frost');
   bot.say('read tome');
   bot.say('buy ward');
   bot.say('read tome');
   return bot;
+}
+
+/** Sell every one of a thing to whoever is at hand, as long as they are buying. */
+function sellAll(bot: Bot, item: string): void {
+  for (let n = bot.p.inv[item] ?? 0; n > 0; n = bot.p.inv[item] ?? 0) {
+    bot.say(`sell ${item}`);
+    if ((bot.p.inv[item] ?? 0) >= n) throw new Error(`Nobody here would buy the ${item}: ${bot.log[bot.log.length - 1]}`);
+  }
 }
 
 const STORY = ['hearth', 'stores', 'wolves', 'errand'];
@@ -245,6 +262,15 @@ describe('a Thane', () => {
     bot.meet('odd');
     expect(bot.say('buy longsword')).toContain('Sixty silver');
     expect(bot.say('buy mail')).toContain('Forty-five');
+    // The iron sword goes back to the man who made it, and the bow into the chest at the inn:
+    // the country out there is long, and the wolves in it have pelts worth carrying home.
+    expect(bot.say('sell the sword back')).toContain('10 silver');
+    expect(has('sword')).toBe(false);
+    bot.door('inn');
+    bot.walkTo(44, 118, 16);
+    expect(bot.say('put bow in chest')).toContain('You put the hunting bow in the chest');
+    expect(bot.say('look in the chest')).toContain('a hatchet, a hunting bow');
+    bot.door('village');
 
     // The Elder's work: out to wherever she names, and back to be paid.
     bot.door('hall');
@@ -298,6 +324,10 @@ describe('a Thane', () => {
     bot.meet('brekka');
     expect(bot.say('talk to brekka')).toContain('keep you warm');
     expect(sim.p.armor).toBe('bearcloak');
+    // Six of the wolves met on the way are worth more to Brekka than to anybody: she makes a pack of them.
+    const room = sim.limit();
+    expect(bot.say('ask brekka about a pack')).toContain('They can carry yours');
+    expect(sim.limit()).toBe(room + 20);
 
     // Frostcaps for Runa: gathered wherever they grow nearest.
     const patches: string[] = [];
@@ -351,7 +381,7 @@ describe('a Thane', () => {
     bot.travel('village');
     bot.door('inn');
     bot.walkTo(250, 112, 14);
-    while (sim.p.gold >= 6 && (sim.p.inv.potion ?? 0) < 8) bot.say('buy potion');
+    while (sim.p.gold >= 6 && (sim.p.inv.potion ?? 0) < 8 && sim.fits('potion')) bot.say('buy potion');
     bot.door('village');
     bot.travel('tarn');
     bot.door('hut');

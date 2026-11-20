@@ -216,7 +216,10 @@ function setupPanel(shell: Shell): void {
     } else if (m.k === 'list') {
       [c, body] = card('list', m.title, m.cancel ? () => shell.modal === m && shell.keyDown('Escape') : undefined);
       rows = m.items.map((item, i) => {
-        const b = el('button', 'row', item);
+        // A row laid out in two columns (a thing and its weight) keeps the second at the right.
+        const cols = /^(.*\S) {2,}(\S+)$/.exec(item);
+        const b = el('button', 'row', cols ? cols[1] : item);
+        if (cols) b.append(el('span', 'num', cols[2]));
         b.type = 'button';
         b.addEventListener('click', () => {
           if (shell.modal !== m) return;

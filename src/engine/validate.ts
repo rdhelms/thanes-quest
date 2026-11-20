@@ -39,7 +39,10 @@ export function validate(c: Content, only?: RoomDef): string[] {
       if ('note' in e && e.note.length > 80) errs.push(`${where}: the hint "${e.note.slice(0, 24)}..." is over 80 characters and will not fit`);
       else if ('chance' in e) effects(where, e.do);
       else if ('cmd' in e && !parser.parse(e.cmd).ok) errs.push(`${where}: "${e.cmd}" is not a command the parser understands`);
-      else if ('give' in e) item(where, e.give);
+      else if ('give' in e) {
+        item(where, e.give);
+        if (e.took && e.took.length > 80) errs.push(`${where}: the hint "${e.took.slice(0, 24)}..." is over 80 characters and will not fit`);
+      }
       else if ('lose' in e) item(where, e.lose);
       else if ('goto' in e) room(where, e.goto);
       else if ('quest' in e) c.quests[e.quest] || errs.push(`${where}: unknown quest "${e.quest}"`);
@@ -105,6 +108,10 @@ export function validate(c: Content, only?: RoomDef): string[] {
   }
   for (const it of Object.values(c.items)) {
     it.nouns.forEach((n) => noun(`item ${it.id}`, n));
+    if (!(it.weight >= 0)) errs.push(`item ${it.id}: has no weight`);
+    // What a story needs can never be left behind, so it must never be what fills a pack.
+    if (it.keep && it.weight !== 0) errs.push(`item ${it.id}: is kept for a story, and so must weigh nothing`);
+    if (it.carry && !it.keep) errs.push(`item ${it.id}: carries more, and so must be kept: dropping it would leave a pack over-full`);
     if (it.use) effects(`item ${it.id}`, it.use);
   }
   for (const en of Object.values(c.enemies)) en.nouns.forEach((n) => noun(`enemy ${en.id}`, n));
@@ -130,6 +137,7 @@ export function validate(c: Content, only?: RoomDef): string[] {
       if (roomOf(c, to) && roomOf(c, to)!.exits?.[opposite[side]] !== r.id) errs.push(`${w}: exit ${side} to "${to}" has no way back`);
     }
     const ids = new Set<string>();
+    if ((r.things ?? []).filter((t) => t.store).length > 1) errs.push(`${w}: has more than one store; a room keeps one`);
     for (const t of r.things ?? []) {
       if (ids.has(t.id)) errs.push(`${w}: duplicate thing "${t.id}"`);
       ids.add(t.id);
