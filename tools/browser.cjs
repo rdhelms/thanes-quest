@@ -18,7 +18,9 @@
 //   :fight [ms] [fleeHp]   guard when a blow is coming, otherwise close and swing
 //   :shot <name>        a screenshot, saved under node_modules/.cache/thanes-quest/browser/
 //   :wait <ms>          :settle (read whatever boxes are up)          :status
-//   :new                start a new game                              :load <file>   continue a saved game from a file
+//   :tap <words>        tap the on-screen button or text with these words (touch layout)
+//   :view <W>x<H>       resize the window (e.g. turn a phone sideways: 844x390)
+//   :new                start a new game                             :load <file>   continue a saved game from a file
 //
 // If the page has been reloaded (the development server does that when a file changes), the title
 // menu is up: ":choose continue" takes the game up again from its last room.
@@ -233,6 +235,8 @@ const play = async (cmds) => {
     else if (op === 'key') { await post([{ press: a[0], times: Number(a[1] ?? 1) }]); await settle(); }
     else if (op === 'hold') { await post([{ hold: a[0], ms: Number(a[1] ?? 500) }]); }
     else if (op === 'wait') { await post([{ wait: Number(a[0]) }]); await settle(); }
+    else if (op === 'tap') { await post([{ tapText: a.join(' ') }, { wait: 300 }]); await settle(); }
+    else if (op === 'view') { const [w, h] = a[0].split('x').map(Number); await post([{ viewport: { width: w, height: h } }, { wait: 400 }]); }
     else if (op === 'shot') { console.log((await post([{ shot: a[0] }]))[0]); }
     else if (op === 'settle') { await settle(); }
     else if (op === 'fight') { await fight(Number(a[0] ?? 20000), Number(a[1] ?? 12)); await settle(); }

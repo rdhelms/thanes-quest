@@ -77,6 +77,8 @@ function fit(): void {
     // Upright, the pad is pinned to the foot of the screen and takes no room in the column above it.
     const pads = document.getElementById('pads');
     if (!landscape && pads && getComputedStyle(pads).position === 'fixed') h -= pads.offsetHeight + 30;
+    // And it leaves the panel that shows the words between picture and controls room to be read.
+    if (!landscape && !document.documentElement.classList.contains('typing')) h -= 120;
   }
   // With a keyboard, snap to whole device pixels for even lettering. On a phone, size matters more:
   // fill the width.
