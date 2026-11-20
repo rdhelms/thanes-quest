@@ -65,7 +65,7 @@ export const hall: RoomDef = {
       id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle, and at the far end one mug, filled and not touched. Feasts were held here. The table remembers; you can tell by the stains.',
       lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the far end, beside the cup that is always set there and never drunk, lies the seven-pointed crown, where you put it down in front of Marta. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
     },
-    { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: three shelves of it, and a good third about sheep." },
+    { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: nine books, three of them about sheep." },
     { id: 'door', nouns: ['door'], x: 60, y: 106, reach: 400, look: 'The way out, back to the square.' },
     { id: 'bench', nouns: ['bed'], x: 262, y: 162, reach: 44, hidden: true, try: ['sleep'], look: 'A bench made up as a bed, with a bearskin over it, where the heat of the hearth reaches. Nobody has said whose it is. Nobody has needed to.' },
   ],
