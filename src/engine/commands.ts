@@ -244,7 +244,8 @@ function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null):
       } else if (target.def.kind === 'trinket') {
         p.trinket = target.def.id;
         sim.say(sim.text('wearing', target.def.name));
-      } else sim.say(sim.text('cantEquip'));
+      } else if (target.def.don) run(sim, target.def.don);
+      else sim.say(sim.text('cantEquip'));
       return true;
     }
     case 'drop':

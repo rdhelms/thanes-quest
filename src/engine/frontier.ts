@@ -23,6 +23,9 @@ function parseCrypt(id: string): [number, number] | null {
   return m ? [Number(m[1]), Number(m[2])] : null;
 }
 
+/** "a brooch", "an iron torc". */
+export const withArticle = (name: string): string => `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`;
+
 export function parseWild(id: string): [number, number] | null {
   const m = /^wild_(-?\d+)_(-?\d+)$/.exec(id);
   return m ? [Number(m[1]), Number(m[2])] : null;
@@ -533,7 +536,7 @@ function crypt(c: Content, X: number, Y: number): RoomDef | undefined {
         on: ['take treasure', 'open treasure'], if: [{ near: 'hoard' }],
         do: [
           { set: `loot.${id}` }, { gold: silver }, { sound: 'take' }, { score: 4, id: `loot.${id}` }, { say: f.text.cryptTake.replace('%s', String(silver)) },
-          ...(trinket ? [{ give: trinket }, { say: f.text.cryptTrinket.replace('%s', c.items[trinket]?.name ?? trinket) }] : []),
+          ...(trinket ? [{ give: trinket }, { say: f.text.cryptTrinket.replace('%s', withArticle(c.items[trinket]?.name ?? trinket)) }] : []),
           ...waking,
           { chance: 0.5, do: [{ give: 'potion' }, { note: 'And a red draught, left as an offering.' }] },
         ],

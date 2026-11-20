@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as combat from '../src/engine/combat';
 import { gainSkill, hurtPlayer, levelNeed } from '../src/engine/combat';
+import { withArticle } from '../src/engine/frontier';
 import { Parser, matches } from '../src/engine/parser';
 import { all } from '../src/engine/rules';
 import { Shell } from '../src/engine/shell';
@@ -2681,4 +2682,72 @@ describe('walking over for a typed line, everywhere', () => {
     }
     expect(missed).toEqual(['tarn: take amulet']);
   }, 60000);
+});
+
+describe('news that keeps', () => {
+  it('holds a perk and a level back until the fight is over', () => {
+    const shell = playing('pinewood', 200, 132);
+    const sim = shell.sim;
+    const wolf = sim.rs.actors.find((a) => a.kind === 'enemy')!;
+    sim.rs.actors = [wolf];
+    wolf.x = sim.p.x + 60;
+    wolf.y = sim.p.y;
+    wolf.ai.stun = 100000;
+    // Enough practice at once for a perk and a level, with a wolf a few paces off.
+    sim.p.skills.blade.lv = 11;
+    sim.p.skills.blade.xp = 0;
+    gainSkill(sim, 'blade', 400);
+    for (let i = 0; i < 20; i++) shell.tick();
+    expect(sim.p.pendingLevels).toBeGreaterThan(0);
+    expect(shell.modal).toBeUndefined();
+
+    // The wolf gone, both are told: the perk first, then the choice.
+    sim.rs.actors = [];
+    shell.tick();
+    const first = shell.modal;
+    expect(first?.k === 'msg' && first.text).toContain('Riposte.');
+    while (shell.modal?.k === 'msg') shell.keyDown('Enter');
+    const then = shell.modal;
+    expect(then?.k === 'list' && then.items).toEqual(['Health', 'Mana', 'Stamina']);
+  });
+});
+
+describe('small things found by playing', () => {
+  it('lets the grain be handed over as well as talked over, and the cheese is a cheese', () => {
+    const shell = playing('farm', 30, 150);
+    Object.assign(shell.sim.state.flags, { 'gorm.met': true, 'quest:stores': 1 });
+    shell.sim.give('grain');
+    const gold = shell.sim.p.gold;
+    expect(typed(shell, 'give grain to gorm').join(' ')).toContain('adds a cheese');
+    shell.keyDown('Escape');
+    expect(shell.sim.p.gold).toBe(gold + 25);
+    expect(shell.sim.p.inv.cheese).toBe(1);
+    expect(typed(shell, 'eat cheese')[0]).toContain('best cheese you have ever eaten');
+    expect(shell.sim.p.inv.cheese).toBeUndefined();
+  });
+
+  it('answers a crown or an amulet being tried on', () => {
+    const sim = game('village');
+    sim.give('crown');
+    sim.give('amulet');
+    expect(type(sim, 'wear crown')[0]).toContain('you are cold');
+    expect(sim.p.inv.crown).toBe(1);
+    expect(type(sim, 'wear amulet')[0]).toContain('only carrying it home');
+    expect(type(sim, 'wear hatchet')[0]).not.toContain('ridiculous');
+  });
+
+  it('lets Fenn stop looking at the ice once he has the amulet back', () => {
+    const sim = game('hut', 190, 126);
+    sim.state.flags['fenn.met'] = true;
+    sim.give('amulet');
+    expect(type(sim, 'ask fenn about the amulet')[0]).toContain('Please');
+    expect(type(sim, 'give amulet to fenn')[0]).toContain('forgotten it was so small');
+    expect(type(sim, 'ask fenn about the tarn')[0]).toContain('It is only ice now');
+    expect(type(sim, 'ask fenn about the amulet')[0]).toContain('shelf by the window');
+  });
+
+  it('says "an iron torc"', () => {
+    expect(withArticle('iron torc')).toBe('an iron torc');
+    expect(withArticle('bone token')).toBe('a bone token');
+  });
 });

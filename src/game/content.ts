@@ -48,6 +48,11 @@ const items: Record<string, ItemDef> = {
     use: [{ run: 'tonic' }, { say: 'It tastes like the bottom of a well. For a moment you can feel every one of your bones. Then they feel stronger than they did.' }],
   },
   bearskin: { id: 'bearskin', name: 'white bearskin', nouns: ['bearskin'], kind: 'misc', look: 'The pelt of a snow bear, white as the drifts and heavy as a door. Worth real silver to anyone who has to sleep cold.' },
+  cheese: {
+    id: 'cheese', name: "Gorm's cheese", nouns: ['cheese'], kind: 'food', consumed: true,
+    look: 'A small hard cheese in a cloth, the colour of old candles. It smells strongly of sheep, and of somebody having very little and giving it anyway.',
+    use: [{ heal: 12 }, { say: 'Hard, yellow, and sharp enough to make your eyes water. It was made from the milk of three discouraged ewes, and it is the best cheese you have ever eaten.' }],
+  },
   venison: {
     id: 'venison', name: 'haunch of venison', nouns: ['venison'], kind: 'food', consumed: true,
     look: 'A haunch of red deer, frozen hard already. Halla would give silver for it. So would your own stomach.',
@@ -71,8 +76,13 @@ const items: Record<string, ItemDef> = {
     use: [{ heal: 25 }, { say: 'It tastes the way a hearth feels. Your wounds ease.' }],
   },
   grain: { id: 'grain', name: 'sack of seed grain', nouns: ['grain'], kind: 'misc', look: "A heavy sack with a G in a ring burned into it. Gorm's whole spring is in here." },
-  amulet: { id: 'amulet', name: 'silver amulet', nouns: ['amulet'], kind: 'misc', look: 'A moonstone on a silver chain. Forty years in the ice have not dimmed it. It is faintly warm.' },
-  crown: { id: 'crown', name: 'seven-pointed crown', nouns: ['crown'], kind: 'misc', look: 'Black iron, seven points, far heavier than it looks. It is the only thing the Barrow-King left behind. You do not feel like trying it on.' },
+  amulet: { id: 'amulet', name: 'silver amulet', nouns: ['amulet'], kind: 'misc', look: 'A moonstone on a silver chain. Forty years in the ice have not dimmed it. It is faintly warm.',
+    don: [{ say: 'You hold it up by the chain, and find you cannot. It was put round one neck, once, by one pair of hands, and you are only carrying it home.' }],
+  },
+  crown: { id: 'crown', name: 'seven-pointed crown', nouns: ['crown'], kind: 'misc', look: 'Black iron, seven points, far heavier than it looks. It is the only thing the Barrow-King left behind. You do not feel like trying it on.',
+    // What the crown does to its wearer is the second saga's whole secret; a glimpse of it is there for anyone who asks.
+    don: [{ say: 'You lift it in both hands. It is heavier than it was a moment ago, and your fingers have gone to sleep. For one breath you are sitting in a stone seat with every fire of a village laid at your feet, and you are cold, and you have been cold for longer than there are words for. Then you are yourself again, and the crown is back in your pack. You do not remember putting it there.' }],
+  },
   tomeFlame: tome('tomeFlame', 'flame', 'singed tome', 'A book with scorched edges. The title page reads: FLAME, and How to Mean It.', 'The letters crawl, then settle. You understand, suddenly, how fire is spoken to. It is mostly a matter of tone.'),
   tomeFrost: tome('tomeFrost', 'frost', 'pale blue tome', 'A book bound in pale hide, cold to the touch. FROST: A Slowing.', 'Your breath smokes as you read. When you close the book the cold stays in your hands, waiting.'),
   tomeMend: tome('tomeMend', 'mend', 'small green tome', 'A small green book, soft with handling. MEND: On Putting Back.', 'It is less a spell than a kindness with rules. You find you know them now.'),

@@ -146,6 +146,10 @@ export class Sim {
   say(text: string, who?: string): void {
     this.out.push({ t: 'say', text, who });
   }
+  /** News that keeps: told at once in a quiet moment, and otherwise when the fight is over. */
+  sayWhenIdle(text: string): void {
+    this.out.push({ t: 'say', text, idle: true });
+  }
   talked(char: string): void {
     this.out.push({ t: 'talk', char });
   }

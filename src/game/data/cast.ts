@@ -29,7 +29,10 @@ export const chars: Record<string, CharDef> = {
     topics: {
       elder: '"Marta Coldhand. She has kept this village forty winters. You will find her in the hall, staring at a cold hearth as if she could shame it into lighting."',
       hall: '"The Elder\'s hall. Warmest place in Hollowmere, once. Now you can see your breath at the high table."',
-      hearth: '"Every fire in the village gutters and dies. Dry wood, good flint, and still they go out, as if something were drinking the heat."',
+      hearth: [
+        { if: [{ flag: 'hearth.lit' }], say: '"Every one of them lit, and staying lit. I have stopped getting up in the night to look." She does not sound as if she has stopped.' },
+        { say: '"Every fire in the village gutters and dies. Dry wood, good flint, and still they go out, as if something were drinking the heat."' },
+      ],
       barrow: [
         { if: [{ flag: 'king.dead' }], say: '"It has stopped glowing. I went up to look, in daylight, with a stick." Sigga shrugs. "It is a hill."' },
         { say: '"The old mound up north. We do not go there." She lowers her voice. "It has started to glow at night. Do not tell the children I said so."' },
@@ -96,7 +99,10 @@ export const chars: Record<string, CharDef> = {
         { if: [{ flag: 'hearth.lit' }], say: '"It was old when the first of us came over the mountains. I took the king in it for a story to make children generous. I shall tell it differently now."' },
         { say: '"It was old when the first of us came over the mountains. A king is buried there, they say, who would not share his fire in life. I always took that for a story to make children generous."' },
       ],
-      hearth: '"Laid, dry, and dead. Light it and it dies in a breath. Something is taking the warmth out of this village, and I mean to have it back."',
+      hearth: [
+        { if: [{ flag: 'hearth.lit' }], say: '"It burns. I sit by it of an evening and do nothing at all, which I have not done in forty years. I find I am rather good at it."' },
+        { say: '"Laid, dry, and dead. Light it and it dies in a breath. Something is taking the warmth out of this village, and I mean to have it back."' },
+      ],
       fenn: '"Clever, rude, and older than he has any right to be. He lives by the tarn. Mind the ice there: it took his wife, forty years back."',
       work: [
         { if: [{ flag: 'bounty.done' }], say: '"You have the look of someone who has come to be paid."', do: [{ run: 'bountyPay', arg: 'Elder Marta' }] },
@@ -160,7 +166,10 @@ export const chars: Record<string, CharDef> = {
       ],
       hatchet: '"If you mean the one by the woodpile, I never saw it, and I do not want it back."',
       work: '"I sell. I do not hire."',
-      barrow: '"I make things to keep people out of the ground. I do not go looking in it."',
+      barrow: [
+        { if: [{ flag: 'king.dead' }], say: '"You went looking in it. I heard." Odd turns the iron over. "I still make things to keep people out of the ground. You are more work than most."' },
+        { say: '"I make things to keep people out of the ground. I do not go looking in it."' },
+      ],
       name: '"Odd." He lets that sit. "It is a name."',
     },
     shrug: '"I talk about iron," says Odd, "and I have just about finished doing that."',
@@ -196,7 +205,10 @@ export const chars: Record<string, CharDef> = {
       { say: '"Same prices as yesterday. Same as tomorrow, if there is one."' },
     ],
     topics: {
-      hearth: '"I feed it a stick every quarter hour, day and night, and it still tries to die on me. I have not slept since the barrow lit up."',
+      hearth: [
+        { if: [{ flag: 'hearth.lit' }], say: '"It burns by itself now. I still wake every quarter hour to feed it." Halla shrugs. "Give me a month."' },
+        { say: '"I feed it a stick every quarter hour, day and night, and it still tries to die on me. I have not slept since the barrow lit up."' },
+      ],
       ale: '"Thin, sour, and a silver a horn. Nobody has complained twice."',
       food: '"Barley and whatever was slowest. A silver a bowl, and it is hot, which is more than anyone else can offer you."',
       potion: '"Fenn brews them and I sell them. Six silver. They close a wound faster than is decent."',
@@ -275,10 +287,12 @@ export const chars: Record<string, CharDef> = {
           say: '"Forty years ago my wife went through that ice. Her amulet came up the next winter and froze in where you can see it, right in the thin middle, and I have looked at it every day since. I cannot reach it. Nothing heavier than a hare can cross there." He finally looks at you. "Unless the ice were made to freeze harder. There is a word for that. Bring me the amulet, and I will give you Light. You will want it badly, underground."',
           do: [{ quest: 'errand', stage: 1 }, { score: 2, id: 'errand.start' }],
         },
+        { if: [{ quest: 'errand', is: 2 }], say: '"It is only ice now. Forty years I went down to that shore every morning, to look at one bright thing I could not reach." Fenn turns a page. "This week I have stayed in and read. I am told that is what books are for."' },
         { say: '"Thin in the middle. It would not hold you unless something froze it harder. ISKA would, if you had it. The stone that holds ISKA stands by the old watchtower, south-east of here."' },
       ],
       amulet: [
         { if: [{ has: 'amulet' }], say: '"Give it here. Please." It is the first time you have heard him say please, and possibly the first time he has.' },
+        { if: [{ quest: 'errand', is: 2 }], say: '"On the shelf by the window, where the light gets at it." He does not look that way. "Asa would say it was a waste of a good necklace to hang it on a nail. She would be right. She generally was."' },
         { say: '"Silver, with a moonstone. Hers. It is out in the middle of the tarn, where I can see it and cannot have it."' },
       ],
       hearth: [
@@ -538,7 +552,7 @@ export const chars: Record<string, CharDef> = {
       {
         if: [{ quest: 'stores', is: 1 }, { has: 'grain' }],
         say: 'You swing the sack down off your shoulder. Gorm looks at the G burned into it, then at you, then at the sack again, and for a moment you think he is going to cry. He counts twenty-five silver into your hand instead, very carefully, and then adds a cheese.',
-        do: [{ lose: 'grain' }, { gold: 25 }, { quest: 'stores', stage: 2 }, { score: 10, id: 'stores.done' }, { heal: 10 }],
+        do: [{ lose: 'grain' }, { gold: 25 }, { give: 'cheese' }, { quest: 'stores', stage: 2 }, { score: 10, id: 'stores.done' }],
       },
       { if: [{ quest: 'stores', is: 1 }], say: '"South-west, past the ford. You will see their smoke. Mind yourself."' },
       { if: [{ flag: 'crown.unmade' }], say: '"The snow on the south field has gone soft. Soft! I put my hand in it." Gorm holds the hand up, as if it might still be wet. "I shall be sowing in a month. You will have the first loaf, Thane, and the second."' },

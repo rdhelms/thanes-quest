@@ -91,6 +91,7 @@ export class Shell {
     this.tapDir = [0, 0];
     this.bound = null;
     this.errand = null;
+    this.waiting = [];
     this.modals = [];
     this.input = '';
     this.talkingTo = null;
@@ -302,7 +303,14 @@ export class Shell {
   /** Turn simulation events into boxes and sounds. */
   private absorb(): void {
     for (const e of this.sim.drain()) {
-      if (e.t === 'say') this.message(e.text, e.who);
+      if (e.t === 'say') {
+        // News that keeps is not told in the middle of a fight: a word of it under the picture, the rest after.
+        if (e.idle && this.pressed()) {
+          this.waiting.push(e.text);
+          this.noteText = e.text.split('\n')[0];
+          this.noteUntil = this.uiTick + 70;
+        } else this.message(e.text, e.who);
+      }
       else if (e.t === 'talk') {
         // A new conversation starts at the top of its menu, wherever the last one was left.
         if (this.talkingTo !== e.char) this.talkLast = null;
@@ -345,7 +353,11 @@ export class Shell {
         });
       } else if (e.t === 'won') this.message(e.text);
     }
-    if (this.sim.p.pendingLevels > 0 && !this.modals.some((m) => m.k === 'list')) {
+    // With nothing pressing: whatever news was kept back, and any level earned meanwhile. Neither
+    // is worth being bitten for, and a level chosen by a key meant for a wolf is not chosen at all.
+    const calm = !this.pressed();
+    if (calm && !this.sim.p.dead) for (const text of this.waiting.splice(0)) this.message(text);
+    if (calm && this.sim.p.pendingLevels > 0 && !this.modals.some((m) => m.k === 'list')) {
       const pools = ['hp', 'mp', 'sp'] as const;
       this.modals.push({
         k: 'list', title: `You have grown stronger: level ${this.sim.p.level - this.sim.p.pendingLevels + 1}. What will you raise?`,
@@ -489,6 +501,15 @@ export class Shell {
   }
 
   private fightUntil = 0;
+  /** News kept back until the fight is over. */
+  private waiting: string[] = [];
+
+  /** Is a fight on: something hostile close by, or in the middle of a blow? */
+  private pressed(): boolean {
+    const sim = this.sim;
+    const p = sim.p;
+    return !p.dead && sim.rs.actors.some((a) => hostile(sim, a) && (a.ai.atk > 0 || Math.hypot(a.x - p.x, (a.y - p.y) * 2) < 120));
+  }
 
   /** Which tune suits this moment: the title, a fight, or wherever the player is standing. */
   musicCue(): string {
@@ -497,8 +518,7 @@ export class Shell {
     const sim = this.sim;
     const p = sim.p;
     // A fight is on while something hostile is close or mid-swing; the music lingers a little after.
-    const pressed = !p.dead && sim.rs.actors.some((a) => hostile(sim, a) && (a.ai.atk > 0 || Math.hypot(a.x - p.x, (a.y - p.y) * 2) < 120));
-    if (pressed) this.fightUntil = this.uiTick + 70;
+    if (this.pressed()) this.fightUntil = this.uiTick + 70;
     if (this.uiTick < this.fightUntil) return cues.boss && sim.rs.actors.some((a) => hostile(sim, a) && this.content.enemies[a.ref]?.ai === 'boss') ? cues.boss : cues.battle;
     // Out of doors after dark, the night has its own music.
     if (cues.night && sim.room.scene.kind === 'outdoor' && sim.daylight() < 0.3) return cues.night;

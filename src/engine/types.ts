@@ -279,6 +279,8 @@ export interface ItemDef {
   use?: Effect[];
   /** Used up by using it. */
   consumed?: boolean;
+  /** What happens when somebody tries to put it on, for a thing that is not for wearing. */
+  don?: Effect[];
   /** A ready-made command to offer (on touch screens) while this is carried and the conditions hold. */
   offer?: { label: string; say: string; if?: Cond[] };
 }
@@ -632,7 +634,8 @@ export type Intent =
   | { t: 'ease'; gentle: boolean };
 
 export type SimEvent =
-  | { t: 'say'; text: string; who?: string }
+  /** Something to be read. `idle` marks news that keeps: it need not stop a fight to be told. */
+  | { t: 'say'; text: string; who?: string; idle?: boolean }
   /** A conversation with this character has begun or continued. */
   | { t: 'talk'; char: string }
   /** A passing remark that does not stop play. */

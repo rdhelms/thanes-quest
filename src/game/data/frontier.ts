@@ -183,7 +183,7 @@ export const frontier: FrontierDef = {
     stairWalk: 'The stair goes down into the dark under the tower. Walk in at the doorway, if you are going, and take a light.',
     cryptTreasure: 'Grave-goods, heaped where they were left: arm-rings, a cup, coin gone green with age.',
     cryptTake: 'You take what will carry: %s silver in old coin and hack-silver. It is very cold to the touch.',
-    cryptTrinket: 'Among the coin your fingers close on something that is not coin: a %s. It has lain here a long time, waiting to be of use to somebody.',
+    cryptTrinket: 'Among the coin your fingers close on something that is not coin: %s. It has lain here a long time, waiting to be of use to somebody.',
     cryptWake: 'The last coin is hardly in your pack when stone grinds on stone behind you. The lids are moving. They were not asleep. They were waiting to see what you would do.',
     cryptTrap: 'A flagstone sinks a finger\'s width under your boot, and something old and sharp comes out of the wall at knee height. It has been waiting four thousand years to do that, and it has lost none of its enthusiasm.',
     cryptTaken: 'You have had the best of it. The rest is too heavy, or too closely watched.',

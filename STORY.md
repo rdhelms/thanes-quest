@@ -101,6 +101,10 @@ sleeps. A bed is made up for the Thane beside the Elder's hearth.
 Marta gives the Thane paid work out in the wild. When she pays for the first piece of it, the
 Thane notices that the crown, still in the pack, has grown much colder.
 
+A Thane who tries the crown on, at any time before it is unmade, is for one breath sitting in a
+stone seat with every fire of a village laid at their feet, and is cold, and has been cold for
+longer than there are words for. Then the crown is back in the pack.
+
 Fenn examines the crown and judges that it was never the King's own. It was made for a bigger head
 and cut down to fit, so somebody crowned him, four thousand years ago. The crown is not cold as
 iron is cold: it drinks. The dead come to a thing like that, wanting what is shut up in it, and
@@ -157,8 +161,10 @@ After the winter breaks he talks of taking the bow back, and then tells the hero
 **What the Ice Kept.** Asa's amulet came up the winter after she drowned and froze into the thin
 middle of the tarn. Fenn has looked at it every day for forty years and cannot reach it. The hero
 hardens the ice with ISKA, or with the Frost spell, and brings it to him. Fenn says "please",
-perhaps for the first time, and gives the hero the Light spell, which he does not sell and which
-the hero will want in the dark under the barrow. Spoken at
+perhaps for the first time. He holds it in both hands and says he had forgotten it was so small.
+He gives the hero the Light spell, which he does not sell and which the hero will want in the dark
+under the barrow. Afterward the amulet hangs on a nail by his window, and he no longer goes down
+to the shore in the mornings: he stays in and reads. Spoken at
 the tarn, ORUN shows a shape far down in the water that might be a woman's shawl, and the print of
 two knees worn into the ice at the shore.
 

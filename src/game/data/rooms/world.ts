@@ -304,6 +304,9 @@ export const farm: RoomDef = {
     firstVisit('farm'),
     { on: ['pet sheep', 'kiss sheep', 'take sheep'], do: [{ say: 'The nearest ewe leans on you with her whole weight, sighs, and goes back to staring at the snow.' }] },
     { on: ['attack sheep'], do: [{ say: 'Gorm has little enough left. You leave his sheep alone.' }] },
+    // Handing the sack over is the same as coming up and saying so.
+    { on: ['give grain', 'give grain gorm', 'give gorm grain', 'use grain', 'use grain gorm', 'drop grain'], if: [{ has: 'grain' }, { near: 'gorm' }], do: [{ cmd: 'talk to gorm' }] },
+    { on: ['give grain', 'give grain gorm', 'give gorm grain', 'use grain', 'use grain gorm'], if: [{ has: 'grain' }], do: [{ say: 'You are not close enough.' }] },
     { on: 'orun', do: [{ say: 'ORUN. For a moment you can see through the snow as if it were glass: the furrows of the east field, a lost ploughshare, and, three paces from the corner of the house, a crock with a lid on it. Gorm\'s savings, such as they are. You look somewhere else, quite hard, until the word wears off.' }] },
     {
       on: ['give herb sheep', 'give sheep herb', 'use herb sheep', 'give herb'], if: [{ near: 'sheep', d: 70 }, { has: 'herb' }, { not: { flag: 'farm.ewe' } }],

@@ -30,7 +30,7 @@ export function gainSkill(sim: Sim, id: string, amount: number): void {
     for (const perk of sim.content.perks)
       if (perk.skill === id && perk.lv === s.lv) {
         sim.sound('level');
-        sim.say(`${perk.name}.\n\n${perk.text}`);
+        sim.sayWhenIdle(`${perk.name}.\n\n${perk.text}`);
       }
   }
   while (p.xp >= levelNeed(p.level)) {
