@@ -283,6 +283,48 @@ A smaller pike lives in that one.
 **The sleeper.** A hump of snow with a breathing-hole in it. It is a white bear, asleep, and can
 be left that way. ORUN shows the two cubs asleep against her.
 
+**The skating stake.** A pair of bone skates hangs on a stake by a mere, with BORROW THEM. HANG
+THEM BACK cut into it. A hero who skates is good at it for a while, and then sits down, as
+everybody does. ORUN shows the ice written over with skating, winter under winter, as deep as can
+be seen.
+
+**The lamp tree.** A horn lantern hangs high in a dead tree, put there to be seen by somebody
+coming home in the dark, and a hero can climb up and light it again. ORUN shows a line of
+nail-holes up the trunk: the snow came deeper every winter, and every winter somebody moved the
+lantern higher. Nobody has moved it since.
+
+**The wishing stones.** By a ring of stones stands a heap of small flat ones, each with a wish
+scratched on it: LESS SNOW, mostly, and A DOG, and SPRING. ANY SPRING. I AM NOT FUSSY. A hero may
+add one. Once the crown is unmade, the hero scratches THANK YOU instead. ORUN shows the whole heap:
+further down they ask for an early spring, then a mild winter, and at the very bottom, four
+thousand years down, for rain.
+
+**The ferry post.** A tarred post on the shore of a mere says BLOW FOR THE FERRY, and has a horn
+to blow. The ferry does not come. ORUN shows the ferry rope running away east along the bottom,
+and the ferry itself on the mud, made fast to the post by its last ferryman, ready for a crossing
+in the morning.
+
+**The reavers' rota.** In a reavers' camp a board keeps their duties: the watch, the wood, and the
+pot, which is NOT ULF. WHY NOT ULF, somebody has asked. YOU KNOW WHY, somebody has answered. ORUN
+shows a cooking-pot buried behind the tents, burned clean through the bottom.
+
+**The bread oven.** In a ruin where everything else has fallen stands a clay bread oven, whole,
+with a loaf in it gone to stone and kindling laid ready. A hero who lights it is warmed by it, as
+the people who lived here were every morning. ORUN shows the floors of a dozen houses round it,
+every door facing it, and a path worn from every doorstep to its mouth.
+
+**The lookout.** Iron pegs climb the face of a crag to a ledge, and from the ledge the smoke of
+Hollowmere can be seen: one thread of it while Halla keeps the last fire, smoke from all eleven
+roofs once the Elder's hearth is lit. ORUN shows the ledge scratched with rows of little roofs
+with smoke going up. Somebody who lived out there climbed up winter after winter to count the
+smoke of home. The first rows have twenty roofs and the last has eleven, and after that nobody
+came up to count.
+
+**The door.** Far out, a door stands shut in its frame with no house round it. A hero can knock,
+and go through, and find the same snow on both sides. Notches on the post mark the heights of
+EYVIND, SIGRUN and LITTLE ODA, the last three cut on one day, deeper than the rest; nobody took the
+door. ORUN shows a fourth row on the far side of the post, low down, with a picture of a dog.
+
 ## Far places
 
 **The Sunken Bell**, far to the east. A great bronze bell stands frozen into a mere. Something

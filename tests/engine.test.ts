@@ -2975,6 +2975,44 @@ describe('things written by hand, out in the generated country', () => {
     expect((sc.when ?? []).filter((w) => all(sim, w.if)).flatMap((w) => w.props ?? []).map((p) => p.v)).toEqual(['kettle']);
   });
 
+  it('warms whoever lights the old oven, and hangs a light out for somebody else', () => {
+    const lit = (room: string, sim: Sim): string[] => (roomOf(content, room)!.scene.when ?? []).filter((w) => all(sim, w.if)).flatMap((w) => w.props ?? []).map((p) => p.v!);
+    const oven = beside('oven');
+    oven.sim.p.hp = 10;
+    expect(type(oven.sim, 'eat the loaf')[0]).toContain('different teeth');
+    expect(lit(oven.room, oven.sim)).toEqual([]);
+    expect(type(oven.sim, 'light the fire')[0]).toContain('like a slow breath');
+    expect(oven.sim.p.hp).toBeCloseTo(25, 0);
+    expect(type(oven.sim, 'light the oven')[0]).toContain('Stand by it a while');
+    expect(oven.sim.p.hp).toBeCloseTo(25, 0);
+    expect(lit(oven.room, oven.sim)).toEqual(['lit']);
+    const lamp = beside('lamp');
+    expect(type(lamp.sim, 'light the lantern')[0]).toContain('never meant for you');
+    expect(type(lamp.sim, 'look at the lantern')[0]).toContain('is burning');
+    expect(lit(lamp.room, lamp.sim)).toEqual(['lamplit']);
+  });
+
+  it('answers a wish, and a climb, according to how the winter stands', () => {
+    const before = beside('wishes').sim;
+    expect(type(before, 'make a wish')[0]).toContain('add your voice');
+    expect(type(before, 'make a wish')[0]).toContain('One stone each');
+    const after = beside('wishes').sim;
+    after.state.flags['crown.unmade'] = true;
+    expect(type(after, 'make a wish')[0]).toContain('THANK YOU');
+    const cold = beside('lookout').sim;
+    expect(type(cold, 'climb the pegs')[0]).toContain('one thread of smoke');
+    cold.state.flags['hearth.lit'] = true;
+    expect(type(cold, 'climb the ladder')[0]).toContain('all eleven of its roofs');
+  });
+
+  it('lets a door with no house be knocked at and gone through', () => {
+    const { sim } = beside('door');
+    expect(type(sim, 'knock on the door')[0]).toContain('Nobody answers');
+    expect(type(sim, 'open the door')[0]).toContain('wipe your boots');
+    expect(type(sim, 'go through the door')[0]).toContain('same snow on both sides');
+    expect(type(sim, 'read the notches')[0]).toContain('LITTLE ODA');
+  });
+
   it('lets a sleeping bear lie, or does not', () => {
     const { sim } = beside('sleeper');
     expect(type(sim, 'pet the hump')[0]).toContain('patted a sleeping bear and lived');

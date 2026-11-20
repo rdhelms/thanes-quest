@@ -172,6 +172,174 @@ const sights: SightDef[] = [
       { on: ['read menhir', 'pet menhir', 'read inscription'], do: [{ say: 'You are not close enough.' }] },
     ],
   },
+  {
+    id: 'skates', name: 'The Skating Stake', biomes: ['mere'], minDepth: 2,
+    seen: 'Somebody has driven a stake into the bank of the mere and hung a pair of skates on it.',
+    prop: { t: 'post', v: 'skates' },
+    thing: {
+      nouns: ['skates'], try: ['skate'],
+      look: "A pair of skates made from a horse's shin-bones, ground flat underneath and bored at each end for thongs, hanging from a nail in a stake at the edge of the ice. Cut into the stake, in letters a child could read: BORROW THEM. HANG THEM BACK.",
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The snow lifts off the mere like a sheet off a table, and the ice under it is written all over with skating: long sure curves, and loops, and figures of eight, and small wobbling lines that go nowhere much, and here and there a scuffed place where somebody sat down. They lie one under another, winter under winter, as deep as you can see. Every one of those people hung the skates back.' }] },
+      { on: ['skate', 'skate skates', 'skate tarn', 'use skates', 'equip skates', 'take skates'], if: [{ flag: 'sight.skates' }, near('skates')], do: [{ say: 'You go round once more, with more style and less sitting down. It does not get any less good. You hang them back.' }] },
+      {
+        on: ['skate', 'skate skates', 'skate tarn', 'use skates', 'equip skates', 'take skates'], if: [near('skates')],
+        do: [{ set: 'sight.skates' }, { heal: 10 }, { say: 'You strap them on over your boots and push off. For a long, bad moment you and the mere disagree about which way is up. Then you have it, and you go round, and round again, faster, arms out and the wind in your teeth, and for a while you are rather good at this, which is a pity, because there is nobody out here to see. Then you sit down hard, as everybody does in the end. You are warmer than you have been in days. You hang them back on the stake.' }],
+      },
+      { on: ['attack skates', 'drop skates'], do: [{ say: 'BORROW THEM, the stake says. HANG THEM BACK. It does not say anything about that, and you feel it would have.' }] },
+    ],
+  },
+  {
+    id: 'lamp', name: 'The Lamp Tree', biomes: ['deadwood'], minDepth: 2,
+    seen: 'High in one of the dead trees, from a limb of its own, hangs a lantern.',
+    prop: { t: 'deadtree', h: 58, seed: 7, v: 'lantern' },
+    when: [{ if: [{ flag: 'sight.lamp' }], prop: { t: 'deadtree', h: 58, seed: 7, v: 'lamplit' } }],
+    thing: {
+      nouns: ['lamp', 'light'], try: ['light the lantern'],
+      look: 'A horn lantern on an iron hook, hung from a limb higher than you can reach from the ground. It has been out a long time, and the stub of candle in it is the colour of old teeth. It was hung up there to be seen from a long way off, by somebody coming home in the dark.',
+      lookWhen: [{ if: [{ flag: 'sight.lamp' }], look: 'The lantern is burning, high in the dead tree, where it shows over the drifts. It is not much of a light. It is a good deal more than none.' }],
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The grey bark goes thin as paper, and under it, running up the trunk, is a line of old nail-holes, each a hand above the one before. The snow came deeper every winter, and every winter somebody climbed up and moved the lantern higher, so that it would still show over the drifts. The lowest hole is at the height of your knee. The highest is the one it hangs from now. Nobody has moved it since.' }] },
+      { on: ['light lamp', 'light light', 'light tree', 'use lamp', 'use light', 'light', 'cast flame'], if: [{ flag: 'sight.lamp' }], do: [{ say: 'It is burning. Leave it be. Whoever it was for, it can be seen a long way off again.' }] },
+      {
+        on: ['light lamp', 'light light', 'light tree', 'use lamp', 'use light', 'light', 'cast flame'], if: [near('lamp')],
+        do: [{ set: 'sight.lamp' }, { sound: 'take' }, { say: 'You go up the trunk, which allows it under protest, and get the lantern open with one hand and a spark into it with the other. The stub catches. Out here, flames behave. You climb down and stand back to look. It is not much of a light, but then it was never meant for you.' }],
+      },
+      { on: ['climb tree', 'climb lamp', 'climb light', 'climb'], if: [near('lamp')], do: [{ say: 'You go up as far as the lantern and look out over the drifts, the way it does. Nobody is coming. You climb down again.' }] },
+      { on: ['take lamp', 'take light', 'pull lamp'], do: [{ say: 'You leave it where it can be seen. That was the whole idea of it.' }] },
+    ],
+  },
+  {
+    id: 'wishes', name: 'The Wishing Stones', biomes: ['shrine'], minDepth: 3,
+    seen: 'Outside the ring somebody has heaped a second, smaller cairn, of flat stones with writing on them.',
+    prop: { t: 'cairn', seed: 41 },
+    thing: {
+      nouns: ['wishes'], try: ['make a wish'],
+      look: 'A knee-high heap of pebbles and flat stones, and every one has a few words scratched on it. They are wishes. The ones on top say LESS SNOW, and LESS SNOW, and A DOG, and LESS SNOW, and SPRING. ANY SPRING. I AM NOT FUSSY.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The heap goes clear as water to the frozen ground, and you can read every stone in it. Near the top they ask for less snow. Further down they ask for an early spring, and further still for a mild winter. At the very bottom, on stones worn nearly smooth, in letters nobody has cut for four thousand years, they ask for rain.' }] },
+      { on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [{ flag: 'sight.wishes' }, near('wishes')], do: [{ say: 'One stone each seems to be the custom. You have had yours.' }] },
+      {
+        on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [{ flag: 'crown.unmade' }, near('wishes')],
+        do: [{ set: 'sight.wishes' }, { say: 'You find a flat stone and begin to scratch LESS SNOW on it, out of habit, and then you stop. In Hollowmere the eaves are dripping. You turn the stone over, scratch THANK YOU on the other side instead, and set it on the top, that side up.' }],
+      },
+      {
+        on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [near('wishes')],
+        do: [{ set: 'sight.wishes' }, { say: 'You find a flat stone, scratch LESS SNOW on it with the point of your knife, and set it on the top with the others. It is what everybody else asked for. It seems only right to add your voice.' }],
+      },
+      { on: ['read wishes', 'read inscription'], if: [near('wishes')], do: [{ say: 'LESS SNOW. LESS SNOW. A DOG. LESS SNOW. SPRING. ANY SPRING. I AM NOT FUSSY. The ones further down are worn, and harder to make out.' }] },
+      { on: ['take wishes', 'attack wishes', 'push wishes'], do: [{ say: 'You leave them be. They are not yours, and some of them may still be waiting.' }] },
+    ],
+  },
+  {
+    id: 'ferry', name: 'The Ferry Post', biomes: ['mere'], minDepth: 3, side: 'e',
+    seen: 'A black post stands at the edge of the ice, with a horn hung on it by a cord.',
+    prop: { t: 'post', v: 'horn' },
+    thing: {
+      nouns: ['ferry', 'ale', 'fence', 'sign', 'rope'], try: ['blow the horn'],
+      look: "A post as thick as a man, black with old tar, with an iron ring for a mooring rope and a cow's horn hung beside it on a cord. Burned into the wood, in letters big enough to read from the far side of the water: BLOW FOR THE FERRY. There is no river here. There is the mere, frozen, and beyond it the east.",
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The ice goes clear as a window. A rope runs from the iron ring down into the water and away east along the bottom, straight as a rule, further than you can see. Below the post, on a short line, lies the ferry: a broad flat boat, sitting upright on the mud. Its last ferryman made it fast before he went, properly, the way he always had, ready for a crossing in the morning.' }] },
+      { on: ['blow ale', 'blow ferry', 'use ale', 'use ferry'], if: [{ flag: 'sight.ferry' }, near('ferry')], do: [{ say: 'You blow again. The ice hears you out, politely.' }] },
+      {
+        on: ['blow ale', 'blow ferry', 'use ale', 'use ferry'], if: [near('ferry')],
+        do: [{ set: 'sight.ferry' }, { say: 'You put the horn to your mouth and blow. It gives a long, low note that goes out across the ice and keeps on going for longer than seems likely. Then you wait, because that is what the post tells you to do. The ferry does not come. You had not really thought it would, and you find you are a little disappointed in it all the same.' }],
+      },
+      { on: ['take ale', 'take ferry', 'pull ferry', 'push ferry', 'pull rope', 'take rope'], do: [{ say: 'The horn belongs to the post, and the post has been standing here a good deal longer than you. Somebody may want the ferry yet.' }] },
+      { on: ['read ferry', 'read sign', 'read inscription'], do: [{ say: 'BLOW FOR THE FERRY.' }] },
+    ],
+  },
+  {
+    id: 'rota', name: "The Reavers' Rota", biomes: ['camp'], minDepth: 4,
+    seen: 'By the fire-pit a board is nailed to a post, and somebody has been writing on it.',
+    prop: { t: 'signpost' },
+    thing: {
+      nouns: ['rota', 'sign'], try: ['read the board'],
+      look: 'A split board nailed to a post, cut all over with names and duties in at least three hands, none of them good. Reavers, it turns out, keep a rota.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. Behind the tents, under a foot of snow, where somebody buried it in a hurry and then stamped on the place, lies a cooking-pot. Its bottom is burned clean through, and something black is welded to the inside of it that may once have been a stew. You now know why not Ulf.' }] },
+      {
+        on: ['read rota', 'read sign', 'read inscription'], if: [near('rota')],
+        do: [{ say: 'WATCH: ULF. KETIL. ULF. GRIM. WOOD: KETIL. GRIM. ULF. KETIL. THE POT: GRIM. KETIL. GRIM. KETIL. NOT ULF. Under that, in a second hand: WHY NOT ULF. Under that, in a third, cut very deep: YOU KNOW WHY.' }],
+      },
+      { on: ['read rota', 'read sign', 'read inscription'], do: [{ say: 'You cannot make it out from here.' }] },
+      { on: ['take rota', 'take sign', 'pull rota'], do: [{ say: 'You leave it where it is. Somebody has to keep them organised.' }] },
+      { on: ['attack rota', 'attack sign'], do: [{ say: 'It has done nothing to you. It has done a great deal to Ulf.' }] },
+    ],
+  },
+  {
+    id: 'oven', name: 'The Bread Oven', biomes: ['ruin'], minDepth: 4,
+    seen: 'Among the fallen stones one thing still stands whole: a domed oven of fired clay.',
+    prop: { t: 'oven' },
+    when: [{ if: [{ flag: 'sight.oven' }], prop: { t: 'oven', v: 'lit' } }],
+    thing: {
+      nouns: ['oven', 'food'], try: ['light the oven'],
+      look: 'A bread oven as round as a beehive and as high as your chest, built of clay and fired as hard as a pot by years of use. Everything else that stood here has fallen down. The oven has not so much as cracked. There is a loaf inside it, and kindling laid ready at the back.',
+      lookWhen: [{ if: [{ flag: 'sight.oven' }], look: 'The oven is lit and drawing well, and warmth comes out of its mouth like a slow breath. The loaf is still in there, minding its own business.' }],
+    },
+    rules: [
+      { on: 'orun', do: [{ say: "ORUN. The snow goes to glass. Under it lie the floors of a dozen houses, set round the oven in a ring, every door facing it, and from every doorstep a path is worn into the stone, straight to the oven's mouth. One fire, and all of them shared it, every morning, for as long as there was anything to bake." }] },
+      { on: ['light oven', 'light hearth', 'use oven', 'light', 'cast flame'], if: [{ flag: 'sight.oven' }], do: [{ say: 'It is lit. Stand by it a while. That is what it is for.' }] },
+      {
+        on: ['light oven', 'light hearth', 'use oven', 'light', 'cast flame'], if: [near('oven')],
+        do: [{ set: 'sight.oven' }, { heal: 15 }, { sound: 'take' }, { say: 'The kindling was laid a very long time ago and is as dry as paper. It catches at the first spark, the oven draws the way it was built to, and after a while warmth comes out of its mouth like a slow breath. You stand in front of it with your hands out, as people stood here every morning, and are warm. You leave the loaf where it is. It has waited a long time for this.' }],
+      },
+      { on: ['warm', 'warm oven', 'sit oven'], if: [{ flag: 'sight.oven' }, near('oven')], do: [{ say: 'You stand by the oven until your fingers remember what they are for.' }] },
+      { on: ['enter oven', 'climb oven'], do: [{ say: 'It was built for bread, and you are the wrong shape.' }] },
+      { on: ['eat food', 'take food', 'eat oven'], do: [{ say: 'It has been bread for a long time, and stone for a good deal longer. You would need different teeth.' }] },
+      { on: ['take oven', 'push oven', 'attack oven'], do: [{ say: 'It has outlasted a whole village. It can outlast you.' }] },
+    ],
+  },
+  {
+    id: 'lookout', name: 'The Lookout', biomes: ['crags'], minDepth: 5,
+    seen: 'Iron pegs have been driven into the face of one crag, one above another, like the rungs of a ladder.',
+    prop: { t: 'crag', w: 40, h: 64, seed: 17, v: 'pegs' },
+    thing: {
+      nouns: ['pegs'], try: ['climb the pegs'],
+      look: 'A spur of grey rock with iron pegs hammered into its face a stride apart, all the way up to a ledge. The pegs are worn bright on top by hands and boots, and rusted underneath. Somebody climbed this often, and not for the exercise.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The snow on the ledge above blows clear, and the rock there is scratched all over with small pictures in rows: each one a roof, with a line of smoke going up from it. Somebody who lived out here climbed up, winter after winter, to count the smoke of home. The first rows have twenty roofs. The last has eleven. After that nobody came up to count.' }] },
+      {
+        on: ['climb pegs', 'climb crag', 'climb', 'use pegs'], if: [{ flag: 'hearth.lit' }, near('lookout')],
+        do: [{ say: 'You go up the pegs, which are colder than iron has any right to be, and haul yourself onto the ledge. The whole country you have crossed lies below you, white and folded, and at the far end of it, so small you nearly miss it, is Hollowmere, with smoke going straight up from all eleven of its roofs. It is a fine thing to see from a long way off. You sit and look at it for a while before you climb down.' }],
+      },
+      {
+        on: ['climb pegs', 'climb crag', 'climb', 'use pegs'], if: [near('lookout')],
+        do: [{ say: 'You go up the pegs, which are colder than iron has any right to be, and haul yourself onto the ledge. The whole country you have crossed lies below you, white and folded, and at the far end of it, so small you nearly miss it, one thread of smoke is going up. That is Hollowmere: one fire, and somebody keeping it in. You watch it for a while, to be sure, before you climb down.' }],
+      },
+      { on: ['take pegs', 'pull pegs'], do: [{ say: 'They were driven in to stay, and they have.' }] },
+    ],
+  },
+  {
+    id: 'door', name: 'The Door', biomes: ['open'], minDepth: 6,
+    seen: 'A door stands by itself in the snow, shut, in a frame with no house round it.',
+    prop: { t: 'doorway' },
+    thing: {
+      nouns: ['door', 'inscription'], try: ['knock on the door', 'open the door', 'read the notches'],
+      look: 'Two oak posts and a lintel, set deep in the ground, with the door still hung between them on leather hinges, and shut. There is no house. There is no wall. On one post a row of notches climbs from knee height to shoulder height, with names cut beside them. You cannot tell which side was the inside.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. On the far side of the same post, low down, where a grown-up would have to kneel to see them, is a fourth row of notches, very close together. There is no name beside these, only a small scratched picture of a dog.' }] },
+      { on: ['knock door', 'knock'], if: [near('door')], do: [{ say: 'You knock. It seems only polite. Nobody answers, as you knew nobody would, but you notice you were listening all the same.' }] },
+      { on: ['open door', 'enter door', 'push door'], if: [{ flag: 'sight.door' }, near('door')], do: [{ say: 'In, and out again. It is the same snow on both sides.' }] },
+      {
+        on: ['open door', 'enter door', 'push door'], if: [near('door')],
+        do: [{ set: 'sight.door' }, { say: 'You lift the latch, step through, and shut the door behind you. You are standing in the snow, exactly as cold as you were a moment ago, on the other side of nothing. You wipe your boots anyway.' }],
+      },
+      {
+        on: ['read inscription', 'read door'], if: [near('door')],
+        do: [{ say: "Three names, cut with a knife: EYVIND, SIGRUN, and LITTLE ODA. Their notches climb the post a hand at a time, a year at a time, LITTLE ODA's fastest of all. The last three were cut on the same day, deeper than the rest, the way people do who want to remember exactly how tall everybody was. Nobody took the door. It is a hard thing to carry, a door." }],
+      },
+      { on: ['read inscription', 'read door'], do: [{ say: 'You are not close enough to read it.' }] },
+      { on: ['take door', 'attack door', 'close door'], do: [{ say: 'It is somebody\'s door, even now. You leave it shut, the way they did.' }] },
+    ],
+  },
 ];
 
 export const frontier: FrontierDef = {
