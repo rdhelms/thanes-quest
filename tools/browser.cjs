@@ -27,7 +27,8 @@
 //
 // Real keys and clicks go to the page. The development build's `window.game` is read only to know
 // when a box or a menu is up, where things stand, and when a walk is over. PORT moves the control
-// port (7777); VIEW=WxH and TOUCH=1 set the window, for the phone layout (add ?touch to the address).
+// port (7777) and GAME the address of the game (http://localhost:5173/), so that two can run side by
+// side; VIEW=WxH and TOUCH=1 set the window, for the phone layout (add ?touch to the address).
 //
 // Needs Playwright and a Chromium, which are not dependencies of the game: `npm i -D playwright`
 // and `npx playwright install chromium` where they are not already on the machine.
@@ -37,7 +38,7 @@ const http = require('http');
 const path = require('path');
 
 const PORT = Number(process.env.PORT || 7777);
-const URL0 = 'http://localhost:5173/';
+const URL0 = process.env.GAME || 'http://localhost:5173/';
 const CACHE = path.join(__dirname, '..', 'node_modules', '.cache', 'thanes-quest', 'browser');
 
 // ---------------------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ const serve = async () => {
     p.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
   };
   hook(page);
-  await page.goto(process.argv[3] || 'http://localhost:5173/');
+  await page.goto(process.argv[3] || URL0);
 
   const run = async (acts) => {
     const out = [];

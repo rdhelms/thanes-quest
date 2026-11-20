@@ -180,6 +180,19 @@ Four rules shape the code, so that a larger, shared, growing world stays possibl
 3. Add any new nouns to `src/game/data/vocab.ts`.
 4. Run `npm test`. The validator will say what is unreachable, misspelled or missing.
 
+### Adding something to find in the wild
+
+The generated country holds "sights": small scenes written by hand, each standing once, in the
+nearest country to home of a kind that suits it. They are the `sights` list in
+`src/game/data/frontier.ts`, and one more is one more entry: where it may stand, the sentence that
+gets it noticed, what is drawn, the thing itself, and its rules (written exactly as a room's are;
+`near: '<its id>'` means standing by it). The engine places it, names the place after it and walks
+the player to it. Give each something to read, something to try, and something only ORUN shows.
+
+Two things to know. A sight gives no score: the walkthrough test must earn every score award the
+content declares, and it does not go looking for these. And `npm test` checks every sight's words
+against the vocabulary, tries what each offers, and walks to each from across its screen.
+
 ## QA tools
 
 Four scripts stand in for hours of play. (Three are bundled with the esbuild that Vite brings. The
@@ -224,3 +237,8 @@ keyboard-equivalent intents:
 
 Every generated room within seven screens of the valley, and every vault under them, is also put
 through the same validator as the hand-made rooms.
+
+The last of those walkthroughs is a contract worth knowing about before adding to the story: it
+ends by checking that every quest is finished and every score award anywhere in the content has
+been earned. A new quest, or a new `score` effect, needs the bot in `tests/walkthrough.test.ts`
+taught to do it. Things that are only there to be found should give no score.
