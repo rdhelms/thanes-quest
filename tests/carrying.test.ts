@@ -3,18 +3,19 @@
 
 import { describe, expect, it } from 'vitest';
 import { bagRows, groundRows, storedRows } from '../src/engine/commands';
-import { sights } from '../src/engine/frontier';
+import { homes, sights, wildId } from '../src/engine/frontier';
 import { Renderer } from '../src/engine/render';
 import { Shell, type Modal } from '../src/engine/shell';
 import { Sim } from '../src/engine/sim';
 import type { GameState } from '../src/engine/types';
 import { behaviours } from '../src/game/behaviours';
 import { content } from '../src/game/content';
-import { Bot, game, says, type } from './helpers';
+import { game, type } from './helpers';
 
 /** Fill the pack with wolf pelts until another would not go in. */
 function fill(sim: Sim): void {
   while (sim.fits('pelt')) sim.give('pelt');
+  while (sim.fits('potion')) sim.give('potion');
   sim.drain();
 }
 
@@ -84,6 +85,7 @@ describe('the limit', () => {
 
   it('refuses a pick-up that will not fit, says so and what would help, and leaves the thing where it is', () => {
     const sim = game('village', 172, 126);
+    sim.give('sword');
     fill(sim);
     const said = type(sim, 'take hatchet');
     expect(said[0]).toContain('Your pack will not take the hatchet');
@@ -123,9 +125,10 @@ describe('the limit', () => {
     back.enterRoom('pinewood', pile.x, pile.y + 4);
     expect(back.pile('pelt')?.n).toBe(pile.n);
     type(back, 'drop 3 pelts');
+    const n0 = back.pile('pelt')!.n;
     const got = type(back, 'take pelt');
     expect(got[0]).toContain('wolf pelt');
-    expect(back.pile('pelt')).toBeUndefined();
+    expect(back.pile('pelt')?.n ?? 0).toBe(n0 - 1);
   });
 
   it('keeps the silver and the loot of a chest apart: the silver always, what will not fit on the ground beside it', () => {
@@ -145,8 +148,8 @@ describe('the limit', () => {
 
   it('cannot be raised past by buying: a seller will not sell what will not fit, and keeps the silver', () => {
     const sim = by('village', 'odd');
-    sim.give('sword');
-    sim.p.weapon = null;
+    // Wearing something better, so that the mail would go in the pack.
+    sim.give('bearcloak');
     fill(sim);
     sim.p.gold = 100;
     const said = type(sim, 'buy mail');
@@ -154,6 +157,8 @@ describe('the limit', () => {
     expect(sim.p.gold).toBe(100);
     expect(sim.p.inv.mail).toBeUndefined();
     // A blade bought goes into the hand, so it always fits: the one it replaces is what goes in the pack.
+    expect(type(sim, 'buy sword')[0]).toContain('iron sword');
+    expect(sim.p.weapon).toBe('sword');
     const inn = by('inn', 'halla');
     fill(inn);
     inn.p.gold = 20;
@@ -163,9 +168,11 @@ describe('the limit', () => {
 
   it('can be gone over, by what comes off a hand into the pack, but then nothing more goes in until it is sorted out', () => {
     const sim = game('village', 172, 126);
+    sim.give('sword');
     fill(sim);
     sim.give('longsword');
-    expect(type(sim, 'unequip')[0]).toBeTruthy();
+    expect(type(sim, 'swap')).toBeTruthy();
+    expect(sim.p.weapon).toBe('sword');
     expect(sim.load()).toBeGreaterThan(sim.limit());
     // Still free to walk.
     const x = sim.p.x;
@@ -320,16 +327,130 @@ describe('the chest at the inn', () => {
 });
 
 describe('carrying more', () => {
-  it('comes of six wolf pelts and Brekka\'s needle', () => {
-    const at = sights(content); // (the frontier is generated; Brekka lives where the content says)
-    expect(at.size).toBeGreaterThan(0);
-    const bot = new Bot(game());
-    const { sim } = bot;
-    const home = Object.entries(sim.content.frontier!.grid).length ? undefined : undefined;
-    void home;
+  /** Beside somebody who lives out at a steading. */
+  const atHome = (who: string): Sim => {
+    const [x, y] = homes(content)[who];
+    const sim = game(wildId(x, y));
+    sim.rs.actors = sim.rs.actors.filter((a) => a.kind === 'npc');
+    const a = sim.rs.actors.find((k) => k.ref === who)!;
+    sim.p.x = a.x;
+    sim.p.y = a.y + 6;
+    return sim;
+  };
+
+  it("comes of six wolf pelts and Brekka's needle", () => {
+    const sim = atHome('brekka');
     sim.state.flags['brekka.met'] = true;
-    // Standing beside her, wherever she lives.
-    const homes = (globalThis as unknown as { homes?: unknown }).homes;
-    void homes;
+    sim.give('pelt', 5);
+    const before = sim.limit();
+    expect(type(sim, 'ask brekka about a pack')[0]).toContain('Bring me six wolf pelts');
+    expect(sim.p.inv.pelt).toBe(5);
+    sim.give('pelt');
+    expect(type(sim, 'ask brekka about a pack')[0]).toContain('They can carry yours');
+    expect(sim.p.inv.pelt).toBeUndefined();
+    expect(sim.limit()).toBe(before + 20);
+    // The bag says so, and the pack can never be put down.
+    expect(bagRows(sim).map((r) => r.label)).toContain("Brekka's pack");
+    expect(type(sim, 'drop the pack')[0]).toContain('Brekka would know');
+    expect(sim.limit()).toBe(before + 20);
+    expect(type(sim, 'ask brekka about a pack')[0]).toContain('outlast you');
+  });
+
+  it('comes of a deeper wind: every level put into stamina', () => {
+    const sim = game();
+    const before = sim.limit();
+    sim.p.pendingLevels = 2;
+    sim.step([{ t: 'level', pool: 'hp' }]);
+    expect(sim.limit()).toBe(before);
+    sim.step([{ t: 'level', pool: 'sp' }]);
+    expect(sim.limit()).toBe(before + 5);
+    expect(sim.drain().some((e) => e.t === 'note' && e.text.includes(`carry ${before + 5}`))).toBe(true);
+  });
+
+  it("comes of a pedlar's frame, a long way out, left for whoever has further to go", () => {
+    const [room] = [...sights(content)].find(([, s]) => s.id === 'pedlar')!;
+    const sim = game(room);
+    sim.rs.actors = [];
+    const frame = sim.things().find((t) => t.id === 'pedlar')!;
+    sim.p.x = frame.x + 16;
+    sim.p.y = frame.y + 2;
+    const before = sim.limit();
+    expect(type(sim, 'read the frame')[0]).toContain('FURTHER TO GO');
+    expect(type(sim, 'take the frame')[0]).toContain('room to spare');
+    expect(sim.limit()).toBe(before + 15);
+    expect(type(sim, 'take the frame')[0]).toContain('on your back already');
+    expect(sim.limit()).toBe(before + 15);
+  });
+});
+
+describe('what a story needs', () => {
+  it('can always be taken, however full the pack', () => {
+    const sim = game('tarn');
+    fill(sim);
+    for (const id of ['ember', 'crown', 'amulet', 'glove', 'grain', 'ewe', 'toyhorse', 'log', 'trappack', 'frame']) {
+      expect(sim.fits(id), id).toBe(true);
+      sim.give(id);
+      expect(sim.p.inv[id], id).toBe(1);
+    }
+    expect(sim.rs.ground ?? []).toEqual([]);
+  });
+});
+
+describe('a game saved before packs had limits', () => {
+  it('loads, says the pack is over-full, walks, and takes nothing more until it is lightened', () => {
+    const sim = game('village', 172, 126);
+    // As an older build wrote it: no ground, no chest, and everything taken whatever it weighed.
+    sim.p.inv = { pelt: 30, bearskin: 3, potion: 6, sword: 1 };
+    sim.p.weapon = 'sword';
+    const old = JSON.parse(JSON.stringify(sim.state)) as GameState;
+    for (const r of Object.values(old.rooms)) {
+      delete r.ground;
+      delete r.stored;
+    }
+    const back = new Sim(content, { saved: old, behaviours });
+    const notes = back.drain().flatMap((e) => (e.t === 'note' ? [e.text] : []));
+    expect(notes).toContain(content.text.overladen);
+    expect(back.p.inv.pelt).toBe(30);
+    const x = back.p.x;
+    for (let i = 0; i < 10; i++) back.step([{ t: 'move', dx: 1, dy: 0 }]);
+    expect(back.p.x).not.toBe(x);
+    expect(groundRows(back)).toEqual([]);
+    back.p.x = 172;
+    back.p.y = 126;
+    expect(type(back, 'take hatchet')[0]).toContain('will not take');
+    // Lightened, it carries on as ever.
+    type(back, 'drop all bearskins');
+    type(back, 'drop 25 pelts');
+    expect(back.load()).toBeLessThan(back.limit());
+    type(back, 'take hatchet');
+    expect(back.p.inv.hatchet).toBe(1);
+  });
+});
+
+describe('things to do with what is carried', () => {
+  it('Fenn shelves the books that have been read, and asks for the others to be read first', () => {
+    const sim = by('hut', 'fenn');
+    sim.give('tomeFlame');
+    sim.give('tomeFrost');
+    type(sim, 'read tome');
+    expect(type(sim, 'return the books to fenn')[0]).toContain('on a shelf is a book');
+    expect(sim.p.inv.tomeFlame).toBeUndefined();
+    expect(sim.p.inv.tomeFrost).toBe(1);
+    expect(type(sim, 'give tome to fenn')[0]).toContain('Read it first');
+  });
+
+  it('Odd buys back what he made, and nothing he did not', () => {
+    const sim = by('village', 'odd');
+    sim.give('sword');
+    sim.give('longsword');
+    sim.give('hatchet');
+    sim.give('spear');
+    const gold = sim.p.gold;
+    expect(type(sim, 'sell the sword back')[0]).toContain('10 silver');
+    expect(sim.p.gold).toBe(gold + 10);
+    expect(sim.p.inv.sword).toBeUndefined();
+    expect(type(sim, 'sell hatchet')[0]).toContain('never saw it');
+    expect(type(sim, 'sell spear')[0]).toContain('do not buy what I did not make');
+    expect(sim.p.inv.hatchet).toBe(1);
   });
 });

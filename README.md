@@ -40,8 +40,10 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
   when the typing line is empty.
 - **Shift** (held) raises a guard: you cannot walk, but you can turn, and blows from the front
   mostly bounce.
-- **Tab** opens your bag (so does typing `inventory`): a row for each thing carried, and your
-  silver. Choose a thing to read about it and to drink, eat, read, use, ready, wear or take it off.
+- **Tab** opens your bag (so does typing `inventory`): a row for each thing carried with its
+  weight, how full the pack is, and your silver. Choose a thing to read about it and to drink, eat,
+  read, use, ready, wear, take off, drop, or put in a chest. The bag also lists what lies on the
+  ground where you stand, and what is in the chest there, to take back.
   **Esc** opens the menu (bag, map, journal, character, deeds, save, restore, settings, how to
   play, start again; the settings are music, sound effects, how walking works, and whether fights
   are fair or gentle). Whatever the menu opens comes back to the menu when it is closed; Resume,
@@ -61,6 +63,16 @@ Some things to type: `look`, `look at sign`, `take hatchet`, `equip hatchet`, `t
 `ask elder about barrow`, `read tome`, `cast flame`, `buy sword`, `wear torc`, `swap` (changes
 between your last two weapons), `map`, `exits`, `think`, `journal`, `skills` (the character
 sheet), `deeds`, `time`, `save`, `help`.
+
+**Carrying.** A pack holds 35 to begin with. A wolf pelt weighs 3, a bearskin 15, a draught 1, a
+sword 6, mail 20; silver weighs nothing, and so does anything a story needs, which can never be
+put down. What is in hand or worn is not in the pack. A full pack takes nothing more: loot that
+will not fit stays where it fell, and sellers will not sell what will not fit. Eat, sell (Odd buys
+back what he made; Fenn takes back books you have read), `drop` things (they stay where they are
+put, to be taken again), or keep them in the chest at the inn (`put pelts in chest`, `take sword
+from chest`). `weigh` tells what something weighs. Three things let you carry more: a pack Brekka
+the trapper makes from six wolf pelts, every level put into Stamina, and something found far out
+in the wild.
 
 There are six skills, and they rise only by use: swing to raise Blade, shoot to raise Archery,
 block to raise Block, cast to raise Sorcery, heal yourself to raise Mending, read runes and books
@@ -106,7 +118,7 @@ Finishing the first saga does not finish the game:
   trades, tells what lies nearby, and has something they want and something worth having.
 - **Vaults.** Ruined towers have dark vaults under them: take a light. Some hold trinkets, which
   are worn one at a time.
-- **Things to find.** Seventeen small scenes written by hand stand once each somewhere in the
+- **Things to find.** Eighteen small scenes written by hand stand once each somewhere in the
   generated country: a cold camp with a kettle, a signpost where no roads meet, a sledge, a sleeping
   bear, a ferry-horn by a frozen mere, a bread oven in a ruin, a door with no house round it.
   Each can be looked at and tried, and each shows something more to the word ORUN. Two of them send
@@ -185,6 +197,16 @@ Four rules shape the code, so that a larger, shared, growing world stays possibl
    exits, doors, things, characters, enemies, and rules of the form "when the player types this,
    if these hold, do these". `validate.ts` checks every record (words exist, exits lead somewhere
    and back, everything can actually be walked to) before it is played.
+
+### Adding an item
+
+Items are in `src/game/content.ts`. Every item needs a `weight` (the validator says so if one is
+missing): a pelt is 3, a sword 6, mail 20, a pack holds 35. Give `keep` (true, or the line said
+when somebody tries to put it down) to anything a story needs: it must weigh 0, and can never be
+dropped, stored or left behind. `carry` makes a kept item raise what can be carried. The limit
+itself is `carry` in the same file. Give an item from a rule with `{ give: 'pelt', took: 'You take
+the pelt.' }`: what will not fit is left on the ground, and `took` is said only if all of it was taken.
+A rule that pays silver for an item is refused when it will not fit, in the seller's `full` line.
 
 ### Adding a room
 

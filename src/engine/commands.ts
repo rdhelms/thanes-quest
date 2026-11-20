@@ -490,9 +490,6 @@ function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null, 
       else sim.say(sim.text('cantEquip'));
       return true;
     }
-    case 'drop':
-      sim.say(sim.text('noDrop'));
-      return true;
     case 'unequip':
       // Naming something worn takes off that one thing; otherwise the hands are emptied.
       if (target?.k === 'item' && (p.armor === target.def.id || p.trinket === target.def.id)) {
