@@ -23,6 +23,13 @@ function parseCrypt(id: string): [number, number] | null {
   return m ? [Number(m[1]), Number(m[2])] : null;
 }
 
+/** A name from two halves, never one that says the same thing twice ("Greywater Water"). */
+function placeName(first: string, seconds: string[], pick: <T>(list: T[]) => T): string {
+  const second = pick(seconds);
+  const echo = (s: string): boolean => first.toLowerCase().includes(s.toLowerCase());
+  return `${first} ${echo(second) ? seconds.find((s) => !echo(s)) ?? second : second}`;
+}
+
 /** "a brooch", "an iron torc". */
 export const withArticle = (name: string): string => `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`;
 
@@ -453,7 +460,7 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
   const far = level >= 3 ? ' ' + f.text.deep : '';
   return {
     id,
-    name: `${pick(text.first)} ${pick(text.second)}`,
+    name: placeName(pick(text.first), text.second, pick),
     music: peaceful ? f.calm : f.music,
     mark,
     look: `${pick(text.look)}${far} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`,
@@ -509,7 +516,7 @@ function crypt(c: Content, X: number, Y: number): RoomDef | undefined {
   const trinket = f.trinkets?.length && roll() < 0.6 ? f.trinkets[mix(X, Y, f.seed, 5) % f.trinkets.length] : null;
   return {
     id,
-    name: `${pick(text.first)} ${pick(text.second)}`,
+    name: placeName(pick(text.first), text.second, pick),
     music: f.under,
     dark: true,
     look: pick(text.look),

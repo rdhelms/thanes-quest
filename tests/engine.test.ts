@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as combat from '../src/engine/combat';
 import { gainSkill, hurtPlayer, levelNeed } from '../src/engine/combat';
-import { withArticle } from '../src/engine/frontier';
+import { homes, roomOf, wildId, withArticle } from '../src/engine/frontier';
 import { Parser, matches } from '../src/engine/parser';
 import { all } from '../src/engine/rules';
 import { Shell } from '../src/engine/shell';
@@ -518,7 +518,7 @@ describe('conversation, hints and first run', () => {
     for (const ch of Object.values(content.chars)) {
       collect(ch.talk);
       Object.values(ch.topics ?? {}).forEach(collect);
-      if (ch.shrug) spoken.push(ch.shrug);
+      if (ch.shrug) collect(ch.shrug);
     }
     // What the Elder and the people of the steadings say through the game's text counts too.
     for (const [key, line] of Object.entries(content.text)) if (key.startsWith('bounty.') || key.startsWith('rumour.')) spoken.push(line);
@@ -1517,7 +1517,7 @@ describe('a world with time in it', () => {
     sim.state.flags['bounty.n'] = 3;
     const lines = read().join(' ');
     expect(lines).toContain('named Thane');
-    expect(lines).toContain('3 times so far');
+    expect(lines).toContain('Jobs done so far: 3.');
     expect(lines).not.toContain('crown');
   });
 });
@@ -2750,4 +2750,98 @@ describe('small things found by playing', () => {
     expect(withArticle('iron torc')).toBe('an iron torc');
     expect(withArticle('bone token')).toBe('a bone token');
   });
+});
+
+describe('found by playing on past the first saga', () => {
+  it('lets a menu row walk the last step, when talking distance is not trading distance', () => {
+    const shell = playing('village', 160, 160);
+    shell.sim.state.flags['odd.met'] = true;
+    shell.sim.p.inv.pelt = 1;
+    const odd = shell.sim.rs.actors.find((a) => a.ref === 'odd')!;
+    // Near enough to be talking (48), not near enough for a rule that wants him at hand (44).
+    shell.sim.p.x = odd.x + 46;
+    shell.sim.p.y = odd.y;
+    typed(shell, 'talk to odd');
+    const m = shell.modal;
+    if (m?.k !== 'list') throw new Error('expected a menu');
+    while (!m.items[m.sel].startsWith('Sell a wolf pelt')) shell.keyDown('ArrowDown');
+    shell.keyDown('Enter');
+    const said: string[] = [];
+    for (let i = 0; i < 200 && shell.sim.p.inv.pelt; i++) {
+      const box = shell.modal;
+      if (box?.k === 'msg') said.push(box.text);
+      box && box.k !== 'list' ? shell.keyDown('Enter') : shell.tick();
+    }
+    expect(shell.sim.p.inv.pelt).toBeUndefined();
+    expect(shell.sim.p.gold).toBe(3);
+  });
+
+  it('knows a plain plural, and does not mistake other words for one', () => {
+    const p = new Parser(content.vocab);
+    expect(p.parse('look at the crowns')).toEqual({ ok: true, verb: 'look', nouns: ['crown'] });
+    expect(p.parse('look at the grass')).toMatchObject({ ok: false });
+  });
+
+  it('lets the Cold Smith be named, spoken to and offered his own work', () => {
+    const sim = game('rimehall', 60, 126);
+    sim.give('crown');
+    expect(type(sim, 'look at the smith')[0]).toContain('Half as tall again');
+    expect(type(sim, 'talk to the smith')[0]).toContain('work that came out wrong');
+    expect(type(sim, 'give crown to smith')[0]).toContain('He wants it right');
+    expect(type(sim, 'look at crowns')[0]).toContain('heaped like kindling');
+    expect(type(sim, 'look at hammer')[0]).toContain('strong enough to swing it');
+    // In the square, the smith is still Odd.
+    const home = game('village', 130, 156);
+    expect(type(home, 'look at the smith')[0]).toContain('leather apron');
+  });
+
+  it('greets a Thane it has not met as a Thane, not as it would have nine days before', () => {
+    const sim = game('village', 130, 156);
+    sim.state.flags['hearth.lit'] = true;
+    expect(type(sim, 'talk to odd')[0]).toContain('which is roaring');
+    const inn = game('inn', 236, 133);
+    inn.state.flags['hearth.lit'] = true;
+    expect(type(inn, 'talk to halla')[0]).toContain("lit Marta's hearth");
+    expect(inn.p.inv.potion).toBe(1);
+  });
+
+  it('has Halla point the way to the three steadings, truthfully, once there is a fire to gossip by', () => {
+    const sim = game('inn', 236, 133);
+    sim.state.flags['halla.met'] = true;
+    expect(type(sim, 'ask halla about work')[0]).toContain('big trouble');
+    sim.state.flags['hearth.lit'] = true;
+    const said = type(sim, 'ask halla about work')[0];
+    expect(said).toContain('Brekka the trapper, north beyond the barrow');
+    for (const who of ['brekka', 'ivar', 'runa']) expect(sim.state.flags[`goal.${who}`], who).toBeTruthy();
+    // What she says of where they live has to stay true of where the country puts them.
+    const at = homes(content);
+    expect(at.brekka[1] < 0 && Math.abs(at.brekka[0]) <= 1).toBe(true);
+    expect(at.ivar[0] < 0 && at.ivar[1] < 0).toBe(true);
+    expect(at.runa[0] > 0 && at.runa[1] > 0).toBe(true);
+  });
+
+  it('lets Marta be asked about Ivar, before and after', () => {
+    const sim = game('hall', 200, 122);
+    sim.state.flags['marta.met'] = true;
+    expect(type(sim, 'ask elder about ivar')[0]).toContain('a bear had him');
+    sim.state.flags['quest:message'] = 3;
+    expect(type(sim, 'ask elder about ivar')[0]).toContain('there is a chair by this hearth');
+    sim.state.flags['hearth.lit'] = true;
+    expect(type(sim, 'ask elder about sheep')[0]).toContain('a village to keep');
+  });
+
+  it('shows what is under the ice at the Sunken Bell to whoever asks with the right word', () => {
+    const sim = game('bellmere', 160, 160);
+    sim.teach('word:orun');
+    expect(type(sim, 'orun')[0]).toContain('roped together');
+  });
+
+  it('never names a place twice over', () => {
+    for (let x = -6; x <= 6; x++)
+      for (let y = -6; y <= 6; y++) {
+        const name = roomOf(content, wildId(x, y))?.name ?? '';
+        const [first, ...rest] = name.split(' ');
+        expect(rest.some((w) => w.length > 3 && first.toLowerCase().includes(w.toLowerCase())), name).toBe(false);
+      }
+  }, 30000);
 });

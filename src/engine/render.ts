@@ -403,7 +403,7 @@ export class Renderer {
       // A wounded enemy shows how much fight it has left.
       const full = a.kind === 'enemy' ? a.ai.max ?? sim.content.enemies[a.ref].hp : 0;
       // A foe about to strike says so: this is the moment to guard or step aside.
-      if (!dark && a.ai.wind > 0) {
+      if (!dark && a.ai.wind > 0 && a.act !== 'dead') {
         const wx = Math.round(a.x) - 3;
         const wy = Math.round(a.y) - Math.round((beast(spec) ? 22 : 38) * (spec.size ?? 1)) - 10 + PIC_Y;
         items.push({ y: 998, draw: () => (this.fill(wx - 1, wy - 1, 9, 10, UI.black), drawText(fb, SW, wx, wy, '!', UI.gold)) });
@@ -508,7 +508,12 @@ export class Renderer {
     const until = (k: string): boolean => Number(st.flags[k] ?? 0) > st.tick;
     const boons = [until('ward') ? 'Ward' : '', until('might') ? 'Might' : '', until('light') && sim.room.dark ? 'Light' : ''].filter(Boolean).join(' ');
     if (boons) drawText(fb, SW, SW - boons.length * 8, PIC_Y + PH + 16, boons, UI.gold);
-    drawText(fb, SW, 0, PIC_Y + PH + 16, [hands, ...words].filter(Boolean).join('  ').slice(0, 40 - (boons ? boons.length + 1 : 0)), UI.dim);
+    // The words are what can be typed, so they are never crowded off the line: what is in the
+    // hands is shortened to the weapon alone, or left out, before a word is.
+    const room = 40 - (boons ? boons.length + 1 : 0);
+    const weapon = p.weapon ? `[${sim.content.items[p.weapon]?.name ?? p.weapon}]` : '';
+    const line = [hands, weapon, ''].map((h) => [h, ...words].filter(Boolean).join('  ')).find((l) => l.length <= room) ?? words.join(' ');
+    drawText(fb, SW, 0, PIC_Y + PH + 16, line.slice(0, room), UI.dim);
 
     // Something that takes a whole fight to bring down gets its name and its health across the top.
     const boss = dark ? undefined : sim.rs.actors.find((a) => a.kind === 'enemy' && a.act !== 'dead' && sim.content.enemies[a.ref]?.ai === 'boss');

@@ -185,16 +185,16 @@ function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null):
       const anyone = nouns[0] === 'person';
       // Naming somebody who is elsewhere, as the one being addressed.
       const addressed = verb === 'talk' || nouns.length > 1;
-      const away = addressed && target?.k !== 'char' && Object.values(sim.content.chars).some((ch) => ch.nouns.includes(nouns[0]));
+      const away = addressed && !target && Object.values(sim.content.chars).some((ch) => ch.nouns.includes(nouns[0]));
       const who = target?.k === 'char' ? target : anyone || !target || verb === 'ask' ? nearestChar(sim) : null;
       if (away) sim.say(sim.text('personAway'));
-      else if (target && target.k !== 'char' && verb === 'talk') sim.say(sim.text('talkThing'));
+      else if (target && target.k !== 'char' && verb === 'talk') sim.say((target.k === 'enemy' && target.def.hail) || sim.text('talkThing'));
       else if (!who) sim.say(sim.text('talkNoOne'));
       else if (needNear(who.actor.x, who.actor.y, 48)) {
         const topic = verb === 'ask' ? nouns[target?.k === 'char' || anyone ? 1 : 0] : undefined;
         const entry = topic ? who.def.topics?.[topic] : who.def.talk;
         const said = entry ? speak(sim, entry, who.def.name) : false;
-        if (!said) sim.say(who.def.shrug ?? sim.text('shrug'), who.def.name);
+        if (!said && !(who.def.shrug && speak(sim, who.def.shrug, who.def.name))) sim.say(sim.text('shrug'), who.def.name);
         if (said !== 'brief') sim.talked(who.def.id);
       }
       return true;

@@ -39,7 +39,7 @@ const items: Record<string, ItemDef> = {
     use: [{ run: 'emberHome' }],
     offer: { label: 'Go home by the ember', say: 'use ember', if: [{ quiet: true }, { not: { near: 'well', d: 400 } }] },
   },
-  glove: { id: 'glove', name: 'grey glove', nouns: ['glove'], kind: 'misc', look: "A man's glove of good grey wool, the left. Somebody knitted it with care a long time ago, and it has never been worn." },
+  glove: { id: 'glove', name: 'grey glove', nouns: ['glove'], kind: 'misc', look: "A man's glove of good grey wool, the left. Somebody knitted it with care a long time ago, and it has never been worn.", don: [{ say: 'It was knitted for one hand in particular, forty years ago, and yours is not the hand. You fold it away again.' }] },
   spear: { id: 'spear', name: 'boar-spear', nouns: ['spear'], kind: 'weapon', power: 12, look: "Ivar's boar-spear: an ash shaft as thick as your wrist, and a blade like a willow leaf. It has stopped things a good deal bigger than you." },
   bearcloak: { id: 'bearcloak', name: 'greyback cloak', nouns: ['bearcloak'], kind: 'armor', power: 35, look: "A cloak of the Greyback's hide, grey fur outward, stitched by Brekka with sinew. It turns a blade nearly as well as mail and weighs half as much. It still smells faintly of bear." },
   tonic: {
@@ -164,7 +164,9 @@ const enemies: Record<string, EnemyDef> = {
     death: [{ add: 'bandits.killed', n: 1 }, { gold: 14 }, { give: 'potion' }, { note: 'He carried silver, and a red draught.' }],
   },
   coldsmith: {
-    id: 'coldsmith', name: 'the Cold Smith', nouns: ['coldsmith'], ai: 'boss', undead: true, reach: 30, hp: 240, dmg: 16, speed: 0.95, throws: 'frost',
+    // "The smith" is Odd's word everywhere else. Down here it can only mean this one.
+    id: 'coldsmith', name: 'the Cold Smith', nouns: ['coldsmith', 'odd'], ai: 'boss',
+    hail: 'The Cold Smith does not answer. He looks at you the way he looks at the crowns on the floor: as work that came out wrong.', undead: true, reach: 30, hp: 240, dmg: 16, speed: 0.95, throws: 'frost',
     spec: { skin: 'ice', hair: 'white', hairStyle: 'bald', beard: true, tunic: 'rock', legs: 'rock', boots: 'rock', apron: 'metal', eyes: 'glow', armed: true, outline: 'ice', size: 1.5 },
     look: 'Half as tall again as you, and built like the anvil he works at. His apron is ring-mail and his hammer is a block of blue ice on an iron haft. Where his face should be there is frost in the shape of one. He does not look up at once. He finishes the blow he was striking first.',
     kills: 'The Cold Smith turns you over once with his boot, the way a craftsman looks at a flawed piece, and goes back to his work.',
@@ -175,7 +177,8 @@ const enemies: Record<string, EnemyDef> = {
     ],
   },
   king: {
-    id: 'king', name: 'the Barrow-King', nouns: ['king'], ai: 'boss', undead: true, hp: 130, dmg: 12, speed: 1,
+    id: 'king', name: 'the Barrow-King', nouns: ['king'], ai: 'boss',
+    hail: 'The Barrow-King turns the dark where his eyes were toward you. Nothing in it answers. Every flame in the room leans a little further his way.', undead: true, hp: 130, dmg: 12, speed: 1,
     spec: { skin: 'wight', hair: 'gold', hairStyle: 'crown', beard: true, tunic: 'purple', legs: 'rock', boots: 'rock', cloak: 'purple', eyes: 'glow', armed: true, outline: 'glow' },
     look: 'Tall, crowned, and four thousand years past caring. Frost falls from him as he moves. Every flame in the room leans toward him.',
     kills: 'The Barrow-King takes the warmth out of you as easily as he took it from the village. He seats you beside his throne, where you make a handsome ornament.',
@@ -367,7 +370,7 @@ const deeds: Content['deeds'] = [
   { if: [{ flag: 'barrow.open' }], text: 'Spoke VETH at the barrow door, and it opened.' },
   { if: [{ flag: 'king.dead' }], text: 'Ended the Barrow-King in his own hall.' },
   { if: [{ flag: 'hearth.lit' }], text: "Lit the Elder's hearth, and was named Thane of Hollowmere." },
-  { if: [{ flag: 'bounty.n', min: 1 }], text: "Did the Elder's work in the wild: {bounty.n} times so far." },
+  { if: [{ flag: 'bounty.n', min: 1 }], text: "Did the Elder's work in the wild. Jobs done so far: {bounty.n}." },
   { if: [{ quest: 'message', is: 3 }], text: 'Carried a glove forty years late from Marta Coldhand to Ivar One-Glove.' },
   { if: [{ quest: 'greyback', min: 2 }], text: 'Killed the Greyback, who had robbed traps for six winters.' },
   { if: [{ flag: 'tonic' }], text: "Drank Runa's tonic, and kept it down." },

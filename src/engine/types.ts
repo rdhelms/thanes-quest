@@ -257,7 +257,7 @@ export interface CharDef {
   /** Answers to "ask <character> about <noun>", by canonical noun. */
   topics?: Record<string, Topic>;
   /** Said when asked about anything else. */
-  shrug?: string;
+  shrug?: Topic;
   /** What the conversation menu offers: a label and the command it stands for. */
   menu?: { label: string; say: string; if?: Cond[] }[];
 }
@@ -289,6 +289,8 @@ export interface EnemyDef {
   id: string;
   name: string;
   nouns: string[];
+  /** What comes of speaking to it, for the few that are worth speaking to. */
+  hail?: string;
   spec: CharSpec;
   look: string;
   hp: number;

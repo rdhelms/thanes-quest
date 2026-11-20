@@ -162,7 +162,7 @@ export class Shell {
     this.uiTick++;
     if (this.modal) return;
     // Mid-conversation, with the last reply read: offer what else can be said.
-    if (this.talkingTo && !this.queue.length) {
+    if (this.talkingTo && !this.queue.length && !this.errand) {
       this.openTalk();
       if (this.modal) return;
     }
@@ -282,8 +282,8 @@ export class Shell {
       [b.lastX, b.lastY] = [p.x, p.y];
       // A key takes over at once; and a walk that has gone on far too long is given up.
       if (keys[0] || keys[1] || this.tapDir[0] || this.tapDir[1] || ++b.ticks > 600) this.bound = this.errand = null;
-      // Near enough for what was typed: no need to tread on its toes.
-      else if (this.errand && this.sim.within(this.errand.x, this.errand.y, this.errand.d - 4)) this.arrive();
+      // Near enough for what was typed, with something to spare (whoever it is may shift): no need to tread on its toes.
+      else if (this.errand && this.sim.within(this.errand.x, this.errand.y, Math.min(this.errand.d - 4, this.errand.d * 0.8))) this.arrive();
       else {
         // Knocked off the way (a blow, a swing, a raised guard): find it again from here.
         const at = b.i ? b.paces[b.i - 1] : null;
@@ -543,7 +543,11 @@ export class Shell {
       pick: (i) => {
         this.talkLast = options[i]?.label ?? null;
         if (i >= options.length) leave();
-        else this.queue.push({ t: 'say', line: options[i].say });
+        else {
+          // Standing near enough to talk is not always near enough to trade: the row walks the last step itself.
+          this.tries = 0;
+          this.queue.push({ t: 'say', line: options[i].say, afoot: true });
+        }
       },
     });
   }

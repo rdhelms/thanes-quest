@@ -173,7 +173,8 @@ weather. A bear took his right hand, and he supposes she thinks it took all of h
 hero to tell her he is not dead. Marta says nothing for three breaths. Then she fetches one grey
 glove, the left: she knitted him a pair forty years ago and never sent them. "Do not tell him I
 kept it." Ivar laughs until he has to sit down, puts the glove on, and gives the hero his
-boar-spear.
+boar-spear. Told that he laughed, Marta looks at the fire for some time, and says that if his
+knees ever mend there is a chair by her hearth. She does not say whose.
 
 **The Greyback.** An old grey bear with a scarred face has robbed Brekka's trap-lines for six
 winters, and last month it ate her dog. The hero kills it in the crags near her steading. Brekka
@@ -192,7 +193,9 @@ walking, beasts taking sheep, and something living in old stones.
 that wanted a bell once stood here, a village or a ferry or a chapel, and shapes like a roof and a
 wall show under the ice. Cast into the bell's rim are the words "I called them in. I called them
 home. I was not answered." The hero hardens the ice and rings it. It gives one note that does not
-stop, and part of that note stays with the hero.
+stop, and part of that note stays with the hero. Spoken there, ORUN clears the ice to the bottom:
+a street of roofs runs to the bell's foot, and further out, where the mere is deepest, a line of
+small dark shapes lies evenly spaced, as people are who cross ice roped together.
 
 **The Hanging Tree**, far to the north. Reavers camp under a dead oak hung with ropes, and some of
 the loops are not empty. The hero can clear the camp, cut down the dead and lay them straight in

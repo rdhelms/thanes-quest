@@ -130,11 +130,23 @@ export const rimehall: RoomDef = {
     { id: 'runes', nouns: ['rune', 'inscription'], x: 160, y: 108, reach: 400, look: 'Three runes cut in the back wall, each as tall as you are. You can read none of them, and you find that you are glad.',
       lookWhen: [{ if: [{ flag: 'crown.unmade' }], look: 'The back wall is bare and dark where the three runes burned. You read them once, as they went out: KEEP ME WARM.' }],
     },
+    {
+      id: 'hammer', nouns: ['hammer'], x: 196, y: 138, reach: 400, look: 'A block of blue ice on an iron haft, in the hand of the one thing here strong enough to swing it.',
+      lookWhen: [
+        { if: [{ flag: 'crown.unmade' }], look: 'It lies where you let it fall, beside the cracked anvil. The ice of its head is clouding over.' },
+        { if: [{ flag: 'smith.dead' }], look: "The Smith's hammer, lying among the slabs of him: a block of blue ice on an iron haft. You could lift it, with both hands. Once." },
+      ],
+    },
     { id: 'pillars', nouns: ['pillar'], x: 84, y: 112, reach: 400, look: 'Pillars of ice, clear enough to see through. There are things frozen in them. You stop looking.' },
     { id: 'arch', nouns: ['arch', 'door'], x: 44, y: 108, reach: 400, look: 'The stair back up to the wind.' },
   ],
   rules: [
     { enter: true, if: [{ not: { flag: 'seen.rimehall' } }], do: [{ set: 'seen.rimehall' }, { score: 5, id: 'seen.rimehall' }] },
+    // Offering the crown back to the one who made it.
+    { on: ['give crown coldsmith|odd', 'give coldsmith|odd crown'], if: [{ has: 'crown' }, { not: { flag: 'smith.dead' } }], do: [{ say: 'You hold the crown out. The Cold Smith looks at it as he looks at the others on the floor: as work that came out wrong. He does not want it back. He wants it right, and he lifts the hammer to begin again, on you.' }] },
+    { on: ['take hammer', 'use hammer'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'It has done the one thing it was for. You leave it where it fell.' }] },
+    { on: ['take hammer', 'use hammer'], if: [{ flag: 'smith.dead' }], do: [{ say: 'It is all you can do to get it off the floor, and there is nowhere to carry it. It belongs at the anvil, for one blow.' }] },
+    { on: ['take hammer', 'use hammer'], do: [{ say: 'Its owner is using it.' }] },
     { on: ['use crown anvil', 'use crown', 'give crown anvil', 'attack crown', 'attack crown anvil', 'drop crown', 'temper crown', 'light crown'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'It is done. There is nothing left to unmake.' }] },
     { on: ['use crown anvil', 'use crown', 'give crown anvil', 'attack crown', 'attack crown anvil', 'drop crown', 'temper crown', 'light crown'], if: [{ not: { flag: 'smith.dead' } }], do: [{ say: 'The anvil is in use, and its owner has just noticed what you are carrying.' }] },
     { on: ['use crown anvil', 'use crown', 'give crown anvil', 'attack crown', 'attack crown anvil', 'drop crown', 'temper crown', 'light crown'], if: [{ not: { has: 'crown' } }], do: [{ say: 'You have no crown to lay on it.' }] },
@@ -197,6 +209,7 @@ export const bellmere: RoomDef = {
     { enter: true, if: [{ not: { flag: 'seen.bellmere' } }], do: [{ set: 'seen.bellmere' }, { score: 5, id: 'seen.bellmere' }] },
     { zone: 'thin', if: [{ not: { flag: 'bell.frozen' } }], do: [{ die: 'You are a dozen paces out when the ice speaks, and it does not say anything you want to hear. The water under it is deep here, and the bell has been waiting a long time for company.' }] },
     { on: 'iska', if: [{ flag: 'bell.frozen' }], do: [{ say: 'The mere is as hard as it will go. Far below, something creaks.' }] },
+    { on: 'orun', do: [{ say: "ORUN. The ice goes clear, all the way down. There are roofs under it: a street of them, ridge-poles and all, running to the bell's foot. Further out, where the mere is deepest, a line of small dark shapes lies along the bottom, evenly spaced, as people are spaced who cross ice roped together. The bell called them in. You let the word go, and are glad to." }] },
     { on: 'iska', do: [{ set: 'bell.frozen' }, { score: 3, id: 'bell.frozen' }, { say: 'ISKA. The word goes out across the mere as frost, and the ice whitens and thickens under it with a long groan. It would bear you now, out to the bell.' }] },
     { on: ['cast frost'], if: [{ knows: 'frost' }, { not: { flag: 'bell.frozen' } }], do: [{ set: 'bell.frozen' }, { score: 3, id: 'bell.frozen' }, { say: 'You pour cold into cold. The ice groans, whitens, and thickens from shore to shore.' }] },
     { on: ['read bell', 'read inscription', 'look inscription'], if: [{ near: 'bell' }], do: [{ say: 'Cast into the rim, in letters a hand high: I CALLED THEM IN. I CALLED THEM HOME. I WAS NOT ANSWERED.' }] },

@@ -54,9 +54,9 @@ export const chars: Record<string, CharDef> = {
     shrug: '"I would not know about that," says Sigga. "I know bread, and I know who owes me for it."',
     menu: [
       ask('sigga', 'The Elder', 'elder'),
-      ask('sigga', 'The dead fires', 'hearth'),
+      ask('sigga', 'The fires', 'hearth'),
       ask('sigga', 'The barrow', 'barrow'),
-      ask('sigga', 'Work for a stranger', 'work'),
+      ask('sigga', 'Work', 'work'),
       ask('sigga', 'The wolves', 'wolf'),
       ask('sigga', 'The hermit', 'fenn'),
     ],
@@ -95,6 +95,11 @@ export const chars: Record<string, CharDef> = {
       { say: '"Thane." Marta does not look round from the fire. "You have the look of someone with idle hands."', do: [{ run: 'bountyOffer', arg: 'Elder Marta' }] },
     ],
     topics: {
+      ivar: [
+        { if: [{ quest: 'message', is: 3 }], say: '"Laughed, did he. He would." Marta looks at the fire for some time. "If his knees ever mend, there is a chair by this hearth." She does not say whose.' },
+        { if: [{ quest: 'message', is: 2 }], say: '"You have the glove. Take it to him. And remember what you are not to tell him."' },
+        { say: '"A hunter. He went north forty years ago, and a bear had him, or so the trappers said." Her face gives nothing away, which from Marta is a kind of answer.' },
+      ],
       barrow: [
         { if: [{ flag: 'hearth.lit' }], say: '"It was old when the first of us came over the mountains. I took the king in it for a story to make children generous. I shall tell it differently now."' },
         { say: '"It was old when the first of us came over the mountains. A king is buried there, they say, who would not share his fire in life. I always took that for a story to make children generous."' },
@@ -126,10 +131,13 @@ export const chars: Record<string, CharDef> = {
       ],
       wild: '"Past the ridge and the river it is nobody\'s country. Trappers, reavers, and things with no names. It was quiet once. It is not quiet now, and what is out there has started walking this way."',
     },
-    shrug: '"I have a village freezing to death," says Marta. "Bring me questions that help."',
+    shrug: [
+      { if: [{ flag: 'hearth.lit' }], say: '"I have a village to keep," says Marta. "Bring me questions that help."' },
+      { say: '"I have a village freezing to death," says Marta. "Bring me questions that help."' },
+    ],
     menu: [
       ask('elder', 'The barrow', 'barrow'),
-      ask('elder', 'The cold hearth', 'hearth'),
+      ask('elder', 'The hearth', 'hearth'),
       ask('elder', 'The hermit Fenn', 'fenn'),
       ask('elder', 'The buried king', 'king'),
       { label: 'Payment', say: 'ask elder about work', if: [{ not: { flag: 'hearth.lit' } }] },
@@ -147,6 +155,7 @@ export const chars: Record<string, CharDef> = {
     talk: [
       // The night the hearth is lit, in the Elder's hall with everybody else.
       { if: [{ flag: 'hall.feast' }], brief: true, say: 'Odd is standing as close to the fire as a man can get without being in it. "Forge," he says, and then, because the occasion seems to call for more: "Tomorrow." By his standards it is an oration.' },
+      { if: [{ not: { flag: 'odd.met' } }, { flag: 'hearth.lit' }], say: '"Odd. Smith." He does not look up from the forge, which is roaring. "Sword, shield, mail, and a better edge on anything you bring me, for silver. I do not haggle and I do not chat."', do: [{ set: 'odd.met' }] },
       { if: [{ not: { flag: 'odd.met' } }], say: '"Forge is dead. Fire will not hold." He does not look up. "I finished one blade before it went out. Twenty-five silver. A shield is fifteen. I do not haggle and I do not chat."', do: [{ set: 'odd.met' }] },
       { if: [{ flag: 'crown.unmade' }], say: '"Iron works sweeter since the wind dropped. Do not ask me why. I only hit it." He jerks his head at the forge. "Edge or mail, whenever you have the silver."' },
       { if: [{ flag: 'hearth.lit' }], say: '"Forge is lit." It is the most cheerful you have ever seen him, which is to say he very nearly looks at you. "Bring me a blade and silver and I will put a better edge on it than it came with. Mail too. Each time costs more than the last; that is how iron is."' },
@@ -199,6 +208,7 @@ export const chars: Record<string, CharDef> = {
     talk: [
       // The night the hearth is lit, in the Elder's hall with everybody else.
       { if: [{ flag: 'hall.feast' }], brief: true, say: 'Halla is asleep on her feet. She is propped in the corner by the hearth with a horn of ale going warm in her hand, and for the first time in nine days there is no fire that she has to feed. Nobody wakes her. You do not either.' },
+      { if: [{ not: { flag: 'halla.met' } }, { flag: 'hearth.lit' }], say: '"In, in, and shut the door behind you. Halla. This is the Kettle and Helm." She wipes the counter without looking at it. "Ale is a silver. So is stew. A red draught is six, a torch is three, and the bed is four a night, fleas included." She looks you over, and slides a stoppered flask across the counter. "So you are the one who lit Marta\'s hearth. First one is free. Drink it when you are hurt, not before."', do: [{ set: 'halla.met' }, { give: 'potion' }] },
       { if: [{ not: { flag: 'halla.met' } }], say: '"In, in, and shut the door behind you. Halla. This is the Kettle and Helm, and that," she nods at the hearth, "is the last fire in Hollowmere." She wipes the counter without looking at it. "Ale is a silver. So is stew. A red draught is six, a torch is three, and the bed is four a night, fleas included." She looks you over, sighs, and slides a stoppered flask across the counter. "You have the look of someone about to do something brave. First one is free. Drink it when you are hurt, not before."', do: [{ set: 'halla.met' }, { give: 'potion' }] },
       { if: [{ flag: 'crown.unmade' }], say: '"There was a drip off the eaves this morning. A drip! In this month!" Halla pushes a horn across the counter without being asked. "I do not know what you did, and I have decided I do not want to. Drink that."', do: [{ heal: 6 }] },
       { if: [{ flag: 'hearth.lit' }], say: '"I slept. A whole night. I had forgotten what it was like." She pushes a horn of ale across the counter. "That one is on the house, Thane. Do not get used to it."', do: [{ heal: 4 }] },
@@ -219,7 +229,19 @@ export const chars: Record<string, CharDef> = {
         { say: '"My grandmother said a king lies there who hoarded his fire while his people froze. Now ours go out. Make of that what you like."' },
       ],
       elder: '"Marta has not smiled since the hearths died. Mind you, she did not smile much before."',
-      work: '"Marta in the hall has the big trouble. Gorm at the east farm was robbed a week back. Toke in the west wood got himself bitten. All three would pay to see the back of it."',
+      work: [
+        {
+          if: [{ flag: 'crown.unmade' }],
+          say: '"They say the wind has stopped, out at the far end of the west, and trappers are coming in with pelts and all their fingers. Brekka sent word that she is alive, which from Brekka is a love letter." Halla leans on the counter. "And there is talk of country further out than anybody here has walked: a bell stuck in a frozen mere, a long way east, and a stone table in the south that shows a light at night. I only pour the ale. I do not vouch for it."',
+          do: [{ run: 'mark', arg: 'brekka' }, { run: 'mark', arg: 'ivar' }, { run: 'mark', arg: 'runa' }],
+        },
+        {
+          if: [{ flag: 'hearth.lit' }],
+          say: '"Now there is a fire worth sitting by, people sit, and talk. There are three out in the wild who know that country better than anyone under a roof. Brekka the trapper, north beyond the barrow. Old Ivar One-Glove, north-west past the ridge, if the bears have not finished what they started. And Runa, who was born in this village, gathering her mushrooms south-east past the watchtower." She fills a horn. "If you mean to walk out there, find one of them first."',
+          do: [{ run: 'mark', arg: 'brekka' }, { run: 'mark', arg: 'ivar' }, { run: 'mark', arg: 'runa' }, { note: 'Three steadings are marked on your map.' }],
+        },
+        { say: '"Marta in the hall has the big trouble. Gorm at the east farm was robbed a week back. Toke in the west wood got himself bitten. All three would pay to see the back of it."' },
+      ],
       name: '"Halla. Everyone here will tell you I water the ale. I do. It needs it."',
       fenn: '"The old hermit. He trades me draughts for bread. Lives by the tarn, north-east. Do not walk on his ice."',
     },
@@ -382,6 +404,7 @@ export const chars: Record<string, CharDef> = {
       stag: '"There are deer yet, out past the valley: in the pinewoods and by the meres, and only by day. Loose from as far off as you can see them. Come one step too near and all you will have is the white of a tail." He flexes the bandaged hand. "Halla pays for venison. So does your belly." He lowers his voice. "And a long way out, they say, there is a white one. I saw it once, at dusk, forty paces off. I did not loose. I have never been sure whether that was wisdom."',
       camp: '"South of here, down the path. Robbers. They hit Gorm\'s farm a week back. Three of them, and one has a bow, so do not stand about in the open."',
       bandit: '"Three, in the hollow south of here. Kill the one with the bow first, or he will make you regret every step."',
+      dog: '"A grey bitch, called Ash. Best nose in the valley. She would not go up that ridge for meat nor shouting, and I never had a dog that was wrong about a place."',
       menhir: '"Up the north path, on the bare ridge. I do not go near it. My dog would not either, when I had a dog."',
       tree: '"I have hunted this wood thirty years. It has never been this quiet, or this cold."',
       work: '"Three wolves. That is the work."',
@@ -424,7 +447,14 @@ export const chars: Record<string, CharDef> = {
         { if: [{ quest: 'greyback', is: 1 }], say: '"He dens in the crags, and he is not hard to find. He finds you. Keep your guard up: he swings slow, but he only has to land once."' },
         { say: '"White, big as a shed, and bad-tempered about being woken. Stay in front of one and keep your guard up: it swings slow, but it only has to land once."' },
       ],
-      weather: '"It was never this cold when I was a girl. Something has got into the winter."',
+      dog: [
+        { if: [{ quest: 'greyback', is: 3 }], say: '"Stone. He would have liked that cloak. He liked anything that smelled of bear, right up to the end."' },
+        { say: '"Stone. Ugly as a boot, and worth two of me on a trap-line." She looks at the peg by the door, where a collar hangs. "Six winters he kept that bear off the catch. The seventh, he was slower."' },
+      ],
+      weather: [
+        { if: [{ flag: 'crown.unmade' }], say: '"It let go. I felt it in the night, like a hand coming off the back of my neck." Brekka scowls at the sky. "Now the snow will rot and the pelts will be poor. I am not complaining."' },
+        { say: '"It was never this cold when I was a girl. Something has got into the winter."' },
+      ],
       village: '"Hollowmere? I go in at midsummer, sell my skins to the smith, and come straight out again. Too many people. Eleven roofs!"',
       pelt: '"Four silver for a wolf, ten for a bear, if you can carry it. I pay better than that tight-fisted smith."',
       potion: '"Seven silver. My own brewing: frostcap, red moss, and a thing I will not name. It will close a wound."',
@@ -468,7 +498,10 @@ export const chars: Record<string, CharDef> = {
       work: [{ say: '"I do not walk as far as I did. But I know where things are, and things do not move much."', do: [{ run: 'rumour', arg: 'Ivar One-Glove' }] }],
       wolf: '"A wolf comes in fast, bites, and is gone before you have finished swearing. Do not chase. Let it come to you, and be ready when it does."',
       bear: '"He gave me fair warning. He stood up, and he took his time, the way they do. I was young and thought I was quicker." He holds up the hand he has left. "Watch for the moment before the blow. There is always a moment."',
-      weather: '"Forty winters, and none like this. The cold comes out of the west in this country, not the north like honest cold, and it comes harder every year."',
+      weather: [
+        { if: [{ flag: 'crown.unmade' }], say: '"The west wind dropped. Forty winters I have leaned into it, and when it stopped I very nearly fell over." Ivar shakes his head. "I do not know what you did out there, and at my age I have learned not to ask."' },
+        { say: '"Forty winters, and none like this. The cold comes out of the west in this country, not the north like honest cold, and it comes harder every year."' },
+      ],
       village: '"Is Marta still Elder? Then it is still standing. Tell her Ivar is not dead, if she asks. She will not ask."',
       pelt: '"Four silver a wolf. Ten for a bear, and I will want to hear how you did it."',
       potion: '"Seven silver. Runa brews them, east of here or west, wherever she has got to. I only sell them on."',

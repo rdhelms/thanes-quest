@@ -58,7 +58,8 @@ export class Parser {
         const phrase = words.slice(i, i + n).join(' ');
         // The verb usually comes first, but need not: "have my sword tempered".
         const asVerb = !verb ? this.verbs.get(phrase) : undefined;
-        const asNoun = this.nouns.get(phrase);
+        // A plain plural of a known thing is that thing: "crowns", "candles".
+        const asNoun = this.nouns.get(phrase) ?? (n === 1 && !this.verbs.has(phrase) && !this.ignore.has(phrase) ? this.nouns.get(phrase.replace(/s$/, '')) ?? this.nouns.get(phrase.replace(/es$/, '')) : undefined);
         if (asVerb) verb = asVerb;
         else if (asNoun) nouns.push(asNoun);
         else continue;
