@@ -137,36 +137,45 @@ const barrow: TuneDef = {
   ],
 };
 
-/** A fight: drums, a low string figure that will not let go, and a horn over the top. */
+/**
+ * One bar of the battle figure for the low strings, by chord, in eighth notes grouped 3+3+2: the
+ * root three times, the note beside it three times, and a turn back. It never climbs out of a
+ * narrow space and never spells out a chord.
+ */
+const GRIP = {
+  E: 'E3:.5 E3:.5 E3:.5 F3:.5 F3:.5 F3:.5 E3:.5 D3:.5 |',
+  F: 'F3:.5 F3:.5 F3:.5 G3:.5 G3:.5 G3:.5 F3:.5 E3:.5 |',
+  C: 'C3:.5 C3:.5 C3:.5 D3:.5 D3:.5 D3:.5 C3:.5 B2:.5 |',
+  D: 'D3:.5 D3:.5 D3:.5 E3:.5 E3:.5 E3:.5 D3:.5 C3:.5 |',
+};
+const FIGHT = ['E', 'E', 'E', 'E', 'F', 'F', 'E', 'E', 'C', 'C', 'D', 'D', 'F', 'F', 'E', 'F'] as const;
+const FIGHT_ROOT = { E: 'E2', F: 'F2', C: 'C2', D: 'D2' };
+
+/**
+ * A fight: E Phrygian, the flattened second (F) always pressing down on the home note. Drums and
+ * bass strike together in uneven threes (3+3+2), the strings grind on one note and its neighbour,
+ * and a horn worries at a three-note cell, moving with the strings. Quicker and lighter than doom,
+ * which is kept for the two great fights: no choir, nothing below C2, no long held notes.
+ */
 const battle: TuneDef = {
   id: 'battle', bpm: 132, beats: 4, bars: 16,
   parts: [
-    // Seven bars of the beat and a fill, twice over.
-    { inst: 'drum', vol: 0.4, notes: Array(2).fill(Array(7).fill('k:1 t:.5 t:.5 k:.5 k:.5 t:1 |').join(' ') + ' k:.5 k:.5 t:.5 t:.5 t:.5 t:.5 k:.5 k:.5 |').join(' ') },
-    { inst: 'drum', vol: 0.22, notes: Array(16).fill('s:.5 s:.5 s:.5 s:.5 s:.5 s:.5 s:.5 s:.5 |').join(' ') },
+    // Struck on the first, the fourth and the seventh eighth of every bar; a turn into each half.
     {
-      inst: 'strings', vol: 0.34,
+      inst: 'drum', vol: 0.42,
+      notes: Array(2).fill(Array(7).fill('k:1.5 k:1.5 t:1 |').join(' ') + ' k:1.5 k:1.5 t:.5 t:.5 |').join(' '),
+    },
+    // No shaker until the second half, and then only on the beat.
+    { inst: 'drum', vol: 0.18, notes: '-:32 | ' + Array(8).fill('s:1 s:1 s:1 s:1 |').join(' ') },
+    { inst: 'strings', vol: 0.34, notes: FIGHT.map((c) => GRIP[c]).join(' ') },
+    {
+      inst: 'horn', vol: 0.38,
       notes:
-        'D3:.5 D3:.5 F3:.5 D3:.5 A3:.5 D3:.5 F3:.5 E3:.5 | D3:.5 D3:.5 F3:.5 D3:.5 A3:.5 D3:.5 F3:.5 E3:.5 | ' +
-        'Bb2:.5 Bb2:.5 D3:.5 Bb2:.5 F3:.5 Bb2:.5 D3:.5 C3:.5 | Bb2:.5 Bb2:.5 D3:.5 Bb2:.5 F3:.5 Bb2:.5 D3:.5 C3:.5 | ' +
-        'C3:.5 C3:.5 E3:.5 C3:.5 G3:.5 C3:.5 E3:.5 D3:.5 | C3:.5 C3:.5 E3:.5 C3:.5 G3:.5 C3:.5 E3:.5 D3:.5 | ' +
-        'A2:.5 A2:.5 C#3:.5 A2:.5 E3:.5 A2:.5 C#3:.5 B2:.5 | A2:.5 A2:.5 C#3:.5 A2:.5 E3:.5 A2:.5 C#3:.5 B2:.5 | ' +
-        // Second strain: the same figure climbing, D to F to G, and home by A.
-        'D3:.5 D3:.5 F3:.5 D3:.5 A3:.5 D3:.5 F3:.5 E3:.5 | D3:.5 D3:.5 F3:.5 D3:.5 A3:.5 D3:.5 F3:.5 E3:.5 | ' +
-        'F3:.5 F3:.5 A3:.5 F3:.5 C4:.5 F3:.5 A3:.5 G3:.5 | F3:.5 F3:.5 A3:.5 F3:.5 C4:.5 F3:.5 A3:.5 G3:.5 | ' +
-        'G2:.5 G2:.5 B2:.5 G2:.5 D3:.5 G2:.5 B2:.5 A2:.5 | G2:.5 G2:.5 B2:.5 G2:.5 D3:.5 G2:.5 B2:.5 A2:.5 | ' +
-        'A2:.5 A2:.5 C#3:.5 A2:.5 E3:.5 A2:.5 C#3:.5 B2:.5 | A2:.5 A2:.5 C#3:.5 A2:.5 E3:.5 A2:.5 C#3:.5 B2:.5 |',
+        '-:8 | E4:1.5 F4:1.5 E4:1 | G4:1.5 F4:1.5 E4:1 | F4:1.5 G4:1.5 F4:.5 -:.5 | F4:3 -:1 | B3:1.5 C4:1.5 B3:1 | E4:1.5 F4:1.5 E4:1 | ' +
+        'G4:1.5 A4:1.5 G4:1 | C5:3 -:1 | A4:1.5 C5:1.5 A4:1 | A4:3 G4:1 | F4:1.5 G4:1.5 F4:.5 -:.5 | C5:3 -:1 | B4:1.5 C5:1.5 B4:1 | F4:3 -:1 |',
     },
-    {
-      inst: 'horn', vol: 0.4,
-      notes:
-        'D4:2 F4:2 | A4:4 | Bb4:2 A4:1 F4:1 | D4:4 | E4:2 G4:2 | C5:3 Bb4:1 | A4:2 C#5:2 | E5:4 | ' +
-        'A4:2 D5:2 | F5:3 D5:1 | C5:2 A4:2 | F4:4 | G4:2 B4:2 | D5:3 B4:1 | C#5:2 E5:2 | A4:4 |',
-    },
-    {
-      inst: 'bass', vol: 0.22,
-      notes: ['D2', 'D2', 'Bb1', 'Bb1', 'C2', 'C2', 'A1', 'A1', 'D2', 'D2', 'F2', 'F2', 'G2', 'G2', 'A1', 'A1'].map((n) => `${n}:1 ${n}:1 ${n}:1 ${n}:1 |`).join(' '),
-    },
+    // Short blows with the kick drum rather than a walking line.
+    { inst: 'bass', vol: 0.24, notes: FIGHT.map((c) => `${FIGHT_ROOT[c]}:.5 -:1 ${FIGHT_ROOT[c]}:.5 -:1 ${FIGHT_ROOT[c]}:.5 -:.5 |`).join(' ') },
   ],
 };
 
