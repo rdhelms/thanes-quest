@@ -391,7 +391,7 @@ export const chars: Record<string, CharDef> = {
           do: [{ quest: 'errand', stage: 1 }, { score: 2, id: 'errand.start' }],
         },
         { if: [{ quest: 'errand', is: 2 }], say: '"It is only ice now. Forty years I went down to that shore every morning, to look at one bright thing I could not reach." Fenn turns a page. "This week I have stayed in and read. I am told that is what books are for."' },
-        { say: '"Thin in the middle. It would not hold you unless something froze it harder. ISKA would, if you had it. The stone that holds ISKA stands by the old watchtower, south-east of here."' },
+        { say: '"Thin in the middle. It would not hold you unless something froze it harder. ISKA would, if you had it. The stone that holds ISKA stands by the old watchtower, due south of here."' },
       ],
       amulet: [
         { if: [{ has: 'amulet' }], say: '"Give it here. Please." It is the first time you have heard him say please, and possibly the first time he has.' },

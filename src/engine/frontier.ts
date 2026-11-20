@@ -293,6 +293,15 @@ export function roadOf(c: Content, X: number, Y: number): { ways: Side[]; says: 
   return { ways: ['n', 's', 'e', 'w'], says: says.replace(/(^|\. )([a-z])/g, (_, a: string, b: string) => a + b.toUpperCase()) };
 }
 
+/** The hand-made place a valley road leads on to, for someone setting out along it that way. */
+export function beyond(c: Content, road: string, way: Side): string | undefined {
+  const at = parseWild(road);
+  const f = c.frontier;
+  if (!at || !f || kindAt(c, at[0], at[1]) !== 'valley') return undefined;
+  const hand = handAt(c, at[0] + STEP[way][0], at[1] + STEP[way][1]);
+  return hand && f.gates[hand]?.includes(BACK[way]) ? (f.valley?.called[hand] ?? c.rooms[hand]?.name ?? hand) : undefined;
+}
+
 const COMPASS = (dx: number, dy: number): string => [dy < 0 ? 'north' : dy > 0 ? 'south' : '', dx < 0 ? 'west' : dx > 0 ? 'east' : ''].filter(Boolean).join('-');
 
 function compose(c: Content, X: number, Y: number, attempt: number, bare: boolean): RoomDef {

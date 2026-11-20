@@ -399,8 +399,8 @@ describe('things found in QA', () => {
     expect(type(sim, 's')[0]).toContain('To the south lies');
     expect(type(game('barrow', 160, 130), 'n')).toEqual([content.text.noWay.replace('%s', 'north')]);
     const exits = type(sim, 'exits')[0];
-    expect(exits).toContain(`North: ${road('wild_0_1')}.`);
-    expect(exits).toContain(`East: ${road('wild_1_2')}.`);
+    expect(exits).toContain(`North: ${road('wild_0_1')}, the road to Hollowmere.`);
+    expect(exits).toContain(`East: ${road('wild_1_2')}, the road to the old watchtower.`);
     expect(type(game('hall', 160, 130), 'leave')[0]).toContain('A door to: Hollowmere.');
   });
 

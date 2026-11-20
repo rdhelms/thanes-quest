@@ -2,7 +2,7 @@
 // things, characters and items, then the game-wide rules, then a dry fallback.
 
 import { playerAttack } from './combat';
-import { parseWild, roomOf } from './frontier';
+import { beyond, parseWild, roomOf } from './frontier';
 import { cast, invoke } from './magic';
 import { fire, questKey, reach, run, speak, test } from './rules';
 import { DAY_LENGTH, type Sim } from './sim';
@@ -174,7 +174,14 @@ const DIRS: Record<string, 'n' | 's' | 'e' | 'w'> = { north: 'n', south: 's', ea
 /** What lies one way from here, and a reminder of how to get there. */
 function wayText(sim: Sim, dir: string): string {
   const to = sim.room.exits?.[DIRS[dir]];
-  return to ? sim.text('wayTo', dir).replace('%r', roomOf(sim.content, to)?.name ?? to) : sim.text('noWay', dir);
+  return to ? sim.text('wayTo', dir).replace('%r', wayName(sim, to, DIRS[dir])) : sim.text('noWay', dir);
+}
+
+/** A neighbouring screen by name; a road is also told by where it is going. */
+function wayName(sim: Sim, to: string, side: 'n' | 's' | 'e' | 'w'): string {
+  const name = roomOf(sim.content, to)?.name ?? to;
+  const on = beyond(sim.content, to, side);
+  return on ? `${name}, the road to ${on}` : name;
 }
 
 /** Every way out of the room. */
@@ -182,7 +189,7 @@ function exitsText(sim: Sim): string {
   const room = sim.room;
   const parts = Object.entries(DIRS).flatMap(([name, side]) => {
     const to = room.exits?.[side];
-    return to ? [`${name[0].toUpperCase()}${name.slice(1)}: ${roomOf(sim.content, to)?.name ?? to}.`] : [];
+    return to ? [`${name[0].toUpperCase()}${name.slice(1)}: ${wayName(sim, to, side)}.`] : [];
   });
   const doors = [...new Set((room.doors ?? []).map((d) => roomOf(sim.content, d.to)?.name ?? d.to))];
   if (doors.length) parts.push(`${doors.length > 1 ? 'Doors' : 'A door'} to: ${doors.join(', ')}.`);
