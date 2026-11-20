@@ -69,7 +69,10 @@ about <thing>` for subjects the menu does not list.
 
 On a phone or tablet the page adds a thumb pad, Hit / Guard / OK / Bag / Menu buttons, a command
 field that uses the device's keyboard, and a row of buttons offering what can be done where you
-stand. Add `?touch` to the address to see that layout on a computer. Added to a phone's home
+stand. Held upright, the space between the picture and the controls shows the game's words in
+large type: the open message or page (tap it to go on), the open menu as rows to tap, and with
+nothing open, the last few things said. Add `?touch` to the address to see that layout on a
+computer. Added to a phone's home
 screen, the game opens full screen.
 
 Fights reward timing. An enemy about to strike shows a gold `!`; raise your guard while it shows

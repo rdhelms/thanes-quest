@@ -3,7 +3,7 @@
 // feeds the same key presses and typed lines a keyboard would.
 
 import { SH, SW, type Renderer } from './engine/render';
-import type { Shell } from './engine/shell';
+import type { Modal, Shell } from './engine/shell';
 
 const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'] as const;
 
@@ -108,7 +108,193 @@ export function setupTouch(shell: Shell, renderer: Renderer, canvas: HTMLCanvasE
     );
   }, 250);
 
+  setupPanel(shell);
+
   window.visualViewport?.addEventListener('resize', refit);
+  // Safari ignores the page's "no zooming"; a pinch would otherwise zoom the whole game.
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+}
+
+/**
+ * Held upright, a phone has room under the picture for the game's words in the page's own type,
+ * at a size that can be read: the open message or page, the open menu as rows to tap, and, with
+ * nothing open, the last few things said. Built from the shell's state each frame, like the
+ * suggestions; a tap here does just what OK or a tap on the box in the picture would.
+ */
+function setupPanel(shell: Shell): void {
+  const panel = document.getElementById('panel')!;
+  const said: { who?: string; text: string; raw: string; open: boolean; note?: boolean }[] = [];
+  const KEEP = 8;
+  let noted = '';
+  let seen: Modal | undefined | null = null;
+  let sel = -1;
+  let rows: HTMLButtonElement[] = [];
+  /** Run each frame while the past is shown: keeps it at the newest as the room for it changes. */
+  let keep: (() => void) | null = null;
+
+  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: string): HTMLElementTagNameMap[K] => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+  /** A card: a heading, a body that scrolls if it must, and room for a line at its foot. */
+  const card = (kind: string, head?: string, close?: () => void): [HTMLDivElement, HTMLDivElement] => {
+    const c = el('div', `card ${kind}`);
+    if (head || close) {
+      const h = el('div', 'head');
+      h.append(el('span', '', head ?? ''));
+      if (close) {
+        const x = el('button', 'close', '\u2715');
+        x.type = 'button';
+        x.setAttribute('aria-label', 'Close');
+        x.addEventListener('click', () => close());
+        h.append(x);
+      }
+      c.append(h);
+    }
+    const body = el('div', 'body');
+    c.append(body);
+    // Words or rows running on past the foot of the card fade out there, to say there is more.
+    const below = (): void => void body.classList.toggle('below', body.scrollTop + body.clientHeight < body.scrollHeight - 4);
+    body.addEventListener('scroll', below);
+    requestAnimationFrame(below);
+    return [c, body];
+  };
+  /**
+   * A tap on a message or a page answers it, as OK does; but where the words run on past the
+   * foot of the card, a tap first shows the rest of them.
+   */
+  const answerable = (c: HTMLElement, body: HTMLElement, more: boolean): void => {
+    const go = el('div', 'go');
+    c.append(go);
+    const hidden = (): boolean => body.scrollTop + body.clientHeight < body.scrollHeight - 4;
+    const label = (): void => void (go.textContent = hidden() ? 'Tap to read on \u25be' : more ? 'Tap for more \u25b8' : 'Tap to go on \u25b8');
+    body.addEventListener('scroll', label);
+    requestAnimationFrame(label);
+    c.addEventListener('click', () => {
+      if (shell.modal !== seen) return;
+      if (hidden()) body.scrollBy({ top: body.clientHeight - 24, behavior: 'smooth' });
+      else shell.keyDown('Enter');
+    });
+  };
+
+  const build = (m: Modal | undefined): void => {
+    keep = null;
+    rows = [];
+    sel = -1;
+    if (!m) {
+      // Nothing open: what was said lately, dimmed, newest at the foot.
+      const [c, body] = card('past');
+      for (const s of said) {
+        const p = el('p', s.note ? 'note' : '');
+        if (s.who) p.append(el('b', '', s.who + ' '));
+        p.append(s.text);
+        body.append(p);
+      }
+      panel.replaceChildren(...(said.length ? [c] : []));
+      // Kept scrolled to the newest, as the space for it changes, unless the player has scrolled back.
+      let pinned = true;
+      const pin = (): void => void (pinned && (body.scrollTop = body.scrollHeight));
+      body.addEventListener('scroll', () => (pinned = body.scrollTop + body.clientHeight >= body.scrollHeight - 4));
+      keep = pin;
+      pin();
+      return;
+    }
+    let c: HTMLDivElement;
+    let body: HTMLDivElement;
+    if (m.k === 'msg') {
+      [c, body] = card('msg', m.who);
+      body.append(el('p', 'words', unwrap(m.text, 32)));
+      answerable(c, body, !!m.more);
+    } else if (m.k === 'page') {
+      [c, body] = card('page', m.title);
+      // A page laid out in columns keeps its columns; any other reads as running text.
+      const cols = m.lines.some((l) => /\S {2,}\S/.test(l));
+      body.append(el('p', cols ? 'words cols' : 'words', cols ? m.lines.join('\n') : unwrap(m.lines.join('\n'), 34)));
+      answerable(c, body, !!m.more);
+    } else if (m.k === 'list') {
+      [c, body] = card('list', m.title, m.cancel ? () => shell.modal === m && shell.keyDown('Escape') : undefined);
+      rows = m.items.map((item, i) => {
+        const b = el('button', 'row', item);
+        b.type = 'button';
+        b.addEventListener('click', () => {
+          if (shell.modal !== m) return;
+          m.sel = i;
+          shell.keyDown('Enter');
+        });
+        return b;
+      });
+      body.append(...rows);
+      // A long menu of short rows goes in two columns, so more of it is in reach at once.
+      if (m.items.length > 5 && m.items.every((t) => t.length <= 16)) body.classList.add('two');
+    } else {
+      [c, body] = card('map', 'The map');
+      body.append(el('p', 'words', 'Tap a place on the map to see its name. The pad moves about it.'));
+      const b = el('button', 'row', 'Close the map');
+      b.type = 'button';
+      b.addEventListener('click', () => shell.modal === m && shell.keyDown('Enter'));
+      c.append(b);
+    }
+    panel.replaceChildren(c);
+  };
+
+  const frame = (): void => {
+    const m = shell.modal;
+    document.documentElement.classList.toggle('boxed', !!m);
+    if (m !== seen) {
+      // Remember what is said as it is shown; a message that runs over several boxes is kept whole.
+      const last = said[said.length - 1];
+      if (m && m.k === 'msg' && !m.any) {
+        if (last?.open && last.who === m.who) {
+          last.raw += '\n' + m.text;
+          last.text = unwrap(last.raw, 32);
+        } else said.push({ who: m.who, text: unwrap(m.text, 32), raw: m.text, open: false });
+        said[said.length - 1].open = !!m.more;
+        if (said.length > KEEP) said.shift();
+      } else if (last && m?.k !== 'msg') last.open = false;
+      seen = m;
+      build(m);
+    }
+    // A passing remark under the picture (a room's name, a hint) joins them too.
+    const note = `${shell.noteText}|${shell.noteUntil}`;
+    if (note !== noted) {
+      noted = note;
+      const last = said[said.length - 1];
+      if (shell.noteText && !(last?.note && last.text === shell.noteText)) {
+        said.push({ text: shell.noteText, raw: shell.noteText, open: false, note: true });
+        if (said.length > KEEP) said.shift();
+        if (!m) build(m);
+      }
+    }
+    keep?.();
+    if (m?.k === 'list' && m.sel !== sel) {
+      rows[sel]?.classList.remove('sel');
+      sel = m.sel;
+      rows[sel]?.classList.add('sel');
+      rows[sel]?.scrollIntoView({ block: 'nearest' });
+    }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+/**
+ * The game wraps its words to fit the box in the picture. Here they reflow to the panel's width
+ * instead: a line break the wrapping made is a space again, and one the writer made is kept.
+ */
+function unwrap(text: string, cols: number): string {
+  const lines = text.split('\n');
+  // A line too long for the box was never wrapped at all.
+  if (lines.some((l) => l.length > cols)) return text;
+  let out = lines[0];
+  for (let i = 1; i < lines.length; i++) {
+    const prev = lines[i - 1];
+    const next = lines[i];
+    const soft = prev && next && prev.length + 1 + next.split(' ')[0].length > cols;
+    out += (soft ? ' ' : '\n') + next;
+  }
+  return out;
 }
 
 /**

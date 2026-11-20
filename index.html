@@ -62,6 +62,61 @@
           bottom: max(18px, env(safe-area-inset-bottom));
         }
       }
+      /* Upright, the game's words are also shown in the space between the picture and the controls,
+         in type large enough to read: the open message, page or menu, or else what was said lately. */
+      #panel { display: none; }
+      @media (orientation: portrait) {
+        .touch body { padding-bottom: calc(146px + max(18px, env(safe-area-inset-bottom))); overscroll-behavior: none; }
+        .touch canvas { flex: none; }
+        .touch #panel {
+          display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; width: min(100vw, 520px); padding: 0 10px; box-sizing: border-box;
+          font: 17px/1.45 system-ui, sans-serif; color: #ecebe6; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+        }
+        .touch #ui { flex: none; }
+        .typing body { padding-bottom: 6px; }
+      }
+      #panel .card {
+        display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 100%; overflow: hidden;
+        background: #14161f; border: 1px solid #474d5d; border-radius: 10px; padding: 12px 14px; box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #panel .body {
+        flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+        scrollbar-width: thin; scrollbar-color: #474d5d transparent;
+      }
+      #panel .list .body { display: flex; flex-direction: column; gap: 5px; }
+      #panel .list .body.two { display: grid; grid-template-columns: 1fr 1fr; }
+      #panel .body.below { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent); }
+      #panel .msg, #panel .page { cursor: pointer; }
+      #panel .head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; min-height: 22px; }
+      #panel .head span { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #e8c15a; }
+      #panel .close { flex: none; width: 34px; height: 28px; margin: -4px -4px -4px 0; padding: 0; font-size: 15px; color: #b9bdc8; }
+      #panel .words { margin: 0; white-space: pre-line; }
+      #panel .cols { white-space: pre-wrap; font: 15px/1.4 ui-monospace, Menlo, monospace; }
+      #panel .go { flex: none; margin-top: 6px; text-align: right; font-size: 14px; color: #8fa6dc; }
+      #panel .row { flex: none; min-height: 42px; padding: 7px 12px; text-align: left; font-size: 17px; line-height: 1.25; }
+      #panel .row.sel { border-color: #8fa6dc; background: #2a3044; }
+      #panel .map > .row { flex: none; margin-top: 10px; }
+      #panel .past { background: transparent; border-color: #262a36; color: #8d919c; font-size: 15px; }
+      #panel .past p { margin: 0 0 8px; white-space: pre-line; }
+      #panel .past p:last-child { margin-bottom: 0; color: #b4b7bf; }
+      #panel .past .note, #panel .past .note:last-child { font-style: italic; color: #9a8a58; }
+      #panel .past b { font-weight: 600; color: #a8934f; }
+      /* While a box is open the panel answers it, so the empty suggestion row and the command field
+         make way for it (a field already in use stays). */
+      @media (orientation: portrait) { .touch #chips:empty, .boxed:not(.typing) #say { display: none; } }
+      /* On a short phone the pad and buttons give up a little room to the words. */
+      @media (orientation: portrait) and (max-height: 700px) {
+        .touch body { padding-bottom: calc(130px + max(14px, env(safe-area-inset-bottom))); gap: 8px; }
+        .touch #pads { bottom: max(14px, env(safe-area-inset-bottom)); }
+        .touch #dpad { width: 122px; height: 122px; }
+        .touch #dpad .u, .touch #dpad .d { left: 52px; }
+        .touch #dpad .l, .touch #dpad .r { top: 52px; }
+        .touch #acts { grid-auto-rows: 50px; }
+        .touch #panel { font-size: 16px; line-height: 1.4; }
+        .touch #panel .row { min-height: 40px; font-size: 16px; }
+      }
+
       /* While the phone's keyboard is up there is no room for the pad. */
       .typing #pads, .typing #chips { display: none; }
 
@@ -77,6 +132,7 @@
   </head>
   <body>
     <canvas id="screen"></canvas>
+    <div id="panel" aria-live="polite"></div>
     <div id="ui">
       <div id="chips"></div>
       <form id="say" autocomplete="off">
