@@ -53,7 +53,7 @@ export function invoke(sim: Sim, word: WordDef): boolean {
   sim.state.flags.spoke = sim.state.tick;
   if (hasPerk(sim, 'echo')) p.mp = Math.min(p.maxMp, p.mp + 8);
   const long = hasPerk(sim, 'longvoice') ? 1.5 : 1;
-  const foes = sim.rs.actors.filter((a) => a.kind === 'enemy' && a.act !== 'dead');
+  const foes = sim.rs.actors.filter((a) => a.kind === 'enemy' && a.act !== 'dead' && !((a.ai.lag ?? 0) > 0));
   if (word.kind === 'push') {
     for (const a of foes) {
       const dx = a.x - p.x;

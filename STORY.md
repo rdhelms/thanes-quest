@@ -19,10 +19,15 @@ him. There is a cradle rhyme:
 > Set him a cup and bank the fire:
 > he will be home when the sun is higher.
 
-So at every feast in Hollowmere one cup is filled and set at the end of the table, and nobody
-drinks it. Nobody remembers the King's name, or why the cup. Half the old tales have him lost in
-the west and half have him asleep in the mound; Fenn spent ten years, when he was young, on the
-fact that a man cannot be both.
+So at every feast in Hollowmere one cup is filled and set at the end of the Elder's table nearest
+the door, and nobody drinks it. Halla fills it fresh every feast-day with the best she has, as her
+grandmother did, and what was left in it from the last feast goes back in the cask. Nobody
+remembers the King's name, or why the cup: when Marta asked her mother, she was told only that it
+was for him. Spoken in the Elder's hall, ORUN shows the board worn into a ring under it, and round
+that the fainter rings of other cups on other tables older than the hall, always in the same
+place: where somebody coming in out of the cold would sit down first. Half the old tales have him
+lost in the west and half have him asleep in the mound; Fenn spent ten years, when he was young,
+on the fact that a man cannot be both.
 
 What happened is found out over the three sagas, and nobody in the valley knows it at the start.
 He was both. In the worst winter of his age the King walked five ridges into the west wind, with
@@ -39,6 +44,14 @@ the walking dead. Ruined towers stand out there, with vaults under them that som
 to keep shut. The people of the wild say the winter is wrong. Brekka says it was never this cold
 when she was a girl, and that something has got into it. Ivar says the cold in this country comes
 out of the west, not the north, and comes harder every year.
+
+A long day's walk out, past every place with a name, the land goes up in a wall of sheer rock
+that runs right round the country, and beyond it there is another, and another. Each wall is
+crossed only at a few passes, and every pass is held: by reavers who take a toll of whatever a
+traveller carries, by a pack denned in the gap, or by the dead guards of a gate from some
+forgotten kingdom, still at their posts. Once beaten, a pass stays open. Out in the wild, whatever
+has a traveller's scent follows it from place to place, and gives up only at the valley or at a
+haven: a shrine, or a steading where somebody lives.
 
 Old words of power are cut into standing stones. A word cannot be taught. A person learns it by
 reading the rune on the stone that holds it. There are four:
@@ -66,7 +79,8 @@ no past.
 - **Toke**, the hunter in the pinewood. A wolf bit his hand and he cannot draw his bow.
 - **Gorm**, the farmer east of the village.
 - **Brekka**, a trapper, **Ivar One-Glove**, an old hunter, and **Runa**, a herb-wife. Each lives
-  alone at a steading out in the wild. Runa was born in Hollowmere, and Fenn taught her to read.
+  alone at a steading out in the wild. Runa was born in Hollowmere, and Fenn taught her to read,
+  with the cradle rhyme chalked on his door.
 
 ## The first saga: The Cold Hearth
 
@@ -231,6 +245,12 @@ the fourth word wrong in three books. The King went west with a kingdom behind h
 the best he could bring them was that crown; the Thane went down a back stair with one word and a
 borrowed coal. He will be home when the sun is higher: well, it was, and somebody came. Marta
 looks down her table at the cup, and says they will go on setting it. She knows now who it is for.
+It is his: he came home to one like it, set ready on the arm of his own seat, and walked past it to
+the stair, and was cold four thousand years with it there the whole time. She has Halla fill it
+fresh every day from now on, feast or no feast, and Sigga is to sing the rhyme to the little ones
+at the next feast. A Thane who sings it in her hall hears Marta say the last line with them,
+flatly, as one reads out a bill. Sung in the Winter Hall while the dead still wait there, it is a
+tune a great many of them know.
 
 A Thane who goes back to the stair can take up the chisel and finish the half-cut bar. Nine
 thousand and eleven, and done.
@@ -262,6 +282,8 @@ glove, the left: she knitted him a pair forty years ago and never sent them. "Do
 kept it." Ivar laughs until he has to sit down, puts the glove on, and gives the hero his
 boar-spear. Told that he laughed, Marta looks at the fire for some time, and says that if his
 knees ever mend there is a chair by her hearth. She does not say whose.
+Ivar says she sang the rhyme once, at a midsummer fire, before she was Elder; Marta says she does
+not sing.
 
 **The Greyback.** An old grey bear with a scarred face has robbed Brekka's trap-lines for six
 winters, and last month it ate her dog. The hero kills it in the crags near her steading. Brekka

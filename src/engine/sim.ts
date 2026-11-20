@@ -2,19 +2,23 @@
 // messages, advances one fixed tick, and emits events. Everything it remembers is in `state`.
 
 import { buildScene } from './build';
-import { hasPerk, playerAttack, swingHit, updateCombat } from './combat';
+import { hasPerk, hostile, playerAttack, swingHit, updateCombat } from './combat';
 import { command } from './commands';
-import { roomOf } from './frontier';
+import { parseWild, roomOf } from './frontier';
 import { Parser } from './parser';
 import { all, questKey, run } from './rules';
 import { PH, PW, type Scene } from './scene';
 import { nearestGround } from './walk';
 import type {
-  ActorState, Content, Dir, GameState, Intent, ItemDef, LookWhen, Pile, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
+  ActorState, Content, Dir, DoorDef, GameState, Intent, ItemDef, LookWhen, Pile, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
 } from './types';
 
 /** How close to a side edge the player gets before stepping into the next room. */
+type Side = 'n' | 's' | 'e' | 'w';
 const EDGE = 6;
+/** How near a hunter must be to follow the player out of a room, and through how many rooms it will. */
+const CHASE_RANGE = 150;
+const CHASE_ROOMS = 4;
 
 /** Somewhere to stand near: a point, and how close counts as within reach of it. */
 export interface Spot {
@@ -467,6 +471,11 @@ export class Sim {
     this.out.push({ t: 'approach', ...at, line });
   }
 
+  /** Ask to be walked somewhere, as a click there would: through a door, or off an edge. */
+  walk(x: number, y: number, door?: number, side?: Side): void {
+    this.out.push({ t: 'walk', x: Math.round(x), y: Math.round(y), ...(door === undefined ? {} : { door }), ...(side ? { side } : {}) });
+  }
+
   /**
    * How much daylight there is, from 1 (day) to 0 (deep night). The day turns with the game
    * clock: a long day, a short dusk, a night, a dawn.
@@ -604,6 +613,7 @@ export class Sim {
       }
       else if (it.t === 'say') command(this, it.line, !!it.afoot);
       else if (it.t === 'ease') this.state.flags.gentle = it.gentle;
+      else if (it.t === 'through') this.through(it.door);
       else if (it.t === 'level' && p.pendingLevels > 0) {
         p.pendingLevels--;
         if (it.pool === 'hp') p.hp = p.maxHp += 10;
@@ -681,19 +691,88 @@ export class Sim {
     const ex = this.room.exits ?? {};
     const nx = p.x + dx;
     const ny = p.y + dy;
-    const leave = (to: string | undefined, x: number, y: number, dir: Dir): boolean => {
+    const leave = (side: Side, to: string | undefined, x: number, y: number, dir: Dir): boolean => {
       if (!to) return false;
+      // A held way is not passed while whoever holds it is still standing (not whatever came in after the player).
+      const held = this.room.holds?.[side];
+      if (held && this.rs.actors.some((a) => hostile(this, a) && !a.id.startsWith('dyn:'))) {
+        if (!(p.cd.held > 0)) {
+          p.cd.held = 80;
+          this.note(held);
+        }
+        return false;
+      }
+      const after = this.hunters(to);
+      const [fromX, fromY] = [p.x, p.y];
+      const from = this.state.room;
       this.enterRoom(to, x, y, dir);
+      this.follow(after, from, side, fromX, fromY);
       return true;
     };
-    if (nx < EDGE) return leave(ex.w, PW - EDGE - 2, p.y, 'left');
-    if (nx > PW - 1 - EDGE) return leave(ex.e, EDGE + 1, p.y, 'right');
-    if (ny <= sc.walkTop) return leave(ex.n, p.x, PH - 4, 'up');
-    if (ny >= PH - 2) return ex.s ? leave(ex.s, p.x, this.scene(ex.s).walkTop + 2, 'down') : false;
+    if (nx < EDGE) return leave('w', ex.w, PW - EDGE - 2, p.y, 'left');
+    if (nx > PW - 1 - EDGE) return leave('e', ex.e, EDGE + 1, p.y, 'right');
+    if (ny <= sc.walkTop) return leave('n', ex.n, p.x, PH - 4, 'up');
+    if (ny >= PH - 2) return ex.s ? leave('s', ex.s, p.x, this.scene(ex.s).walkTop + 2, 'down') : false;
     if (this.footBlocked(sc, nx, ny)) return false;
     p.x = nx;
     p.y = ny;
     return true;
+  }
+
+  /**
+   * Whatever is hunting the player closely enough to come after them out of this room and into
+   * another. Out in the wild, things do not forget a scent because it went out of sight; but
+   * nothing follows anyone into the valley or a haven, nor away from a place it was set to keep.
+   */
+  private hunters(to: string): ActorState[] {
+    if (!parseWild(this.state.room)) return [];
+    const p = this.p;
+    const close = this.rs.actors.filter((a) => {
+      const def = this.content.enemies[a.ref];
+      if (!def || !hostile(this, a) || def.ai === 'boss' || (a.ai.frozen ?? 0) > 0 || (a.ai.chase ?? 0) >= CHASE_ROOMS) return false;
+      // A thing with a home of its own, that does not come back once beaten, stays where it was put.
+      if (!a.id.startsWith('dyn:') && !(this.room.spawns ?? []).find((sp) => sp.id === a.id)?.respawn) return false;
+      return (a.ai.lag ?? 0) > 0 || Math.hypot(a.x - p.x, (a.y - p.y) * 2) <= CHASE_RANGE;
+    });
+    if (close.length && (!parseWild(to) || roomOf(this.content, to)?.haven)) {
+      const shaken = this.content.frontier?.text.shaken;
+      if (shaken) this.note(shaken);
+      return [];
+    }
+    return close;
+  }
+
+  /**
+   * Bring the hunters on after the player, who has just come in over the given side. Each comes in
+   * over the same edge, as far behind as it was, and is a while about it: the slower, the longer.
+   * A creature that came from the room it followed out of is gone from there until it would
+   * have come back had it been killed.
+   */
+  private follow(hunters: ActorState[], from: string, side: Side, fromX: number, fromY: number): void {
+    if (!hunters.length) return;
+    const p = this.p;
+    const left = this.state.rooms[from];
+    const sc = this.scene();
+    hunters.forEach((a, k) => {
+      const def = this.content.enemies[a.ref]!;
+      if (left && !a.id.startsWith('dyn:')) {
+        left.dead.push(a.id);
+        (left.deadAt ??= {})[a.id] = this.state.tick;
+      }
+      const behind = Math.hypot(a.x - fromX, (a.y - fromY) * 2);
+      const [ox, oy] = [a.x - fromX, a.y - fromY];
+      const [x, y] =
+        side === 'e' ? [EDGE + 4, p.y + oy] : side === 'w' ? [PW - EDGE - 5, p.y + oy] : side === 'n' ? [p.x + ox, PH - 5] : [p.x + ox, sc.walkTop + 3];
+      const [gx, gy] = nearestGround(sc, Math.max(EDGE + 4, Math.min(PW - EDGE - 5, x)), Math.max(sc.walkTop + 3, Math.min(PH - 5, y)), 10);
+      const b = this.makeActor(`dyn:${this.state.tick}:after${k}`, 'enemy', a.ref, gx, gy, a.dir, a.hp);
+      b.ai = { lv: a.ai.lv ?? 0, max: a.ai.max ?? a.hp, chase: (a.ai.chase ?? 0) + 1, lag: Math.round((a.ai.lag ?? 0) + behind / Math.max(0.3, def.speed)) + 8 };
+      this.rs.actors.push(b);
+    });
+    if (!this.state.flags['hint.followed']) {
+      this.state.flags['hint.followed'] = true;
+      const said = this.content.frontier?.text.followed;
+      if (said) this.note(said);
+    }
   }
 
   private updateActors(): void {
@@ -744,13 +823,24 @@ export class Sim {
     }
   }
 
-  /** Zones and doors fire once when stepped into. */
+  /**
+   * Zones and doors fire once when stepped into. A door that was shut when it was stepped into
+   * (marked with a "!" in `inside`) is gone through once it opens, as soon as the player presses
+   * on into it, without first having to step off the threshold and back.
+   */
   private checkTriggers(): void {
     const p = this.p;
     const now = this.standingIn();
-    const entered = now.filter((id) => !p.inside.includes(id));
-    p.inside = now;
+    const refused = now.filter((id) => p.inside.includes(`${id}!`));
+    const entered = now.filter((id) => !p.inside.includes(id) && !refused.includes(id));
+    p.inside = now.map((id) => (refused.includes(id) ? `${id}!` : id));
     const room = this.room;
+    const go = (d: DoorDef): void => {
+      this.sound('door');
+      this.enterRoom(d.to, d.x, d.y, d.dir);
+      // Stop on the threshold, or a held key would walk straight back out.
+      p.mdx = p.mdy = 0;
+    };
     for (const id of entered) {
       if (this.room !== room || p.dead) return;
       const [kind, key] = id.split(':');
@@ -758,13 +848,33 @@ export class Sim {
         for (const r of room.rules ?? []) if (r.zone === key && all(this, r.if)) run(this, r.do);
       } else {
         const d = room.doors![Number(key)];
-        if (all(this, d.if)) {
-          this.sound('door');
-          this.enterRoom(d.to, d.x, d.y, d.dir);
-          // Stop on the threshold, or a held key would walk straight back out.
-          p.mdx = p.mdy = 0;
-        } else if (d.locked) this.say(d.locked);
+        if (all(this, d.if)) go(d);
+        else {
+          p.inside = p.inside.map((i) => (i === id ? `${id}!` : i));
+          if (d.locked) this.say(d.locked);
+        }
       }
     }
+    // Every door is a threshold in a back wall, walked into by going up.
+    for (const id of refused) {
+      if (this.room !== room || p.dead || p.mdy >= 0) return;
+      const d = room.doors![Number(id.split(':')[1])];
+      if (all(this, d.if)) return go(d);
+    }
+  }
+
+  /**
+   * Go through a door the player stands at, as if they had walked on into it: for a walk that
+   * ended on a threshold that was not open when it was reached, or was reached from the door's
+   * own ground. Said to be shut if it is.
+   */
+  through(i: number): void {
+    const d = this.room.doors?.[i];
+    if (!d || !this.within((d.x0 + d.x1) / 2, (d.y0 + d.y1) / 2, 14)) return;
+    if (all(this, d.if)) {
+      this.sound('door');
+      this.enterRoom(d.to, d.x, d.y, d.dir);
+      this.p.mdx = this.p.mdy = 0;
+    } else if (d.locked) this.say(d.locked);
   }
 }

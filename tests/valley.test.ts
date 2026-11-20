@@ -129,7 +129,9 @@ describe('the valley', () => {
         expect(depthOf(content, x, y)).toBe(r - reach);
         // What the first ring beyond the valley was before the roads were put in, it still is.
         const want = Math.max(0, r - reach - 1);
-        for (const s of roomOf(content, wildId(x, y))!.spawns ?? []) if (hostile(s.kind) && !haunt.has(s.kind)) expect(s.level, `${wildId(x, y)} ${s.kind}`).toBe(want);
+        // Whoever holds a pass through a march is a step tougher than the country round it, on purpose.
+        const held = kindAt(content, x, y) === 'pass' ? 1 : 0;
+        for (const s of roomOf(content, wildId(x, y))!.spawns ?? []) if (hostile(s.kind) && !haunt.has(s.kind)) expect(s.level, `${wildId(x, y)} ${s.kind}`).toBe(want + held);
       }
     // Just outside the valley there is only what is met near home.
     for (let y = -3; y <= 3; y++)

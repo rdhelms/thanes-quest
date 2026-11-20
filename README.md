@@ -51,7 +51,9 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
 - **Everything else is typed.** Enter sends the line; Enter on an empty line repeats the last one.
   Naming something across the picture (`talk to smith`, `read sign`) walks you over to it first,
   round whatever is in the way and never onto ground that would hurt you; an arrow key stops the
-  walk. Looking is done from where you stand.
+  walk. Looking is done from where you stand. Walking can be typed too: `go north` (or `n`) walks
+  off that side of the picture, `go to the inn` or `enter hall` goes in at its door, `leave` goes
+  back out, and `go to sigga` walks over to her.
 - **F1** is help, **F2** turns sound on and off, **F3** brings back your last line to edit, **F4**
   is the map.
 - **The mouse** also answers a message (click it), picks a row from a menu, and looks about the
@@ -103,10 +105,19 @@ gentle: a path through, and its description says where it leads; by day perhaps 
 nothing. Walk off the valley's edge and new country is generated a screen at a time: the same
 place every time you return, and tougher the further you go. It comes in nine kinds (pinewoods,
 open fells, frozen meres, ruins, reaver camps, crags, dead woods, shrines and lone steadings), with
-their own creatures, people to trade with, and things to find. `map` shows everywhere you have
-been, as one sheet of country with the places that have names of their own drawn large, where you
-stand framed in red, and anywhere you have been sent marked with a gold pennant; the arrow keys
-look about it. There is a day and a night, it snows, and there is music (Esc opens the menu to
+their own creatures, people to trade with, and things to find. Near home much of it has nothing
+living in it by day (the quieter music says so); further out, less and less does. Whatever is
+hunting you follows you from one screen into the next, a little behind, until you are back in the
+valley or at a haven (a shrine, or a steading where somebody lives).
+
+Six screens out from the middle, past every place with a name, the land rises in a wall of rock
+that rings the whole country: a march. It is crossed only at two passes on each side, each held by
+reavers, a wolf pack or the dead, and nobody goes through while one of them stands. Once beaten, a
+pass stays open. There are more marches further out (rings 10, 15, 21, 28, 36 and 45), each
+tougher. `map` shows everywhere you have been, as one sheet of country with the places that have
+names of their own drawn large, where you stand framed in red, anywhere you have been sent marked
+with a gold pennant, and the walls of the marches with the gaps where passes go through; the
+arrow keys look about it. There is a day and a night, it snows, and there is music (Esc opens the menu to
 switch music or sound effects off).
 
 Finishing the first saga does not finish the game:
@@ -250,6 +261,7 @@ node tools/browser.cjs "talk to sigga" ":choose elder" ":shot hall"  # ...and dr
 npm run qa -- fights     # how players of two skill levels fare in each fight, by kit
 npm run qa -- campaign   # a mortal bot takes the Elder's work again and again: does growth keep pace?
 npm run qa -- soak 80    # an unkillable bot walks 80 frontier screens looking for breakage
+npm run qa -- run        # a new Thane who never fights runs for it each way: how far do they get?
 npm run qa -- fuzz       # random keys and commands for 100,000 ticks: any crash is a bug
 npm run qa -- country    # what the frontier generates: kinds of country, creatures, finds
 npm run qa -- phrases    # plausible things to type that got no proper answer
@@ -264,7 +276,8 @@ npm run qa -- room room.json                # the gate a room from anywhere must
 ## Tests
 
 `npm test` runs engine tests (parser, rules, combat, magic, saving, validation, the frontier),
-`tests/valley.test.ts` (the roads between the valley's places, and where difficulty begins), and
+`tests/valley.test.ts` (the roads between the valley's places, and where difficulty begins),
+`tests/wild.test.ts` (pursuit, the marches and their passes, and quiet country), and
 `tests/walkthrough.test.ts`, in which a pathfinding bot plays the game using only
 keyboard-equivalent intents:
 

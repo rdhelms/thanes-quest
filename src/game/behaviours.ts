@@ -272,7 +272,10 @@ export const behaviours: Record<string, Behaviour> = {
     }
     const n = Number(f['bounty.n'] ?? 0);
     // Each task lies further out than the last, and is somewhere still in need of it.
-    const fresh = (x: number, y: number): boolean => !sim.state.rooms[wildId(x, y)]?.dead.length;
+    // Somewhere with something living in it by day, that nobody has been at yet.
+    const fresh = (x: number, y: number): boolean =>
+      !sim.state.rooms[wildId(x, y)]?.dead.length &&
+      !!roomOf(sim.content, wildId(x, y))?.spawns?.some((s) => s.when !== 'night' && sim.content.enemies[s.kind]?.ai !== 'prey');
     // Further out each time at first, starting just beyond the valley; after that, anywhere in the
     // far country that still wants it.
     const edge = sim.content.frontier?.valley?.reach ?? 1;

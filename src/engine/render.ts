@@ -3,7 +3,7 @@
 
 import { charSprite, type Facing, type Sprite } from './doll';
 import { drawText, wrap } from './font';
-import { chart, depthOf, parseWild } from './frontier';
+import { chart, depthOf, edgeOf, parseWild } from './frontier';
 import { ICONS } from './icons';
 import { bayer4, clamp, hash2, mix, vnoise } from './noise';
 import { R, UI, blendThreshold, sceneColour, spriteColour } from './palette';
@@ -431,6 +431,31 @@ export class Renderer {
     const sheet = this.mapSheet.px;
     for (let y = 0; y < H; y++) fb.set(sheet.subarray(y * W, (y + 1) * W), (top + y) * SW + left);
 
+    // The walls of the marches, along any side of a place walked, with the gap where a pass goes through.
+    for (const c of cells) {
+      const col = c.x - x0;
+      const row = c.y - y0;
+      if (!c.mark || col < 0 || col >= COLS || row < 0 || row >= ROWS) continue;
+      const x = left + col * CW;
+      const y = top + row * CH;
+      for (const side of ['n', 's', 'e', 'w'] as const) {
+        const e = edgeOf(sim.content, c.x, c.y, side);
+        if (e === 'open') continue;
+        const across = side === 'n' || side === 's';
+        const len = across ? CW : CH;
+        for (let i = -1; i <= len; i++) {
+          // A pass leaves a gap at the middle; the rest of the wall is a rough line of pale rock,
+          // edged dark, so it shows against known country and unknown alike.
+          if (e === 'pass' && Math.abs(i - len / 2) < len * 0.22) continue;
+          const t = 3 + (hash2(c.x * 31 + i, c.y * 17 + side.charCodeAt(0)) > 0.6 ? 1 : 0);
+          const [px, py] = across ? [x + i, side === 'n' ? y - 2 : y + CH - t + 2] : [side === 'w' ? x - 2 : x + CW - t + 2, y + i];
+          this.fill(px, py, across ? 1 : t, across ? t : 1, spriteColour(R.ink, 0));
+          if (across) this.fill(px, py + 1, 1, t - 2, spriteColour(R.rock, 4));
+          else this.fill(px + 1, py, t - 2, 1, spriteColour(R.rock, 4));
+        }
+      }
+    }
+
     // The marks, and what stands out: places with names, where you have been sent, where you are.
     for (const c of cells) {
       const col = c.x - x0;
@@ -575,7 +600,8 @@ export class Renderer {
     };
     for (const a of sim.rs.actors) {
       const spec = a.kind === 'npc' ? sim.content.chars[a.ref]?.spec : sim.content.enemies[a.ref]?.spec;
-      if (!spec) continue;
+      // Whatever is still on its way in after the player has not come into view yet.
+      if (!spec || (a.ai.lag ?? 0) > 0) continue;
       person(a.ref, spec, a, a.ai.flash > 0);
       // A wounded enemy shows how much fight it has left.
       const full = a.kind === 'enemy' ? a.ai.max ?? sim.content.enemies[a.ref].hp : 0;

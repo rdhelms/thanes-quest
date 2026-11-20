@@ -74,7 +74,7 @@ export const frostgate: RoomDef = {
       ],
     },
     { on: ['open door', 'push door', 'knock door', 'enter door', 'attack door', 'attack tarn', 'push tarn'], if: [{ not: { flag: 'gate.open' } }], do: [{ say: 'You might as well lean on the mountain. Whatever way there is through this ice, it is not found by pushing.' }] },
-    { on: ['open door', 'enter door'], do: [{ say: 'It stands open. Walk in, if you are going.' }] },
+    { on: ['open door'], do: [{ say: 'It stands open, and green light comes up the stair of ice behind it.' }] },
     { on: ['veth'], if: [{ not: { flag: 'gate.open' } }], do: [{ say: 'The word strikes the ice and slides off. There is no door here to open. Not one that can be seen.' }] },
     { on: ['cast flame'], if: [{ knows: 'flame' }, { not: { flag: 'gate.open' } }], do: [{ say: 'The bolt bursts on the ice and leaves a mark the size of your hand, which is frozen over again before you have lowered your arm.' }] },
     { on: ['climb crag', 'climb tarn', 'climb'], do: [{ say: 'The rock is glazed and the ice is glass. You get as high as your own height, twice, and come down the quick way both times.' }] },

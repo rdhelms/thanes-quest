@@ -43,6 +43,9 @@ export function gainSkill(sim: Sim, id: string, amount: number): void {
 
 const alive = (a: ActorState): boolean => a.kind === 'enemy' && a.act !== 'dead';
 
+/** Still on its way in after the player, out of sight: it cannot be struck, and strikes nothing. */
+export const coming = (a: ActorState): boolean => (a.ai.lag ?? 0) > 0;
+
 /** Alive, and meaning harm: game that only grazes and runs does not count. */
 export const hostile = (sim: Sim, a: ActorState): boolean => alive(a) && sim.content.enemies[a.ref]?.ai !== 'prey';
 
@@ -133,7 +136,7 @@ export function swingHit(sim: Sim): void {
   // A blow struck just after a parry lands twice as hard, for those who have learned how.
   const riposte = (p.cd.riposte ?? 0) > 0 && hasPerk(sim, 'riposte');
   for (const a of sim.rs.actors) {
-    if (!alive(a)) continue;
+    if (!alive(a) || coming(a)) continue;
     const dx = a.x - p.x;
     const dy = a.y - p.y;
     const inArc =
@@ -279,6 +282,11 @@ function enemyAI(sim: Sim, a: ActorState, def: EnemyDef): void {
   const k = AI[def.ai];
   const beast = !!def.spec.body && def.spec.body !== 'human';
   const reach = def.reach ?? k.reach;
+  if (coming(a)) {
+    ai.lag--;
+    a.act = 'idle';
+    return;
+  }
   if (ai.flash > 0) ai.flash--;
   if (ai.poise > 0) ai.poise--;
   ai.wind = 0;
@@ -407,11 +415,11 @@ function updateShots(sim: Sim): void {
     s.y += s.dy;
     if (--s.life <= 0 || s.x < 0 || s.x >= PW || s.y < sim.scene().walkTop - 6 || s.y >= PH) return false;
     if (s.from === 'player') {
-      const hit = rs.actors.find((a) => alive(a) && Math.abs(a.x - s.x) < 9 && Math.abs(a.y - s.y) < 6);
+      const hit = rs.actors.find((a) => alive(a) && !coming(a) && Math.abs(a.x - s.x) < 9 && Math.abs(a.y - s.y) < 6);
       if (!hit) return true;
       const spell = s.kind !== 'arrow';
       // With the right learning a bolt bursts, catching everything near where it lands.
-      const caught = spell && hasPerk(sim, 'wildfire') ? rs.actors.filter((a) => alive(a) && Math.hypot(a.x - hit.x, (a.y - hit.y) * 2) < 30) : [hit];
+      const caught = spell && hasPerk(sim, 'wildfire') ? rs.actors.filter((a) => alive(a) && !coming(a) && Math.hypot(a.x - hit.x, (a.y - hit.y) * 2) < 30) : [hit];
       for (const a of caught) {
         if (s.kind === 'frost') a.ai.slow = 100;
         const push = !spell && hasPerk(sim, 'heavyshot') ? 14 : 4;
@@ -453,7 +461,7 @@ export function updateCombat(sim: Sim): void {
     if (p.dead) return;
   }
   // Keep attackers from standing inside one another.
-  const pack = rs.actors.filter(alive);
+  const pack = rs.actors.filter((a) => alive(a) && !coming(a));
   const sc = sim.scene();
   for (const a of pack)
     for (const b of pack) {

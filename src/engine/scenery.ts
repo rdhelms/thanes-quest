@@ -3,7 +3,7 @@
 
 import { R, isRamp } from './palette';
 import { PROPS } from './props';
-import { PW, Scene, line } from './scene';
+import { PH, PW, Scene, line } from './scene';
 import { clamp, fbm, hash2, vnoise } from './noise';
 import type { PropDef } from './types';
 
@@ -831,6 +831,68 @@ function icegate(sc: Scene, p: P): void {
   sc.blockRect(x - hw, y - 5, x + hw + 1, y + 2);
 }
 
+/**
+ * The wall of a march: a ridge of sheer rock all along one side of the picture (v: 'n', 's', 'e'
+ * or 'w'), too steep to climb. Where there is a pass, w is the width of the gap through it, at
+ * the middle of that side; either side of a gap the ridge drops away to scree.
+ */
+function scarp(sc: Scene, p: P): void {
+  const side = p.v ?? 'e';
+  const seed = p.seed ?? 1;
+  const gap = p.w ?? 0;
+  const wt = sc.walkTop;
+  const rock = (px: number, py: number, top: number, lit: number, base: number): void => {
+    const d = py - top;
+    const face = vnoise(px * 0.16 + py * 0.04, py * 0.11, seed + 1);
+    const crack = Math.abs(vnoise(px * 0.3, py * 0.05, seed + 2) - 0.5) < 0.03;
+    let s = lit + (face - 0.5) * 0.4 + (fbm(px * 0.3, py * 0.3, seed + 3, 2) - 0.5) * 0.16;
+    if (crack) s *= 0.5;
+    if (d < 2.2 + 2 * vnoise(px * 0.3, 1, seed + 4)) sc.put(px, py, R.snow, lit > 0.45 ? 0.95 : 0.7, base);
+    else if (d > 6 && vnoise(px * 0.18, py * 0.6, seed + 5) > 0.82) sc.put(px, py, R.snow, lit > 0.45 ? 0.86 : 0.6, base);
+    else sc.put(px, py, R.rock, s, base);
+  };
+  if (side === 'e' || side === 'w') {
+    const mid = 134;
+    // A ridge running away from the viewer along the edge, drawn from its far end to its near
+    // one so that nearer rock stands in front of farther.
+    for (let fy = wt - 3; fy < PH; fy++) {
+      if (gap && Math.abs(fy - mid) < gap / 2) continue;
+      const near = Math.max(0, (fy - wt) / (PH - wt));
+      const scree = gap > 0 && fy > mid;
+      const reach = (scree ? 14 : 22 + near * 16) + vnoise(fy * 0.08, 1, seed) * 16 + vnoise(fy * 0.4, 4, seed) * 5;
+      const tall = scree ? 9 + vnoise(fy * 0.3, 2, seed) * 10 : 58 + near * 44 + vnoise(fy * 0.07, 3, seed) * 26;
+      const inner = side === 'e' ? PW - reach : reach;
+      for (let k = 0; k <= reach + 1; k++) {
+        const px = side === 'e' ? Math.floor(inner) + k : Math.ceil(inner) - k;
+        const t = Math.min(1, k / Math.max(1, reach));
+        // Low at its inner face and rising toward the edge of the picture, with a broken skyline.
+        const h = tall * (0.3 + 0.7 * t ** 0.6) + (vnoise(px * 0.22, fy * 0.06, seed + 6) - 0.5) * 16;
+        const lit = (side === 'e' ? 0.6 : 0.36) - 0.12 * t;
+        for (let py = Math.floor(fy - h); py <= fy; py++) rock(px, py, fy - h, lit, fy + 1);
+      }
+      if (side === 'e') sc.blockRect(inner - 3, fy - 1, PW, fy + 1);
+      else sc.blockRect(0, fy - 1, inner + 4, fy + 1);
+    }
+    return;
+  }
+  // Across the back of the picture, or along the very front of it.
+  const back = side === 'n';
+  for (let px = 0; px < PW; px++) {
+    const off = Math.abs(px - 160) - gap / 2;
+    if (gap && off < 0) continue;
+    // Either side of a gap the rock comes down in a slope, like the shoulders of a notch.
+    const shoulder = gap ? 0.3 + 0.7 * Math.min(1, off / 34) : 1;
+    const jag = vnoise(px * 0.2, 1, seed + 7) * 3;
+    const foot = back ? wt + 9 + jag : PH + 4;
+    const tall = (back ? 40 + vnoise(px * 0.05, 3, seed) * 30 : 15 + vnoise(px * 0.08, 3, seed) * 9) * shoulder + (vnoise(px * 0.3, 5, seed + 6) - 0.5) * 5;
+    const top = foot - tall;
+    const lit = 0.56 + 0.14 * (vnoise(px * 0.06, 8, seed + 8) - 0.5);
+    for (let py = Math.floor(top); py < foot; py++) rock(px, py, top, lit, back ? foot : 255);
+    if (back) sc.blockRect(px, 0, px + 1, foot + 1);
+    else sc.blockRect(px, top + 3, px + 1, PH);
+  }
+}
+
 const draw = (fn: (sc: Scene, p: P) => void) => ({ draw: fn });
 const shaded = (fn: (sc: Scene, p: P) => void, dx: number, rx: number, ry: number) => ({
   draw: fn,
@@ -869,6 +931,7 @@ Object.assign(PROPS, {
   icehole: draw(icehole),
   post: draw(post),
   oven: shaded(oven, 6, 16, 3.5),
+  scarp: draw(scarp),
   crag: { draw: crag, shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + (p.w ?? 60) * 0.22, p.y + 1, (p.w ?? 60) * 0.62, 5)) },
   wall: { draw: wall, shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + 8, p.y + 1, (p.w ?? 60) * 0.56, 3.5)) },
 });

@@ -216,23 +216,34 @@ export class Shell {
    * take, which way to keep on once they are taken (off the edge of the picture), and how long
    * the walk has lasted and made no headway.
    */
-  private bound: { x: number; y: number; paces: Pace[]; i: number; on: [number, number] | null; ticks: number; stuck: number; lastX: number; lastY: number; careful?: boolean } | null = null;
+  private bound: {
+    x: number; y: number; paces: Pace[]; i: number; on: [number, number] | null; ticks: number; stuck: number; lastX: number; lastY: number; careful?: boolean;
+    /** The door the walk is for, by its place in the room's list, and whether it began on that door's threshold. */
+    door?: number; from?: boolean;
+    /** Asked for by a typed line, which is not answered until the walk is over. */
+    typed?: boolean;
+  } | null = null;
 
   /**
    * Walk to a point in the picture, round whatever is in the way, or as near as the ground
    * allows. Pointing at the edge of the picture walks off it. Doors, and ground where something
    * happens to whoever steps on it, are only walked into when they are what was pointed at.
    */
-  walkTo(x: number, y: number): void {
+  walkTo(x: number, y: number, typed = false, doorAt?: number, side?: 'n' | 's' | 'e' | 'w'): void {
     if (this.modal) return;
     this.errand = null;
     const sc = this.sim.scene();
     const p = this.sim.p;
-    const on: [number, number] | null = x < 12 ? [-1, 0] : x > PW - 13 ? [1, 0] : y >= PH - 7 ? [0, 1] : y <= sc.walkTop + 3 ? [0, -1] : null;
+    const ways: Record<string, [number, number]> = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
+    const on: [number, number] | null = side ? ways[side] : x < 12 ? [-1, 0] : x > PW - 13 ? [1, 0] : y >= PH - 7 ? [0, 1] : y <= sc.walkTop + 3 ? [0, -1] : null;
     // Pointing anywhere on a door means its threshold.
-    const door = (this.sim.room.doors ?? []).find((d) => x >= d.x0 - 6 && x <= d.x1 + 6 && y >= d.y0 - 40 && y <= d.y1 + 4);
+    const doors = this.sim.room.doors ?? [];
+    // (A walk off one side, though, goes by the doors and not into them.)
+    const at = doorAt ?? (side ? -1 : doors.findIndex((d) => x >= d.x0 - 6 && x <= d.x1 + 6 && y >= d.y0 - 40 && y <= d.y1 + 4));
+    const door = doors[at];
     if (door) [x, y] = [Math.round((door.x0 + door.x1) / 2), Math.round((door.y0 + door.y1) / 2)];
-    this.bound = { x, y, paces: [], i: 0, on: door ? null : on, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y };
+    const from = !!door && p.x >= door.x0 && p.x <= door.x1 && p.y >= door.y0 && p.y <= door.y1;
+    this.bound = { x, y, paces: [], i: 0, on: door ? null : on, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y, typed, ...(door ? { door: at, from } : {}) };
     this.plan();
   }
 
@@ -245,7 +256,7 @@ export class Shell {
 
   /** True while the player is being walked over to something a typed line named. */
   get busy(): boolean {
-    return !!this.errand;
+    return !!this.errand || !!this.bound?.typed;
   }
 
   /**
@@ -324,6 +335,12 @@ export class Shell {
         // Arrived. At the edge of the picture, keep on until it gives way or will not.
         if (b.on && b.stuck <= 6) return b.on;
         if (this.errand) this.arrive();
+        // At a door and not through it: it was already underfoot, or it has opened since it was
+        // stepped on. Either way, on through it (or be told it is shut, if that was asked for).
+        if (b.door !== undefined) {
+          const d = this.sim.room.doors?.[b.door];
+          if (d && (b.from || all(this.sim, d.if))) this.queue.push({ t: 'through', door: b.door });
+        }
         this.bound = null;
       }
     }
@@ -347,6 +364,7 @@ export class Shell {
         if (this.talkingTo !== e.char) this.talkLast = null;
         this.talkingTo = e.char;
       } else if (e.t === 'approach') this.goFor(e);
+      else if (e.t === 'walk') this.walkTo(e.x, e.y, true, e.door, e.side);
       else if (e.t === 'note') {
         this.noteText = e.text;
         // Long enough to read: hints are a sentence, not a word.
@@ -516,9 +534,14 @@ export class Shell {
       .sort((a, b) => dist(a.x, a.y) - dist(b.x, b.y))[0];
     if (who) out.push({ label: `Talk to ${c.chars[who.ref].name}`, line: `talk to ${c.chars[who.ref].nouns[0]}` });
     const close = sim.things().filter((t) => dist(t.x, t.y) <= (t.reach ?? 30));
+    // A thing to be tried with something carried ("put crown on anvil") is offered only to whoever carries it.
+    const lacking = (line: string): boolean => {
+      const r = sim.parser.parse(line);
+      return r.ok && r.nouns.some((n) => !sim.things().some((t) => t.nouns.includes(n)) && Object.values(c.items).some((it) => it.nouns.includes(n)) && !Object.keys(p.inv).some((id) => c.items[id]?.nouns.includes(n)));
+    };
     for (const t of close) {
       if (t.take) out.push({ label: `Take the ${t.nouns[0]}`, line: `take ${t.nouns[0]}` });
-      for (const line of t.try ?? []) out.push({ label: line[0].toUpperCase() + line.slice(1), line });
+      for (const line of t.try ?? []) if (!lacking(line)) out.push({ label: line[0].toUpperCase() + line.slice(1), line });
     }
     out.push({ label: 'Look around', line: 'look' });
     if (sim.room.scene.kind === 'outdoor') out.push({ label: 'Map', line: 'map' });

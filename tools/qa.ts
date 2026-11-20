@@ -344,7 +344,7 @@ function phrases(): void {
       sim.drain();
       sim.step([{ t: 'say', line }]);
       const ev = sim.drain();
-      const said = ev.flatMap((e) => (e.t === 'say' ? [e.text] : e.t === 'page' ? ['(page)'] : e.t === 'map' ? ['(map)'] : e.t === 'note' ? [e.text] : []));
+      const said = ev.flatMap((e) => (e.t === 'say' ? [e.text] : e.t === 'page' ? ['(page)'] : e.t === 'map' ? ['(map)'] : e.t === 'note' ? [e.text] : e.t === 'walk' ? ['(walks)'] : []));
       asked++;
       const first = said[0] ?? '(nothing)';
       if (stock.has(first) || first.startsWith('The saga has no use') || first === '(nothing)' || first === content.text.notHere || first === content.text.shrug) {
@@ -668,5 +668,92 @@ if (mode === 'room') {
   console.log(problems.length ? `${room.id}: rejected\n  ${problems.join('\n  ')}` : `${room.id}: accepted. It can be walked, everything in it can be reached, and every word and item it uses is known.`);
 }
 
-const MODES = ['words', 'fights', 'country', 'music', 'phrases', 'soak', 'fuzz', 'campaign', 'menus', 'tries', 'export', 'room'];
+const MODES = ['words', 'fights', 'country', 'music', 'phrases', 'soak', 'fuzz', 'campaign', 'menus', 'tries', 'export', 'room', 'run'];
 if (!MODES.includes(mode)) console.log(`usage: qa ${MODES.join(' | ')}`);
+
+// ---------------------------------------------------------------------------------------------
+// Run: a new Thane who will not fight sets out from the ford and runs for it, one way, as far as
+// they can get. When anything comes close they step off the nearest edge of the picture and
+// straight back, which is what a player does who has found that the wild forgets them. How far
+// they get, and how fast, is how well the wild holds a player back.
+
+function runner(ticks: number): void {
+  const PWx = 320;
+  for (const way of ['e', 'n', 'w', 's'] as const) {
+    for (const seed of [1]) {
+      const sim = new Sim(content, { behaviours, seed });
+      const p = sim.p;
+      const [vx, vy] = { e: [1, 0], w: [-1, 0], n: [0, -1], s: [0, 1] }[way];
+      let best = 0;
+      let paces: { dx: number; dy: number }[] = [];
+      let hops = 0;
+      let calm = 0;
+      let drift = way === 'e' || way === 'w' ? 'n' : 'e';
+      let lastRoom = '';
+      let spot: [number, number] | null = null;
+      let t = 0;
+      const far = (): number => {
+        const m = /^wild_(-?\d+)_(-?\d+)$/.exec(sim.state.room);
+        return m ? Number(m[1]) * vx + Number(m[2]) * vy : 0;
+      };
+      for (; t < ticks && !p.dead; t++) {
+        const sc = sim.scene();
+        const foes = sim.rs.actors.filter((a) => alive(a) && content.enemies[a.ref]?.ai !== 'prey' && !(a.ai.lag > 0));
+        const near = Math.min(999, ...foes.map((a) => Math.hypot(a.x - p.x, (a.y - p.y) * 2)));
+        const ex = sim.room.exits ?? {};
+        const edge = (side: string): [number, number] => (side === 'e' ? [PWx - 7, p.y] : side === 'w' ? [6, p.y] : side === 'n' ? [p.x, sc.walkTop + 1] : [p.x, 198]);
+        // Somewhere along an edge that can actually be walked to, as near as may be.
+        const plan = (side: string): { dx: number; dy: number }[] => {
+          if (lastRoom === sim.state.room + side && spot) return routeTo(sc, p.x, p.y, spot[0], spot[1]);
+          lastRoom = sim.state.room + side;
+          const spots: [number, number][] = [];
+          for (let k = 0; k <= 12; k++) {
+            if (side === 'e' || side === 'w') spots.push([side === 'e' ? PWx - 7 : 6, sc.walkTop + 2 + ((198 - sc.walkTop - 4) * k) / 12]);
+            else spots.push([8 + (304 * k) / 12, side === 'n' ? sc.walkTop + 1 : 197]);
+          }
+          spots.sort((a, b) => Math.hypot(a[0] - p.x, (a[1] - p.y) * 2) - Math.hypot(b[0] - p.x, (b[1] - p.y) * 2));
+          for (const [tx, ty] of spots) {
+            const r = routeTo(sc, p.x, p.y, tx, ty);
+            const end = r[r.length - 1] ?? { x: p.x, y: p.y };
+            if (Math.hypot(end.x - tx, (end.y - ty) * 2) < 6) {
+              spot = [tx, ty];
+              return r;
+            }
+          }
+          spot = edge(side);
+          return routeTo(sc, p.x, p.y, ...spot);
+        };
+        if (calm > 0) calm--;
+        // Along the seam between two rows of screens: whenever anything comes close, step over
+        // into the next row, where everything has just been put back where it started.
+        const across = way === 'e' || way === 'w' ? ['n', 's'] : ['e', 'w'];
+        let goal: string = way;
+        // Up against a wall with no way through: follow it, looking for a gap.
+        if (!ex[way as 'n']) {
+          if (!ex[drift as 'n']) drift = across.find((s) => s !== drift && ex[s as 'n']) ?? drift;
+          goal = drift;
+        }
+        if (near < 60 && !calm) {
+          const sides = across.filter((s) => ex[s as 'n']);
+          const d = (s: string): number => Math.hypot(edge(s)[0] - p.x, (edge(s)[1] - p.y) * 2);
+          goal = sides.sort((a, b) => d(a) - d(b))[0] ?? way;
+        }
+        if (t % 6 === 0 || !paces.length) paces = plan(goal);
+        const pace = paces.shift() ?? { dx: { e: 1, w: -1 }[goal as 'e'] ?? 0, dy: { n: -1, s: 1 }[goal as 'n'] ?? 0 };
+        let dx = pace.dx;
+        let dy = pace.dy;
+        // At the edge, keep pressing outward.
+        if (!paces.length) [dx, dy] = [{ e: 1, w: -1 }[goal as 'e'] ?? 0, { n: -1, s: 1 }[goal as 'n'] ?? 0];
+        const room = sim.state.room;
+        sim.step([{ t: 'move', dx, dy }]);
+        if (sim.state.room !== room) {
+          paces = [];
+          if (goal !== way) (hops++, (calm = 20));
+          best = Math.max(best, far());
+        }
+      }
+      console.log(`${way}: ${best} screens out (${p.dead ? 'dead' : 'alive'}) after ${Math.round(t / 20)}s, ${hops} hops, ${Math.round(p.hp)} hp left`);
+    }
+  }
+}
+if (mode === 'run') runner(Number(process.argv[3] ?? 12000));
