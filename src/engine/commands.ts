@@ -558,7 +558,8 @@ function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null, 
     case 'eat': {
       if (!nouns.length) sim.say(sim.text('useWhat'));
       else if (!target) sim.say(sim.text('notHere'));
-      else if (target.k !== 'item') sim.say(sim.text('notCarried'));
+      // Reading a stone, or drinking from a well, is the room's to answer, or the game's.
+      else if (target.k !== 'item') return false;
       else if (!target.def.use || !USE_VERBS[verb].includes(target.def.kind)) sim.say(sim.text('cantUse'));
       else {
         const id = target.def.id;

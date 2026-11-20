@@ -62,8 +62,18 @@ export const hall: RoomDef = {
     { id: 'throne', nouns: ['throne'], x: 258, y: 112, reach: 40, look: "The Elder's chair, carved with knotwork and capped with brass. Nobody but the Elder sits in it, and lately not even she." },
     { id: 'banner', nouns: ['banner'], x: 160, y: 106, reach: 400, look: 'Two banners, purple and red, each with a gold lozenge: the mark of Hollowmere. They hang very still.' },
     {
-      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle, and at the far end one mug, filled and not touched. Feasts were held here. The table remembers; you can tell by the stains.',
+      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle, and at the end nearest the door one cup, filled and not touched. Feasts were held here. The table remembers; you can tell by the stains.',
       lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the far end, beside the cup that is always set there and never drunk, lies the seven-pointed crown, where you put it down in front of Marta. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
+    },
+    // The cup set for the King at every feast, at the end of the table nearest the door.
+    {
+      id: 'cup', nouns: ['cup'], x: 78, y: 142, reach: 34,
+      look: 'A plain horn cup at the end of the long table nearest the door, filled to the brim and not touched. Nobody sits on the bench in front of it. Nobody in Hollowmere knows who it is for, only that it is set, and filled, and left.',
+      lookWhen: [
+        { if: [{ flag: 'dead.rested' }], look: 'The cup at the end of the table, by the door, filled and set straight, as it always is. Nobody sits in front of it. It is not a riddle any more. It is only a kindness, kept up.' },
+        { if: [{ flag: 'crown.unmade' }], look: 'Filled, and set at the end nearest the door, and not touched. You know now what the King asked for at the Frost Gate, in place of the summer. Somebody set him a cup all the same, and somebody has every feast since.' },
+        { if: [{ flag: 'hall.feast' }], look: 'Somebody has filled the cup fresh for the feast and set it straight. The crown lies beside it. The two of them have that end of the table to themselves.' },
+      ],
     },
     { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: nine books, three of them about sheep." },
     { id: 'door', nouns: ['door'], x: 60, y: 106, reach: 400, look: 'The way out, back to the square.' },
@@ -99,7 +109,16 @@ export const hall: RoomDef = {
       do: [{ lose: 'bearskin' }, { set: 'hall.rug' }, { gold: 20 }, { heal: 10 }, { sound: 'take' }, { say: 'You unroll the white bearskin in front of the Elder\'s chair. Marta looks at it for a while. "My father had one of those," she says. "It went for boots, the winter I was nine." She puts her feet on it, experimentally, and her face does something it has not done in your hearing. "Twenty silver. Do not tell the smith what I paid; he will want the same for nails."' }],
     },
     { on: ['take crown', 'look crown'], if: [{ flag: 'hall.feast' }], do: [{ say: 'It lies at the end of the long table, black against the wood. The feast has left a clear space round it, the way a crowd leaves room for a dog it does not know.' }] },
-    { on: ['drink table', 'take table'], do: [{ say: '"That one is not for you," says Marta, without turning round. "It is not for anybody, so far as I was ever able to learn. Leave it be."' }] },
+    // The King's cup. Nobody drinks from it, and what Marta says about it changes as she learns whose it is.
+    { on: ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table'], if: [{ flag: 'dead.rested' }], do: [{ say: '"Leave it," says Marta, more gently than you have heard her say anything. "It is his. He walked past it once, on his way up the stair, cold to the bone and wearing that thing. It was the one thing anybody ever gave him that he did not have to ask for. We shall go on giving it."' }] },
+    { on: ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table'], if: [{ flag: 'hearth.lit' }], do: [{ say: '"Not even you, Thane," says Marta, without turning round. "That one is for whoever it is for."' }] },
+    { on: ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table'], do: [{ say: '"That one is not for you," says Marta, without turning round. "It is not for anybody, so far as I was ever able to learn. Leave it be."' }] },
+    {
+      on: 'orun',
+      do: [{ say: 'ORUN. The table gives up its wear. Under the cup the board is worn into a shallow ring; and round it, fainter and fainter, one laid over another, are the rings of other cups on other tables, older than this one, older than the hall. Always in the same place: at the end nearest the door, where somebody coming in out of the cold would sit down first.' }],
+    },
+    // Hollowmere's one rhyme, sung in the hall it is about.
+    { on: ['sing rhyme', 'sing king', 'sing cup', 'sing'], if: [{ flag: 'dead.rested' }, { flag: 'rhyme.heard' }], do: [{ say: 'You sing it in the Elder\'s hall, with the fire going. West went the King when the snow lay deep, to wake the summer out of her sleep. Set him a cup and bank the fire...\n\nMarta does not sing. But she says the last line with you, flatly, the way she said it the first day, as one reads out a bill; only now it is a bill that has been paid. "He will be home when the sun is higher."' }] },
     { on: ['sit throne', 'sit'], do: [{ say: 'Marta looks at you. You discover you were only admiring the carving.' }] },
     { on: ['sleep', 'sleep *'], if: [{ flag: 'hall.feast' }], do: [{ say: 'With half of Hollowmere standing round the bed? They would only watch. See them out first.' }] },
     { on: ['sleep', 'sleep *'], if: [{ flag: 'hearth.lit' }], do: [{ run: 'rest' }, { say: 'Marta has had a bench made up for you by the hearth, with a bearskin over it. Nobody has said anything about it; it is simply there. You sleep nine hours without moving, and wake warm, which you had forgotten was possible.' }] },
@@ -255,6 +274,7 @@ export const ante: RoomDef = {
   music: 'barrow',
   name: 'The Antechamber',
   look: 'A chamber of fitted stone under the mound. Three figures are carved on the back wall: a wolf, a stag and a crown, with a line of writing beneath. A brazier burns here, which is worrying. To the east an archway is filled with something that is not quite air. The stair behind you climbs to daylight.',
+  lookWhen: [{ if: [{ flag: 'ante.open' }], look: 'A chamber of fitted stone under the mound. Three figures are carved on the back wall: a wolf, a stag and a crown, with a line of writing beneath. A brazier burns here, which is worrying. To the east the archway stands open, and the cold that filled it has gone down ahead of you. The stair behind you climbs to daylight.' }],
   scene: {
     kind: 'indoor', walkTop: 106, ambient: 0.3,
     layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
@@ -453,7 +473,8 @@ export const tally: RoomDef = {
   ],
   rules: [
     firstVisit('tally', 2),
-    { on: 'orun', do: [{ say: 'ORUN. Under the last tally, low down, where a man sitting against the wall would reach, there is one thing more cut into the stone. It is not a number. It is a hand, palm out, the sign in any country for THIS FAR. You have seen its like on a stone a long way from here. This one wears no rings.' }] },
+    { on: 'orun', if: [{ flag: 'sight.boundary' }], do: [{ say: 'ORUN. Under the last tally, low down, where a man sitting against the wall would reach, there is one thing more cut into the stone. It is not a number. It is a hand, palm out, the sign in any country for THIS FAR. You have seen its like on a stone a long way from here. This one wears no rings.' }] },
+    { on: 'orun', do: [{ say: 'ORUN. Under the last tally, low down, where a man sitting against the wall would reach, there is one thing more cut into the stone. It is not a number. It is a hand, palm out, the sign in any country for THIS FAR. It wears no rings.' }] },
     { on: ['read inscription', 'pet inscription', 'read rune', 'pet rune', 'read'], if: [{ flag: 'rest.read' }], do: [{ say: 'Nine thousand and eleven, in one hand, with the last bar half cut.' }] },
     { on: ['read inscription', 'pet inscription', 'read rune', 'pet rune', 'read'], do: [{ set: 'rest.read' }, { run: 'study', arg: 10 }, { say: 'You follow the rows down the stair with one finger. They are tallies, all in one hand, and the hand grows less steady as it goes. Near the foot the count stops. You work it out twice, on the wall, with your lips moving: nine thousand and eleven. The last bar is only half cut.' }] },
     { on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'chop rune', 'dig inscription'], if: [{ flag: 'rest.count' }], do: [{ say: 'The count is closed. You leave his chisel where you laid it.' }] },
@@ -510,7 +531,7 @@ export const winterhall: RoomDef = {
       id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, laid for a homecoming: horn cups, wooden platters, knives set straight, and at every place a sprig of something that was green once. Nothing was ever put on the platters. The fire went out as he came in at the door, and they sat on, waiting for it to take again.',
       lookWhen: [{ if: [RESTED], look: 'Long tables, and empty benches, and horn cups set out in rows for a feast that was four thousand years late.' }],
     },
-    { id: 'highseat', nouns: ['throne'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth, with the best cup in the house set ready on its arm. It is the only empty place in the room. He came home, and walked past it.' },
+    { id: 'highseat', nouns: ['throne', 'cup'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth, with the best cup in the house set ready on its arm. It is the only empty place in the room. He came home, and walked past it.' },
     { id: 'arch', nouns: ['arch'], x: 44, y: 108, reach: 400, look: "The foot of the servants' stair. It is the only way out, and it goes up." },
   ],
   rules: [
@@ -537,6 +558,7 @@ export const winterhall: RoomDef = {
     { on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'light'], if: [{ has: 'ember' }], do: [{ say: 'You are not close enough to the hearth.' }] },
     { on: ['light hearth', 'light', 'cast flame', 'use torch', 'light torch', 'use ember'], do: [{ say: 'You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Along the tables nobody moves; but you have the feeling of a great many people not letting themselves hope. The cold has been in these logs four thousand years, and a spark is no argument against it. Fire will not be struck here. It would have to be brought in alive, from a hearth where one is burning.' }] },
     { on: ['sit', 'sit table', 'sit throne'], if: [RESTED], do: [{ say: 'You sit a while at the long table, alone, in front of a good fire. It seems a thing somebody should do.' }] },
+    { on: ['take cup', 'drink cup', 'use cup', 'take throne'], do: [{ say: 'It was set ready for one man, four thousand years ago, and it is still his. You leave it where it is.' }] },
     { on: ['sit throne'], do: [{ say: 'Nine thousand people are looking at the hearth. If you sat there, they would look at you instead. You stay on your feet.' }] },
     { on: ['sit', 'sit table'], do: [{ say: 'There is one place left at the nearest bench, and you take it. Nobody objects. It is the coldest seat you have ever sat in, and the company is very quiet. After a while you get up again, because you can.' }] },
     { on: ['attack wight', 'shoot wight', 'shoot'], if: [{ not: RESTED }], do: [{ say: 'They have not lifted a hand to you. They are not going to. You put your own hand down.' }] },

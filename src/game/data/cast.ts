@@ -50,6 +50,28 @@ export const chars: Record<string, CharDef> = {
       inn: '"Halla keeps it. Hers is the only fire still lit, and she has not slept in a week keeping it so."',
       odd: '"Our smith. He will sell you a sword if you have the silver, and tell you what is wrong with it for nothing."',
       fenn: '"The hermit by the tarn, north-east. Mad as a spring hare. Knows things, though. More than is good for him."',
+      king: [
+        { if: [{ flag: 'dead.rested' }], say: '"They are saying the King under the hill was real after all. I always said so." Sigga considers. "I did not. But I am saying it now."' },
+        { say: '"West went the King, and so on. Every child in Hollowmere has it before they can walk. I sang it to my little brothers to get them off to sleep. It never worked. It is a song about somebody not coming home, and they lay awake waiting for him."' },
+      ],
+      food: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Bread every morning, and the oven never once sulking. I had forgotten bread could be dull. I am enjoying it enormously."' },
+        { if: [{ flag: 'hearth.lit' }], say: '"There is bread again. I was up before the light. I shall be up before the light for the rest of my life, and I do not care."' },
+        { say: '"Bread wants an oven, and an oven wants a fire that stays lit. I have flour, and nothing to do with it but look at it."' },
+      ],
+      rhyme: [
+        { if: [{ flag: 'dead.rested' }], say: '"They are saying the King under the hill was real after all. I always said so." Sigga considers. "I did not. But I am saying it now."' },
+        { say: '"West went the King, and so on. Every child in Hollowmere has it before they can walk. I sang it to my little brothers to get them off to sleep. It never worked. It is a song about somebody not coming home, and they lay awake waiting for him."' },
+      ],
+      cup: [
+        { if: [{ flag: 'dead.rested' }], say: '"Marta stood and looked at that cup for as long as it takes a loaf to prove. Marta, standing and looking at a cup." Sigga lowers her voice. "Something has happened to her, and I think it is a good thing, and I am not going to ask."' },
+        { say: '"The cup at the end of the Elder\'s table? Nobody touches it. When I was small my brother dared me to, and I got as far as reaching, and Marta\'s mother said my name from the other end of the hall without looking up. I have not reached for anything since."' },
+      ],
+      crown: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Melted, they say. Good. I did not like it on the Elder\'s table. Nobody would stand at that end, and it is the end nearest the bread."' },
+        { if: [{ flag: 'king.dead' }], say: '"That black thing you brought up out of the hill? Keep it wrapped. Halla says the candle beside it went out three times, and Halla does not make things up. She has not the time."' },
+        { say: '"If the King under the hill has a crown, he is welcome to it. I would settle for a fire."' },
+      ],
     },
     shrug: '"I would not know about that," says Sigga. "I know bread, and I know who owes me for it."',
     menu: [
@@ -77,6 +99,8 @@ export const chars: Record<string, CharDef> = {
       snowman: '"The back has to be straighter," says the girl. "She never bends. I have watched."',
       elder: '"She gave us the wool for its neck. She did not ask what it was for. I think she knows."',
       weather: '"It is warm," says the girl, in the snow, with blue hands, meaning every word.',
+      rhyme: '"Everybody knows it," says the girl, and sings the first line under her breath to show you, with every word right. "It is about the Elder\'s cup."',
+      cup: '"We are not to touch it. Not even at the feast. Not even for a dare." She says this with the confidence of somebody who has been dared.',
     },
     shrug: '"I am busy," says the girl, kindly.',
   },
@@ -93,6 +117,7 @@ export const chars: Record<string, CharDef> = {
     ],
     topics: {
       snowman: '"It is going to have a sword," says the boy. "The Elder has not got a sword but it is going to have one."',
+      rhyme: '"I know the last line," says the boy, and sings it, late and loud, with nobody to be late for.',
     },
     shrug: 'The boy considers the question, and holds up a stone instead.',
   },
@@ -147,7 +172,7 @@ export const chars: Record<string, CharDef> = {
       { if: [{ quest: 'hearth', is: 4 }], say: 'You lay the seven-pointed crown on the table. Marta looks at it for a long time. "Then it is done, and the fire should take. No. Not me." She nods at the cold hearth. "You went down there. You light it. There is dry wood on the pile outside, if you have none."' },
       {
         if: [{ flag: 'crown.unmade' }, { not: { flag: 'marta.thaw' } }],
-        say: '"The wind dropped. Three nights ago, in the small hours. I woke because of the quiet." Marta looks at you for a long moment. "I am not going to ask what you did out there. I will tell you that the well thawed this morning, and that I did not expect to live to see it." She puts a purse on the table: every household in Hollowmere has put something in. "Do not argue. They would only be offended."',
+        say: '"The wind dropped, in the small hours. I woke because of the quiet." Marta looks at you for a long moment. "I am not going to ask what you did out there. I will tell you that the well thawed this morning, and that I did not expect to live to see it." She puts a purse on the table: every household in Hollowmere has put something in. "Do not argue. They would only be offended."',
         do: [{ set: 'marta.thaw' }, { gold: 80 }, { score: 5, id: 'thaw.marta' }],
       },
       {
@@ -190,11 +215,23 @@ export const chars: Record<string, CharDef> = {
       name: '"Marta. They call me Coldhand. You may call me Elder."',
       elder: '"That is me. Do try to keep up."',
       word: '"I know nothing of that craft and want to know less. That is what the hermit is for."',
-      crown: '"A dead man\'s hat. Keep it away from me."',
+      crown: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Water, you tell me, on a floor at the far end of the west." She nods once. "Then the candles in this hall can stop going out. Good."' },
+        { say: '"A dead man\'s hat. Keep it away from me."' },
+      ],
       king: [
+        { if: [{ flag: 'dead.rested' }], say: '"An old man who was cold, and asked for the wrong thing, and got it." Marta is quiet for a while. "I have known a good many people do the same with less excuse. The cup stays where it is."' },
         { if: [{ flag: 'hearth.lit' }], say: '"He is ended, and the fires stay lit. That is as much thought as I mean to give him."' },
         { if: [{ flag: 'king.dead' }], say: '"Ended, you tell me. I shall believe it when my hearth holds a flame."' },
-        { say: '"There is a rhyme. My mother sang it over the cradle, and hers over hers. West went the King when the snow lay deep, to wake the summer out of her sleep." Marta says it flatly, as one reads out a bill. "Set him a cup and bank the fire: he will be home when the sun is higher. We have set that cup at every feast since before there was a Hollowmere to set it in. It is on the table now. Nobody has ever come to drink it."' },
+        { say: '"There is a rhyme. My mother sang it over the cradle, and hers over hers. West went the King when the snow lay deep, to wake the summer out of her sleep." Marta says it flatly, as one reads out a bill. "Set him a cup and bank the fire: he will be home when the sun is higher. We have set that cup at every feast since before there was a Hollowmere to set it in. It is on the table now. Nobody has ever come to drink it."', do: [{ set: 'rhyme.heard' }] },
+      ],
+      rhyme: [
+        { if: [{ flag: 'dead.rested' }], say: '"My mother sang it as a promise." Marta looks at the fire. "I shall have it sung to the children as a thing that happened. Not by me. I do not sing. Sigga will sing it."', do: [{ set: 'rhyme.heard' }] },
+        { say: '"West went the King when the snow lay deep, to wake the summer out of her sleep. Set him a cup and bank the fire: he will be home when the sun is higher." Marta says it as she would read out a bill. "My mother could sing it. I never could. We have set that cup at every feast since before there was a Hollowmere to set it in."', do: [{ set: 'rhyme.heard' }] },
+      ],
+      cup: [
+        { if: [{ flag: 'dead.rested' }], say: '"His." Marta looks down the table at it for a long moment. "He walked past it once, on his way up the stair, cold to the bone and wearing that thing. It was the one thing anybody ever gave him that he did not have to ask for. We shall go on giving it."' },
+        { say: '"It was my mother\'s to see filled, and her mother\'s. I asked her once who it was for. She said: him. She did not know who him was either, and she filled it all the same." Marta looks down the table at it. "So do I."' },
       ],
       thane: [
         { if: [{ flag: 'hearth.lit' }], say: '"It means the village feeds you, and you bleed for the village. It is not a good bargain. It is the only one I have to offer, and you took it."' },
@@ -251,6 +288,18 @@ export const chars: Record<string, CharDef> = {
         { say: '"I make things to keep people out of the ground. I do not go looking in it."' },
       ],
       name: '"Odd." He lets that sit. "It is a name."',
+      rhyme: '"I make things," says Odd. "I do not sing about them."',
+      king: '"I make things," says Odd. "I do not sing about kings."',
+      cup: '"Horn. Not my work."',
+      crown: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Melted? Iron does not melt in the cold." He thinks about it, which takes a while. "It was not iron, then. I said so. I said it to nobody, but I said it."' },
+        { if: [{ flag: 'king.dead' }], say: '"Do not bring that near my forge. Cold all through, and it would stay cold in the fire. That is not iron. That is an argument."' },
+        { say: '"I make swords. Crowns are for people who do not have to work."' },
+      ],
+      coldsmith: [
+        { if: [{ flag: 'smith.dead' }], say: 'Odd hears you out without stopping work: a smith at the far end of the west, making crowns out of ice and throwing them on the floor, for four thousand years. Then he does stop. He is quiet, which is not unusual, but this is a different quiet. "I have a box of nails I got wrong. I keep meaning to throw it out." You understand that he will not be throwing it out.' },
+        { say: '"There is one smith in this valley," says Odd, "and you are talking to him."' },
+      ],
     },
     shrug: '"I talk about iron," says Odd, "and I have just about finished doing that."',
     full: '"And carry it where?" Odd looks from %s to your pack and back. "Lighten that first. I sell iron. I do not sell mules."',
@@ -317,6 +366,17 @@ export const chars: Record<string, CharDef> = {
         { say: '"Marta in the hall has the big trouble. Gorm at the east farm was robbed a week back. Toke in the west wood got himself bitten. All three would pay to see the back of it."' },
       ],
       name: '"Halla. Everyone here will tell you I water the ale. I do. It needs it."',
+      cup: [
+        { if: [{ flag: 'dead.rested' }], say: '"I still pour it back in the cask after a feast." Halla wipes the counter, and goes on wiping it. "But Marta has me fill it fresh every morning now, feast or no feast, and leave it. She did not say why. I did not ask. Some things you fill and do not ask."' },
+        { say: '"I fill it. Feast-days, first thing, before anybody else\'s: the best I have, as my grandmother did. And last thing, when they have all gone home, I pour it back in the cask, because nobody drinks it and I am not throwing good ale on the floor." She wipes the counter. "Do not tell Marta about the cask."' },
+      ],
+      rhyme: '"My grandmother sang it at the end of every feast, when it was time for people to go home. West went the King when the snow lay deep. It clears a room faster than shouting."',
+      king: '"My grandmother set a cup for him every feast-day: the King under the hill. I still do." Halla wipes the counter. "If he ever comes in for it, I have been told to be civil, and count the spoons afterward."',
+      crown: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Gone, is it? Good. I watched the candle beside it go out three times the night of the feast, and I was asleep on my feet for two of them."' },
+        { if: [{ flag: 'king.dead' }], say: '"Keep it wrapped. I watched the candle beside it go out three times the night of the feast, and I was asleep on my feet for two of them."' },
+        { say: '"A crown? Not in here. The best thing in this inn is the kettle, and it is only the second best kettle in the village."' },
+      ],
       chest: '"For lodgers. Put in it what you like and take it out when you like. Nobody in this village steals, and anybody who started would have to carry it out past me."',
       fenn: '"The old hermit. He trades me draughts for bread. Lives by the tarn, north-east. Do not walk on his ice."',
     },
@@ -352,7 +412,7 @@ export const chars: Record<string, CharDef> = {
       },
       {
         if: [{ quest: 'rest', is: 1 }],
-        say: '"Standing at the edge of the fields, looking at smoke." Fenn puts his pen down. "Then I have had it backward all winter, along with everything else. I said the dead came for what was shut up in that crown. So they did. But think whose dead they are. Not ours. Ours lie in the Hall of Sleepers, forty generations of them, and most have had the manners to stay there. These are older. These are his." He looks at his own fire as if it had spoken. "Set him a cup and bank the fire. Who do you suppose set the first cup, Thane? He went west for the summer, and his people did what people do: they laid a feast against his coming home. And he came home, wearing that. What do you suppose it drank first?" He is quiet a while. "They never wanted a crown. They wanted to be warm, and they are waiting yet for what he went to fetch. A king\'s mound is raised over his own hall, Thane, and nobody carries that many dead up a stair to bury them. They will be where they sat down. A hall has more than one door, and you have a word for things that are hidden. Take a light. And if you ever find the word I told you of, the sun\'s own name, take that above everything."',
+        say: '"Standing at the edge of the fields, looking at smoke." Fenn puts his pen down. "Then I have had it backward all winter, along with everything else. I said the dead came for what was shut up in that crown. So they did. But think whose dead they are. Not ours. Ours lie in the Hall of Sleepers, forty generations of them, and most have had the manners to stay there. These are older. These are his." He looks at his own fire as if it had spoken. "Set him a cup and bank the fire. Who do you suppose set the first cup, Thane? He went west for the summer, and his people did what people do: they laid a feast against his coming home. And he came home, wearing that. What do you suppose it drank first?" He is quiet a while. "They never wanted a crown. They wanted to be warm, and they are waiting yet for what he went to fetch. A king\'s mound is raised over his own hall, Thane, and nobody carries that many dead up a stair to bury them. They will be where they sat down. A hall has more than one door, and you have a word for things that are hidden. Take a light. And if you ever find the fourth word, the sun\'s own name, take that above everything."',
         do: [{ quest: 'rest', stage: 2 }, { run: 'study', arg: 20 }],
       },
       {
@@ -415,6 +475,26 @@ export const chars: Record<string, CharDef> = {
       ward: '"It halves what hits you, for a little while. Twenty-five silver."',
       magic: '"There are two kinds worth the name. Spells, which you learn from books and pay for in breath: Flame, Frost, Mend, Light, Ward. And the old words, which you learn from stones and pay for in waiting."',
       wife: '"Asa. She laughed at everything, me most of all. Forty years." He turns a page he has not read.',
+      rhyme: [
+        { if: [{ flag: 'dead.rested' }], say: '"He will be home when the sun is higher." Fenn says it to the fire. "Well. It was, and somebody came. I have said it over to myself a good many times since you told me, and it has not worn out yet."' },
+        { if: [{ flag: 'crown.unmade' }], say: '"Set him a cup and bank the fire." He looks at the page where he wrote the three words off the wall. "They knew what he would want when he got home: a fire, and something warm. They had it ready for him. And he asked a smith instead."' },
+        { say: '"West went the King when the snow lay deep. Ten years of my life went into that rhyme." He sniffs. "It scans badly, it rhymes worse, and I could never find a word of it that was not true. That is what I cannot forgive it."' },
+      ],
+      cup: [
+        { if: [{ flag: 'dead.rested' }], say: '"Marta means to go on setting it, I hear. Good." Fenn turns a page. "It is the only sensible thing done in this valley for four thousand years, and it was done by people who had no idea why. Most of the best things are."' },
+        { if: [{ flag: 'crown.unmade' }], say: '"Every fire in the village in his chamber, and he was cold. And a cup on a table a mile away, filled for him every feast since before anybody kept count, and he never once came in for it." Fenn turns his pen over. "I do not know which is worse. I suspect the cup."' },
+        { say: '"The oldest thing in Hollowmere is not the barrow. A barrow is only a hill with a grudge. It is that cup. Not the horn, which is new every few lifetimes: the habit. People who never knew whose it was have filled it for longer than anybody has kept count." He sniffs. "I have never been so annoyed by a piece of kindness in my life."' },
+      ],
+      frostgate: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Quiet, you say. No wind at all." He writes something down. "I have lived my whole life with that wind in the chimney. I keep stopping to listen for it, like a man listening for a clock that has stopped."' },
+        { if: [{ quest: 'crown', min: 2 }], say: '"West of the village, five ridges, out past the pinewood: where the west wind is born, the old tales say. The door will not show itself; it wants uncovering."' },
+        { say: '"Five ridges west, in the old tales: a pass where the west wind is made. I never met anybody who had seen it, and I have met a great many liars."' },
+      ],
+      coldsmith: [
+        { if: [{ flag: 'smith.dead' }], say: '"At his anvil four thousand years, trying to get the order right." Fenn is quiet for a moment. "Most of us give up on a thing much sooner, and call it wisdom."' },
+        { if: [{ quest: 'crown', min: 2 }], say: '"A smith works to order. Whatever is at the Frost Gate made that crown for somebody who asked for it. Find him. And whatever you do, do not ask him for anything."' },
+        { say: '"A smith? Odd is in the village. If you mean some other, I do not know of one, and I know of most things."' },
+      ],
       veth: '"Open. Away. Make room. It is cut into the stone on the west ridge, above the pinewood. It will open the barrow, and it will knock a wolf off its feet."',
       iska: '"Stillness. Winter\'s own name. The stone that holds it stands by the old watchtower, south-east. It freezes what moves, and hardens what is already frozen."',
       sol: [
@@ -433,6 +513,7 @@ export const chars: Record<string, CharDef> = {
       elder: '"Marta. She was a child when I was already old. Stubborn then, too."',
       name: '"Fenn. It will do."',
       king: [
+        { if: [{ flag: 'dead.rested' }], say: '"Nobody alive knows what he was called. I used to mind." Fenn turns a page. "I find I know the rest of him well enough now not to."' },
         { if: [{ flag: 'king.dead' }], say: '"Nobody alive knows what he was called. He kept everything else."' },
         { say: '"He was called something once. He has outlived his own name, which is the kind of thing that happens when you refuse to die properly."' },
       ],
@@ -496,6 +577,19 @@ export const chars: Record<string, CharDef> = {
       menhir: '"Up the north path, on the bare ridge. I do not go near it. My dog would not either, when I had a dog."',
       tree: '"I have hunted this wood thirty years. It has never been this quiet, or this cold."',
       work: '"Three wolves. That is the work."',
+      rhyme: '"My mother sang it. A man goes a long way from home in bad weather, and does not come back." Toke watches the trees. "I took it as advice."',
+      king: '"My mother sang about him. A man goes a long way from home in bad weather, and does not come back." Toke watches the trees. "I took it as advice."',
+      cup: '"I have never been to a feast I did not leave early."',
+      crown: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Melted, Halla says. Good. A thing like that is bad for the hunting." Toke watches the trees. "Everything for a mile round went quiet when you carried it past."' },
+        { if: [{ flag: 'king.dead' }], say: '"I saw you carry it out of the hall. Everything in the wood went quiet when you came by with it." Toke watches the trees. "Keep it wrapped."' },
+        { say: '"I hunt deer, not kings."' },
+      ],
+      wight: [
+        { if: [{ flag: 'dead.rested' }], say: '"They have stopped coming to stand at Gorm\'s field." Toke watches the trees for a while. "I am glad I never loosed at them. I would have wondered about it, after."' },
+        { if: [{ flag: 'crown.unmade' }], say: '"They come down at night and stand at the edge of Gorm\'s field, and look at the smoke. They do not come on. I have had an arrow on the string and could not see the use of it. It would be like shooting at rain."' },
+        { say: '"I hunt things that are alive. Those are somebody else\'s trouble, and I hope to keep it that way."' },
+      ],
       name: '"Toke."',
     },
     shrug: '"I hunt," says Toke. "The rest is other people\'s business."',
@@ -556,6 +650,8 @@ export const chars: Record<string, CharDef> = {
       ],
       potion: '"Seven silver. My own brewing: frostcap, red moss, and a thing I will not name. It will close a wound."',
       name: '"Brekka. My mother had hopes for me. They did not include this."',
+      rhyme: '"Never heard it. Out here you sing to tell the bears where you are, and they are not particular about the words."',
+      king: '"Kings are for people with roofs."',
       wight: [
         { if: [{ flag: 'dead.rested' }], say: '"Gone. I walked my trap-lines by moonlight last night, for the first time in my life, and met nothing but an owl." Brekka shakes her head. "I do not know what you did. I am keeping the knife by the bed all the same."' },
         { if: [{ flag: 'crown.unmade' }], say: '"Still walking. But they wander now. All this winter they went one way, toward your valley, like geese. Whatever it was they wanted there, they have stopped wanting it."' },
@@ -606,6 +702,8 @@ export const chars: Record<string, CharDef> = {
       pelt: '"Four silver a wolf. Ten for a bear, and I will want to hear how you did it."',
       potion: '"Seven silver. Runa brews them, east of here or west, wherever she has got to. I only sell them on."',
       name: '"Ivar. The rest you can see for yourself."',
+      rhyme: '"Marta sang it once, at a midsummer fire, before she was Elder and while she still sang. She will tell you she never sang in her life." He grins. "Ask her."',
+      king: '"The one in the rhyme? Marta sang it once, at a midsummer fire, before she was Elder and while she still sang. She will tell you she never sang in her life." He grins. "Ask her."',
       glove: '"The right one went with the hand, into a bear. I kept the left out of spite, and then I lost that too, crossing the mere. So now I am One-Glove with no gloves at all, and the name has stuck anyway."',
       trap: '"Hunting is waiting, mostly. You wait until the thing you want is where you want it, and then you do not miss. Fighting is the same, only the waiting is shorter. Watch for the moment before the blow."',
       wild: '"I have walked twelve days west of here and never found the end of it. There are towers out there that nobody remembers building, and vaults under them that somebody was at pains to keep shut. Take a light, if you go down."',
@@ -656,6 +754,8 @@ export const chars: Record<string, CharDef> = {
         { say: '"I have seen them, in the dead wood. They do not see me. I think they only see what is warm, and I have been cold a long time."' },
       ],
       name: '"Runa. Just Runa. Out here there is nobody to confuse me with."',
+      rhyme: '"Fenn taught me my letters with it, chalked on his door. W for west, K for king, S for the summer that never came. I could read it long before I knew what it meant, and I am not sure I know yet."',
+      king: '"The King in the rhyme? Fenn taught me my letters with it, chalked on his door. W for west, K for king, S for the summer that never came. I could read it long before I knew what it meant."',
       village: '"I was born under one of those eleven roofs. It was too loud. Out here I can hear things grow."',
     },
     shrug: '"If it does not grow, I have no opinion on it," says Runa.',
@@ -713,6 +813,17 @@ export const chars: Record<string, CharDef> = {
       tarn: '"North of here. Old Fenn lives on the shore. Do not cross the ice: it looks sound and is not."',
       tower: '"The old watchtower, south. Nobody goes there. Somebody has been lately; I have seen a light."',
       name: '"Gorm. That is my mark on the barrel."',
+      rhyme: '"I sing it to the ewes at lambing. They do not care for it, but they hold still to listen, and that is all I ask of a song."',
+      king: '"I sing about him to the ewes at lambing. They do not care for it, but they hold still to listen, and that is all I ask of a song."',
+      crown: [
+        { if: [{ flag: 'crown.unmade' }], say: '"Gone? Good. I had it in my head that it was why the snow would not soften. I had no reason to think so. I thought it anyway, and now look at my field."' },
+        { if: [{ flag: 'king.dead' }], say: '"I stood at the far end of the hall from it all night. So did everybody. It is the first feast I ever saw where the crowd was all at one end."' },
+        { say: '"The King under the hill can keep his crown. I would sooner have a spring."' },
+      ],
+      cup: [
+        { if: [{ quest: 'stores', is: 2 }], say: '"Never had a feast at my place to set one at. If I did, I would have set one for my seed grain." He considers this. "And it came home."' },
+        { say: '"Never had a feast at my place to set one at. If I did, I would set one for my seed grain, and see if it came home."' },
+      ],
     },
     shrug: '"I only know sheep and soil," says Gorm. "And that my grain is gone."',
     menu: [

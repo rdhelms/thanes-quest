@@ -779,7 +779,7 @@ function crypt(c: Content, X: number, Y: number): RoomDef | undefined {
     },
     doors: [{ x0: 36, y0: 107, x1: 52, y1: 109, to: above.id, x: Math.round((way.x0 + way.x1) / 2), y: way.y1 + 7, dir: 'down' }],
     things: [
-      { id: 'hoard', nouns: ['treasure'], x: hoardX, y: 154, reach: 40, try: ['take treasure'], look: f.text.cryptTreasure },
+      { id: 'hoard', nouns: ['treasure', 'cup'], x: hoardX, y: 154, reach: 40, try: ['take treasure'], look: f.text.cryptTreasure },
       { id: 'rune', nouns: ['rune', 'inscription'], x: runeX, y: 108, reach: 40, try: ['read rune'], look: f.text.cryptRune },
       { id: 'coffins', nouns: ['sarcophagus', 'niche'], x: 124, y: 156, reach: 400, look: f.text.cryptCoffins },
       { id: 'arch', nouns: ['arch', 'door'], x: 44, y: 108, reach: 400, look: f.text.cryptWayOut },

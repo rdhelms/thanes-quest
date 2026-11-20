@@ -534,9 +534,14 @@ export class Shell {
       .sort((a, b) => dist(a.x, a.y) - dist(b.x, b.y))[0];
     if (who) out.push({ label: `Talk to ${c.chars[who.ref].name}`, line: `talk to ${c.chars[who.ref].nouns[0]}` });
     const close = sim.things().filter((t) => dist(t.x, t.y) <= (t.reach ?? 30));
+    // A thing to be tried with something carried ("put crown on anvil") is offered only to whoever carries it.
+    const lacking = (line: string): boolean => {
+      const r = sim.parser.parse(line);
+      return r.ok && r.nouns.some((n) => !sim.things().some((t) => t.nouns.includes(n)) && Object.values(c.items).some((it) => it.nouns.includes(n)) && !Object.keys(p.inv).some((id) => c.items[id]?.nouns.includes(n)));
+    };
     for (const t of close) {
       if (t.take) out.push({ label: `Take the ${t.nouns[0]}`, line: `take ${t.nouns[0]}` });
-      for (const line of t.try ?? []) out.push({ label: line[0].toUpperCase() + line.slice(1), line });
+      for (const line of t.try ?? []) if (!lacking(line)) out.push({ label: line[0].toUpperCase() + line.slice(1), line });
     }
     out.push({ label: 'Look around', line: 'look' });
     if (sim.room.scene.kind === 'outdoor') out.push({ label: 'Map', line: 'map' });

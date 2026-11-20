@@ -353,6 +353,53 @@ describe('magic', () => {
   });
 });
 
+describe("the King's cup", () => {
+  /** The Elder's hall, standing by the cup, with the story told as far as `flags` say. */
+  const hall = (...flags: string[]): Sim => {
+    const sim = game('hall', 84, 140);
+    for (const f of flags) sim.state.flags[f] = true;
+    return sim;
+  };
+  const SAGAS = [[], ['hearth.lit', 'king.dead'], ['hearth.lit', 'king.dead', 'crown.unmade'], ['hearth.lit', 'king.dead', 'crown.unmade', 'dead.rested']];
+
+  it('is a thing on the table, and what it means changes as the sagas are told', () => {
+    const looks = SAGAS.map((f) => type(hall(...f), 'look at the cup')[0]);
+    expect(looks[0]).toContain('Nobody in Hollowmere knows who it is for');
+    expect(looks[2]).toContain('what the King asked for');
+    expect(looks[3]).toContain('only a kindness');
+    expect(new Set(looks).size).toBe(3);
+    // Nobody drinks from it, and what Marta says about that is the last thing to change.
+    expect(type(hall(), 'drink from the cup')[0]).toContain('not for anybody');
+    expect(type(hall(...SAGAS[1]), 'take the mug')[0]).toContain('Not even you');
+    expect(type(hall(...SAGAS[3]), "drink the king's cup")[0]).toContain('It is his');
+  });
+
+  it('shows ORUN where it has always stood, and the rhyme is sung in the hall at the end', () => {
+    const sim = hall();
+    sim.teach('word:orun');
+    expect(type(sim, 'orun')[0]).toContain('nearest the door');
+    const end = hall(...SAGAS[3]);
+    expect(type(end, 'sing the rhyme')[0]).toContain('do not know the rhymes');
+    [end.p.x, end.p.y] = [206, 120];
+    expect(type(end, 'ask elder about the king')[0]).toContain('The cup stays');
+    end.state.flags['rhyme.heard'] = true;
+    expect(type(end, 'sing the rhyme')[0]).toContain('a bill that has been paid');
+    expect(type(game('ford'), 'sing the rhyme')[0]).toContain('do not know the rhymes');
+  });
+
+  it('can be asked about, and so can the rhyme, of everybody in Hollowmere', () => {
+    const at: Record<string, [string, number, number]> = { sigga: ['village', 236, 154], odd: ['village', 124, 154], elder: ['hall', 222, 120], halla: ['inn', 250, 114], fenn: ['hut', 196, 124], toke: ['pinewood', 276, 142], gorm: ['farm', 168, 142] };
+    for (const [who, [room, x, y]] of Object.entries(at))
+      for (const what of ['the cup', 'the rhyme', 'the king', 'the crown']) {
+        const said = type(game(room, x + 14, y), `ask ${who} about ${what}`)[0] ?? '';
+        expect(said, `${who} on ${what}`).not.toMatch(/no use for the word|would not know|I talk about iron|I hunt,|only know sheep|questions that help|past what I know|beneath my notice/);
+      }
+    // His wife has a name, and the Frost Gate is a place.
+    expect(type(game('hut', 210, 124), 'ask fenn about asa')[0]).toContain('She laughed');
+    expect(type(game('hut', 210, 124), 'ask fenn about the frost gate')[0]).toContain('west wind');
+  });
+});
+
 describe('things found in QA', () => {
   it('splits long messages across boxes that each fit', () => {
     const shell = new Shell(content, memoryStore(), false, behaviours);
