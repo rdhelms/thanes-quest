@@ -151,6 +151,52 @@ The dead go on walking after the crown is unmade. Brekka says they wander now. A
 they had gone one way, toward the valley, and whatever they wanted there they have stopped
 wanting.
 
+## The third saga: The Long Table
+
+The winter has broken, but the dead still come down at night. They no longer come at the village.
+They stand at the edge of Gorm's field and look at the smoke. Toke will not loose at them: he says
+it would be like shooting at rain. Marta has buried a great many people and never saw one who
+wanted to be walking, and she sends the Thane to ask Fenn what they are waiting for.
+
+Fenn sees that he has had it backward. The dead who walk are not Hollowmere's: those lie in the
+Hall of Sleepers, forty generations of them. These are older. They are the Barrow-King's own
+people, the ones he let freeze. They never wanted the crown. They wanted to be warm, and they
+still do. A king's mound is raised over his own hall, and nobody carries that many dead up a
+stair, so they will be where they sat down. A hall has more than one door.
+
+At the barrow, ORUN shows the second door for what it is: narrow, low in the flank of the mound,
+walled up with fitted stone and turfed over. VETH throws the stones inward. Behind them a
+servants' stair goes down, worn hollow by people carrying things. Both its walls are covered with
+tally marks in one hand, which grows less steady as it goes. The count stops at nine thousand and
+eleven, with the last bar half cut, and a mason's chisel lies under it where a hand let it fall.
+ORUN shows one more thing cut there, low down: an open hand, the sign for THIS FAR, without rings.
+
+At the foot of the stair is the Winter Hall, a king's hall buried whole. The benches are full.
+The King's people sit in their rows with the frost on them, every face turned to a great hearth
+that is laid with logs and has never been lit. The high seat is the only empty place: its owner
+had another made upstairs, nearer the fire. ORUN shows the paths worn in the floor: thousands
+from the benches to the hearth and back, and one from the high seat, to the stair and up, that
+does not come back. They do not lift a hand to the Thane.
+
+Fire struck in that hearth will not hold. Their own fire was the one thing he took from them, and
+it cannot be struck there; it has to be brought, from a hearth that is shared. The word SOL,
+spoken to them cold, is only a blow: they turn from it. The Thane tips the coal from Marta's
+hearth onto the old logs, and it takes as the Elder's hearth took, and every face lifts to it.
+They are warm, and they still do not leave. Then the Thane says SOL quietly, as one tells somebody
+the time. It was never that they could not bear the word. They could not bear it cold. One by one
+they lay their heads on their arms, as people do at the end of a long feast when the fire is good,
+and the benches are empty.
+
+After that nothing walks at night in the north that ought to be asleep. Brekka walks her
+trap-lines by moonlight for the first time in her life. Smoke rises from the crown of the barrow.
+Marta, told where her coal went, lifts another out of her hearth into the horn box: it is only a
+coal, she has a hearthful, and that was rather the point. She will see that wood is taken up to
+the barrow, since she never yet let a fire go out that she could keep in. Fenn finds he has had
+the fourth word wrong in three books: it was never a question of fire, but of whose.
+
+A Thane who goes back to the stair can take up the chisel and finish the half-cut bar. Nine
+thousand and eleven, and done.
+
 ## Side stories
 
 **A Stolen Spring.** A week before the hero came, bandits took all of Gorm's seed grain. A farm

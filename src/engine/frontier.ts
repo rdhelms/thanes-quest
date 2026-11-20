@@ -425,7 +425,7 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
   const night = f.life.night;
   if (count && night?.length) {
     const abroad = night[Math.min(night.length - 1, Math.ceil(level / 2))];
-    if (abroad.length) spawns.push({ id: `${id}:night`, kind: pick(abroad), x: Math.round(70 + roll() * 180), y: Math.round(128 + roll() * 18), respawn: 3000, level, when: 'night' });
+    if (abroad.length) spawns.push({ id: `${id}:night`, kind: pick(abroad), x: Math.round(70 + roll() * 180), y: Math.round(128 + roll() * 18), respawn: 3000, level, when: 'night', if: f.nightIf });
   }
 
   // Anything that has made this place its own.

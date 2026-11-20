@@ -3,7 +3,7 @@
 
 import type { CharSpec, Cond, Content, Effect, EnemyDef, ItemDef, PerkDef, QuestDef, RoomDef, Rule, SpellDef, WordDef } from '../engine/types';
 import { chars } from './data/cast';
-import { ante, hall, hut, inn, sleepers, throne } from './data/rooms/inside';
+import { ante, hall, hut, inn, sleepers, tally, throne, winterhall } from './data/rooms/inside';
 import { bellmere, dolmen, frostgate, hangtree, rimehall } from './data/rooms/west';
 import { barrow, camp, farm, ford, pinewood, ridge, tarn, tower, village } from './data/rooms/world';
 import { frontier } from './data/frontier';
@@ -265,6 +265,17 @@ const quests: Record<string, QuestDef> = {
       5: 'The crown is unmade, and the winter is only a winter. It is a tale Fenn the hermit will want for his books.',
     },
   },
+  rest: {
+    id: 'rest', name: 'The Long Table', done: 6,
+    stages: {
+      1: 'The winter has broken, but the dead still come down at night and stand at the edge of the fields, looking at the smoke. Fenn the hermit may know what they are waiting for.',
+      2: "The dead who walk are the Barrow-King's own people, who froze. Fenn says a king's mound is raised over his own hall, and that a hall has more than one door. A word for hidden things would show it, at the barrow.",
+      3: "The barrow's second door stands open. A servants' stair goes down behind it, into the dark.",
+      4: "The King's people sit at their tables under the barrow, waiting, with their faces to a hearth that was never lit. Fire struck there will not hold.",
+      5: "The hearth under the barrow is lit, and the dead sit warm at their tables, and still do not leave. Fenn spoke once of a fourth word: the sun's own name.",
+      6: 'A fire burns under the barrow, and the dead have stopped walking.',
+    },
+  },
   message: {
     id: 'message', name: 'Not Dead Yet', done: 3,
     stages: {
@@ -379,6 +390,8 @@ const deeds: Content['deeds'] = [
   { if: [{ flag: 'barrow.open' }], text: 'Spoke VETH at the barrow door, and it opened.' },
   { if: [{ flag: 'king.dead' }], text: 'Ended the Barrow-King in his own hall.' },
   { if: [{ flag: 'hearth.lit' }], text: "Lit the Elder's hearth, and was named Thane of Hollowmere." },
+  { if: [{ flag: 'dead.rested' }], text: 'Carried fire down to nine thousand who had never had any, and told them it was day.' },
+  { if: [{ flag: 'rest.count' }], text: "Finished another man's count: nine thousand and eleven." },
   { if: [{ flag: 'farm.stray' }], text: "Brought Gorm's fourth ewe home out of the wild." },
   { if: [{ flag: 'boy.horse' }], text: 'Carried a carved horse in from a sledge in the snow, and found it somebody to belong to.' },
   { if: [{ flag: 'bounty.n', min: 1 }], text: "Did the Elder's work in the wild. Jobs done so far: {bounty.n}." },
@@ -396,7 +409,7 @@ const deeds: Content['deeds'] = [
   { if: [{ flag: 'kills', min: 1 }], text: 'Felled {kills} foes, and walked away from each.' },
 ];
 
-const roomList: RoomDef[] = [ford, village, pinewood, farm, tower, camp, ridge, barrow, tarn, hall, inn, hut, ante, sleepers, throne, frostgate, rimehall, bellmere, hangtree, dolmen];
+const roomList: RoomDef[] = [ford, village, pinewood, farm, tower, camp, ridge, barrow, tarn, hall, inn, hut, ante, sleepers, throne, tally, winterhall, frostgate, rimehall, bellmere, hangtree, dolmen];
 
 export const content: Content = {
   title: "Thane's Quest",
@@ -421,6 +434,8 @@ export const content: Content = {
   calm: [{ flag: 'crown.unmade' }],
   text,
   hints: [
+    { if: [{ flag: 'dead.rested' }], text: 'Three sagas are behind you, and the north sleeps at night. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
+    { if: [{ flag: 'marta.thaw' }, { quest: 'rest', max: 0 }], text: 'The winter has broken, and the dead still walk at night. The Elder has noticed. She had something more to say, the last time you were by her fire.' },
     { if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }], text: 'The crown is unmade. Fenn the hermit, by the tarn, will want to hear all of it.' },
     { if: [{ flag: 'crown.unmade' }], text: 'Two sagas are behind you. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
     { if: [{ flag: 'hearth.lit' }, { has: 'crown' }, { quest: 'crown', max: 0 }], text: 'You are Thane of Hollowmere, with a dead king\'s crown in your pack that the Elder would not keep under her roof. She has work for you whenever you ask, Odd will temper your blade, and beyond the valley there are people and places you have not found yet.' },

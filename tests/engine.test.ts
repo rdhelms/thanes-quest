@@ -3013,3 +3013,100 @@ describe('things written by hand, out in the generated country', () => {
     expect(type(sled, 'talk to the boy').join(' ')).toContain('He is called Ear');
   });
 });
+
+describe('the third saga: the long table', () => {
+  /** A Thane with both sagas behind them and all four words, at the barrow. */
+  const ready = (): Sim => {
+    const sim = game('barrow', 140, 132);
+    Object.assign(sim.state.flags, { 'barrow.open': true, 'king.dead': true, 'hearth.lit': true, 'crown.unmade': true, 'fenn.told': true, 'fenn.met': true, 'marta.met': true, 'marta.thane': true, 'marta.thaw': true, 'quest:hearth': 5, 'quest:crown': 5 });
+    for (const w of ['veth', 'iska', 'orun', 'sol']) sim.teach(`word:${w}`);
+    sim.give('ember');
+    sim.drain();
+    return sim;
+  };
+  const rested = (sim: Sim): void => void (sim.p.cd = {});
+
+  it('begins with Marta noticing, and Fenn working out whose dead they are', () => {
+    const sim = ready();
+    sim.enterRoom('hall', 200, 122);
+    expect(type(sim, 'talk to elder')[0]).toContain('look at the smoke');
+    expect(sim.state.flags['quest:rest']).toBe(1);
+    sim.enterRoom('hut', 190, 126);
+    expect(type(sim, 'talk to fenn')[0]).toContain('They wanted to be warm');
+    expect(sim.state.flags['quest:rest']).toBe(2);
+  });
+
+  it('hides the second door until it is looked for, and opens it to the word that opens', () => {
+    const sim = ready();
+    // Before anybody has reason to look, ORUN shows what it always showed, and there is no way in.
+    expect(type(sim, 'orun')[0]).toContain('thought better of it');
+    expect(sim.state.flags['barrow.seen']).toBeUndefined();
+    sim.state.flags['quest:rest'] = 2;
+    rested(sim);
+    expect(type(sim, 'veth')[0]).toContain('see it before it can hear you');
+    rested(sim);
+    expect(type(sim, 'orun')[0]).toContain('something a word could move');
+    expect(type(sim, 'look at the stair')[0]).toContain('walled up');
+    rested(sim);
+    expect(type(sim, 'veth')[0]).toContain("servants' stair");
+    expect(sim.state.flags['quest:rest']).toBe(3);
+    expect(sim.room.doors!.filter((d) => all(sim, d.if)).map((d) => d.to).sort()).toEqual(['ante', 'tally']);
+  });
+
+  it('will not take a struck fire or a cold word, only fire that was shared and then day', () => {
+    const sim = ready();
+    sim.state.flags['quest:rest'] = 3;
+    sim.enterRoom('winterhall', 160, 118);
+    sim.drain();
+    expect(sim.state.flags['quest:rest']).toBe(4);
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(5);
+    [sim.p.x, sim.p.y] = [118, 138];
+    expect(type(sim, 'talk to the dead')[0]).toContain('a door somebody has promised to come back through');
+    expect(type(sim, 'attack the dead')[0]).toContain('not lifted a hand');
+    [sim.p.x, sim.p.y] = [160, 118];
+    expect(type(sim, 'sol')[0]).toContain('ashamed');
+    expect(sim.state.flags['dead.rested']).toBeUndefined();
+    // Without the ember, a spark is all there is; with it, the hearth takes.
+    const ember = sim.p.inv.ember;
+    delete sim.p.inv.ember;
+    expect(type(sim, 'light the hearth')[0]).toContain('It would have to be brought');
+    sim.p.inv.ember = ember;
+    expect(type(sim, 'light the hearth').join(' ')).toContain('It does not gutter');
+    expect(sim.p.inv.ember).toBeUndefined();
+    expect(type(sim, 'look')[0]).toContain('still here');
+    rested(sim);
+    const end = type(sim, 'sol').join(' ');
+    expect(end).toContain('They could not bear it cold');
+    expect(end).toContain('third saga');
+    expect(sim.state.flags['quest:rest']).toBe(6);
+    expect(sim.rs.actors.length).toBe(0);
+    expect(type(sim, 'look')[0]).toContain('The benches are empty');
+    expect(type(sim, 'sit at the table')[0]).toContain('in front of a good fire');
+  });
+
+  it('ends where the first saga did, with a coal from the same hearth, and quiet nights', () => {
+    const sim = ready();
+    Object.assign(sim.state.flags, { 'quest:rest': 6, 'dead.rested': true, 'rest.lit': true, 'barrow.second': true, 'barrow.seen': true });
+    delete sim.p.inv.ember;
+    sim.enterRoom('hall', 200, 122);
+    expect(type(sim, 'talk to elder')[0]).toContain('I have a hearthful');
+    expect(sim.p.inv.ember).toBe(1);
+    sim.enterRoom('barrow', 160, 140);
+    expect(type(sim, 'look')[0]).toContain('a thread of smoke');
+    // Nothing walks at night any more that ought to be asleep.
+    const walkers = (s: Sim): number => {
+      let n = 0;
+      for (let x = -4; x <= 4; x++) for (const y of [-3, 3]) n += (roomOf(content, wildId(x, y))?.spawns ?? []).filter((sp) => sp.when === 'night' && all(s, sp.if)).length;
+      return n;
+    };
+    expect(walkers(game())).toBeGreaterThan(0);
+    expect(walkers(sim)).toBe(0);
+    // And the people out there have noticed.
+    sim.enterRoom(wildId(...homes(content).brekka), 160, 140);
+    const brekka = sim.rs.actors.find((a) => a.ref === 'brekka')!;
+    sim.p.x = brekka.x + 14;
+    sim.p.y = brekka.y;
+    sim.state.flags['brekka.met'] = true;
+    expect(type(sim, 'ask brekka about the dead')[0]).toContain('by moonlight');
+  });
+});

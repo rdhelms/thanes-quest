@@ -97,6 +97,31 @@ export const chars: Record<string, CharDef> = {
     shrug: 'The boy considers the question, and holds up a stone instead.',
   },
 
+  // The Barrow-King's people, at their tables under the mound. Five stand for nine thousand.
+  ...Object.fromEntries(
+    [
+      ['dead1', 'A woman with her hands folded in her lap, as they were folded when she sat down. The frost has kept her patient.', 'white', true],
+      ['dead2', 'A man built like a ploughman, with a horn cup set in front of him that nothing was ever poured into.', 'grey', false],
+      ['dead3', 'Somebody old, under a hood, whose head has sunk forward. Even so, the face is turned to the hearth.', 'fur', false],
+      ['dead4', 'A man with a mason\'s shoulders and stone dust still in the creases of his hands.', 'grey', false],
+      ['dead5', 'A woman sitting very straight, at the end of the bench nearest the high seat, as one who was used to being sent for.', 'white', true],
+    ].map(([id, look, hair, dress]): [string, CharDef] => [
+      id as string,
+      {
+        id: id as string,
+        name: 'One of the dead',
+        nouns: ['wight'],
+        spec: { skin: 'wight', hair: hair as 'white', hairStyle: id === 'dead3' ? 'hood' : dress ? 'long' : 'short', tunic: 'rock', legs: 'rock', boots: 'rock', dress: !!dress, eyes: 'glow', outline: 'ice', ragged: true },
+        look: look as string,
+        talk: [
+          { if: [{ flag: 'rest.lit' }], brief: true, say: 'The face turns to you, slowly, with the firelight on it. Whatever it was going to say was said four thousand years ago, to somebody else. It turns back to the fire.' },
+          { brief: true, say: 'It does not turn its head. It is looking at the cold hearth, as they all are, the way you look at a door somebody has promised to come back through.' },
+        ],
+        shrug: 'It does not answer. It has only ever been waiting for one thing, and that is not it.',
+      },
+    ]),
+  ),
+
   marta: {
     id: 'marta',
     name: 'Elder Marta',
@@ -124,6 +149,17 @@ export const chars: Record<string, CharDef> = {
         if: [{ flag: 'crown.unmade' }, { not: { flag: 'marta.thaw' } }],
         say: '"The wind dropped. Three nights ago, in the small hours. I woke because of the quiet." Marta looks at you for a long moment. "I am not going to ask what you did out there. I will tell you that the well thawed this morning, and that I did not expect to live to see it." She puts a purse on the table: every household in Hollowmere has put something in. "Do not argue. They would only be offended."',
         do: [{ set: 'marta.thaw' }, { gold: 80 }, { score: 5, id: 'thaw.marta' }],
+      },
+      {
+        // The third saga ends where the first one did: at her hearth.
+        if: [{ flag: 'dead.rested' }, { not: { flag: 'marta.rest' } }],
+        say: 'You tell her where the coal went. Marta Coldhand hears all of it without a word, and at the end of it she gets up, which she does not do for many people. "Nine thousand," she says. She takes the tongs, lifts a coal out of her own hearth, and sets it in the horn box. "It is only a coal, Thane. I have a hearthful. That was rather the point of the thing." She shuts the lid on it. "There was smoke from the barrow at dawn. I thought my eyes had gone. Somebody will have to go up there with wood, now and then. I shall see to it. I never yet let a fire go out that I could keep in."',
+        do: [{ set: 'marta.rest' }, { give: 'ember' }, { score: 5, id: 'rest.marta' }, { sound: 'quest' }],
+      },
+      {
+        if: [{ flag: 'marta.thaw' }, { quest: 'rest', max: 0 }],
+        say: '"One thing more, Thane, before you sit down." Marta does not look round from the fire. "The dead still come down at night. Fewer, and not at us. They stand at the edge of Gorm\'s field and look at the smoke. Toke will not loose at them. He says it would be like shooting at rain." She is quiet for a moment. "I have buried a great many people, and I never yet saw one who wanted to be walking. Ask the hermit what they are waiting for."',
+        do: [{ quest: 'rest', stage: 1 }, { score: 2, id: 'rest.start' }],
       },
       { if: [{ flag: 'bounty.done' }], say: 'Marta looks up from the fire as you come in, and reads the answer in how you are standing.', do: [{ run: 'bountyPay', arg: 'Elder Marta' }] },
       { if: [{ flag: 'hearth.lit' }, { not: { flag: 'marta.thane' } }], say: '"Thane." She inclines her head a careful inch, which from Marta Coldhand is a parade. "The valley is bigger than this village, and winter is long. When you are ready for more work, I have it. I always have it."', do: [{ set: 'marta.thane' }] },
@@ -308,6 +344,16 @@ export const chars: Record<string, CharDef> = {
         if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }],
         say: '"Melted. It simply melted." Fenn is quiet for a long moment, and then, to your considerable alarm, he laughs. "Four thousand years, a king, a smith, a winter that ate a village, and it ends as a puddle on a floor. That is the best ending I ever heard, and I have read all the good ones." He wipes his eyes. "Sit down. No, in the good chair. You are going to tell me all of it, slowly, and I am going to write it down."\n\nMuch later, with the candle low, he stops writing. "One thing would not sit still. A smith works to order. Somebody asked for that crown." He turns back a page, to the three words you read off the wall as they went dark. "Keep me warm." Fenn puts down his pen. "I had it that somebody crowned him. He asked for it himself."\n\nHe looks at the dark window for a while. "And you say that with every fire in Hollowmere in his chamber, the chamber was cold. Then the crown never gave him any of it. Four thousand years, and he was never warm once." He shakes his head. "And the smith at his anvil all that time, trying to get the order right. Pass me the ink."',
         do: [{ set: 'fenn.told' }, { score: 5, id: 'crown.told' }, { run: 'study', arg: 60 }],
+      },
+      {
+        if: [{ quest: 'rest', is: 1 }],
+        say: '"Standing at the edge of the fields, looking at smoke." Fenn puts his pen down. "Then I have had it backward all winter, along with everything else. I said the dead came for what was shut up in that crown. So they did. But think whose dead they are. Not ours. Ours lie in the Hall of Sleepers, forty generations of them, and most have had the manners to stay there. These are older. These are his: the ones he let freeze." He looks at his own fire as if it had spoken. "They never wanted a crown. They wanted to be warm. They still do. A king\'s mound is raised over his own hall, Thane, and nobody carries that many dead up a stair to bury them. They will be where they sat down. A hall has more than one door, and you have a word for things that are hidden. Take a light. And if you ever find the word I told you of, the sun\'s name, take that."',
+        do: [{ quest: 'rest', stage: 2 }, { run: 'study', arg: 20 }],
+      },
+      {
+        if: [{ flag: 'dead.rested' }, { not: { flag: 'fenn.rest' } }],
+        say: '"Nine thousand and eleven." Fenn writes the number down, looks at it, and underlines it. "And a man with a chisel who kept the count until he could not. And the word the dead cannot bear turns out to be the one they were waiting for." He is silent for some time. "I have that wrong in three books. I shall have to write a fourth." He does not sound sorry. "Fire from Marta\'s hearth. Of course it was. It was never a question of fire. It was a question of whose."',
+        do: [{ set: 'fenn.rest' }, { run: 'study', arg: 40 }],
       },
       { if: [{ quest: 'errand', is: 1 }, { has: 'amulet' }], say: '"Is that..." He has gone very still. "You have it. You actually have it." He holds out a hand that is not quite steady.' },
       { if: [{ quest: 'errand', is: 1 }], say: '"My amulet is still in the ice, I notice, and you are still in my hut."' },
@@ -495,6 +541,7 @@ export const chars: Record<string, CharDef> = {
       potion: '"Seven silver. My own brewing: frostcap, red moss, and a thing I will not name. It will close a wound."',
       name: '"Brekka. My mother had hopes for me. They did not include this."',
       wight: [
+        { if: [{ flag: 'dead.rested' }], say: '"Gone. I walked my trap-lines by moonlight last night, for the first time in my life, and met nothing but an owl." Brekka shakes her head. "I do not know what you did. I am keeping the knife by the bed all the same."' },
         { if: [{ flag: 'crown.unmade' }], say: '"Still walking. But they wander now. All this winter they went one way, toward your valley, like geese. Whatever it was they wanted there, they have stopped wanting it."' },
         { say: '"The dead are walking, out past the old stones. I do not set traps there any more. Something kept emptying them, and it was not hungry."' },
       ],
@@ -585,7 +632,10 @@ export const chars: Record<string, CharDef> = {
       tonic: '"Black, bitter, and it puts back what the cold takes out of you. For good, mind, not for an afternoon. It takes three frostcaps to make one, and I never have three to spare. Bring me your own."',
       fenn: '"The old hermit? He taught me letters, when I was small, and I taught him which mushrooms not to eat. He still owes me for that."',
       weather: '"The frostcaps like it. Nothing else does."',
-      wight: '"I have seen them, in the dead wood. They do not see me. I think they only see what is warm, and I have been cold a long time."',
+      wight: [
+        { if: [{ flag: 'dead.rested' }], say: '"They have stopped. I went into the dead wood at dusk to see, and it was only wood." Runa turns a frostcap over in her fingers. "I had got used to them. That is a terrible thing to say, but I had."' },
+        { say: '"I have seen them, in the dead wood. They do not see me. I think they only see what is warm, and I have been cold a long time."' },
+      ],
       name: '"Runa. Just Runa. Out here there is nobody to confuse me with."',
       village: '"I was born under one of those eleven roofs. It was too loud. Out here I can hear things grow."',
     },

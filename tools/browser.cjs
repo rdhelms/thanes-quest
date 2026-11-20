@@ -20,6 +20,9 @@
 //   :wait <ms>          :settle (read whatever boxes are up)          :status
 //   :new                start a new game                              :load <file>   continue a saved game from a file
 //
+// If the page has been reloaded (the development server does that when a file changes), the title
+// menu is up: ":choose continue" takes the game up again from its last room.
+//
 // Every run ends by saying where the player is, how they are, who is about and what can be tried.
 //
 // Real keys and clicks go to the page. The development build's `window.game` is read only to know
@@ -93,7 +96,8 @@ const serve = async () => {
 const post = async (acts) => {
   const r = await fetch(`http://127.0.0.1:${PORT}/`, { method: 'POST', body: JSON.stringify(acts) });
   const j = JSON.parse(await r.text());
-  for (const l of j.logs) console.log('LOG', l);
+  // What the page logs is passed on, except the development server's own chatter.
+  for (const l of j.logs) if (!l.includes('[vite]')) console.log('LOG', l);
   return j.out;
 };
 const modal = async () => {

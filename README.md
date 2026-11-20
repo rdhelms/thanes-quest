@@ -104,7 +104,8 @@ Finishing the first saga does not finish the game:
 - **Night.** It comes round every few minutes, and more walks in the wild after dark. `time`
   tells the hour; the status line shows a sun or a moon.
 - **A second saga**, for anyone still carrying the Barrow-King's crown once the Elder's first
-  task is done. And three places with names of their own, a long way north, east and south; one
+  task is done. **And a third**, which the Elder begins when the second is over, and which has no
+  fights in it. And three places with names of their own, a long way north, east and south; one
   of them holds a fourth runeword, for whoever is there at the right hour.
 - **The way home.** A new Thane is given a hearth-ember: `use ember` anywhere it is quiet.
 

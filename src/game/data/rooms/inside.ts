@@ -361,3 +361,136 @@ export const throne: RoomDef = {
     { on: ['sit throne', 'sit'], do: [{ say: 'It is occupied.' }] },
   ],
 };
+
+// ---------------------------------------------------------------------------------------------
+// The third saga: behind the barrow's second door.
+
+const LIT = { flag: 'rest.lit' };
+const RESTED = { flag: 'dead.rested' };
+
+export const tally: RoomDef = {
+  id: 'tally',
+  music: 'barrow',
+  name: "The Servants' Stair",
+  look: "A narrow stair, worn hollow down the middle by people carrying things, going down under the mound. The walls on both sides are covered with marks, from the floor to as high as an arm can reach. At the foot of it an arch opens on a wider dark.",
+  dark: true,
+  scene: {
+    kind: 'indoor', walkTop: 106, ambient: 0.3,
+    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
+    props: [
+      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
+      { t: 'arch', x: 284, y: DF, w: 40, h: 60 },
+      { t: 'pillar', x: 110, y: 110, lit: 1 },
+      { t: 'pillar', x: 210, y: 110, lit: -1 },
+      { t: 'boulder', x: 236, y: 152, r: 4, seed: 41, ramp: 'stone' },
+    ],
+    lights: [{ x: 160, y: 126, r: 90, i: 0.5, kind: 'glow' }],
+  },
+  doors: [
+    { x0: 36, y0: 107, x1: 52, y1: 109, to: 'barrow', x: 118, y: 126, dir: 'down' },
+    { x0: 274, y0: 107, x1: 294, y1: 109, to: 'winterhall', x: 48, y: 118, dir: 'right' },
+  ],
+  things: [
+    {
+      // "Marks" is a word for runes everywhere else; here it means these.
+      id: 'marks', nouns: ['inscription', 'rune'], x: 160, y: 106, reach: 400, try: ['read marks'],
+      look: 'Five strokes and a bar, five strokes and a bar, in rows without end, cut into both walls with the same chisel. Somebody was counting something, and there was a great deal of it.',
+    },
+    {
+      id: 'chisel', nouns: ['chisel'], x: 236, y: 150, reach: 34, look: "A mason's chisel, worn to a stub, lying against the wall at the foot of the stair where a hand let it fall. Above it, the last tally mark is only half cut.",
+      lookWhen: [{ if: [{ flag: 'rest.count' }], look: "A mason's chisel, worn to a stub, laid straight at the foot of the wall. The count above it is finished." }],
+    },
+    { id: 'archUp', nouns: ['arch'], x: 44, y: 108, reach: 400, look: 'West, the stair climbs to the snow. East, at its foot, an arch opens on a hall you cannot see the end of.' },
+  ],
+  rules: [
+    firstVisit('tally', 2),
+    { on: 'orun', do: [{ say: 'ORUN. Under the last tally, low down, where a man sitting against the wall would reach, there is one thing more cut into the stone. It is not a number. It is a hand, palm out, the sign in any country for THIS FAR. You have seen its like on a stone a long way from here. This one wears no rings.' }] },
+    { on: ['read inscription', 'pet inscription', 'read rune', 'pet rune', 'read'], if: [{ flag: 'rest.read' }], do: [{ say: 'Nine thousand and eleven, in one hand, with the last bar half cut.' }] },
+    { on: ['read inscription', 'pet inscription', 'read rune', 'pet rune', 'read'], do: [{ set: 'rest.read' }, { run: 'study', arg: 10 }, { say: 'You follow the rows down the stair with one finger. They are tallies, all in one hand, and the hand grows less steady as it goes. Near the foot the count stops. You work it out twice, on the wall, with your lips moving: nine thousand and eleven. The last bar is only half cut.' }] },
+    { on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'chop rune', 'dig inscription'], if: [{ flag: 'rest.count' }], do: [{ say: 'The count is closed. You leave his chisel where you laid it.' }] },
+    {
+      on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'dig inscription'], if: [RESTED, { near: 'chisel', d: 44 }],
+      do: [{ set: 'rest.count' }, { sound: 'take' }, { say: 'You take up the chisel, find a loose stone for a mallet, and finish the bar he left half cut. It takes four blows. Nine thousand and eleven, and done. Then you lay the chisel straight at the foot of the wall, where he can find it.' }],
+    },
+    { on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'dig inscription'], do: [{ say: 'You pick it up. The handle is worn to the shape of one hand, and it is not yours. Whoever was counting had not finished, and neither, you think, have you. You put it back.' }] },
+  ],
+};
+
+export const winterhall: RoomDef = {
+  id: 'winterhall',
+  music: 'barrow',
+  name: 'The Winter Hall',
+  look: "A king's hall, buried whole: long tables, a high seat, and at the far end a hearth of river-stone bigger than the Elder's, laid with logs and never lit. The benches are full. They sit in their rows with the frost on them, every face turned to the cold hearth, as people sit who have been told to wait.",
+  lookWhen: [
+    { if: [RESTED], look: 'A long hall under the hill, warm from end to end. The fire in the great hearth has burned down to a steady red, and somebody has stacked fresh logs beside it. The benches are empty. The tables are only tables.' },
+    { if: [LIT], look: "The hall is lit from end to end by its own hearth, for the first time. Along the tables the frost is running off them like sweat, and every face is turned to the fire. Nobody gets up. They are warm, and they are still here. Something more than fire is owed them, and they do not know its name either." },
+  ],
+  scene: {
+    kind: 'indoor', walkTop: 106, ambient: 0.34,
+    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
+    props: [
+      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
+      { t: 'pillar', x: 96, y: 110, lit: 1 },
+      { t: 'pillar', x: 224, y: 110, lit: -1 },
+      { t: 'throne', x: 262, y: 112 },
+      { t: 'table', x: 120, y: 146, w: 76 },
+      { t: 'table', x: 214, y: 158, w: 76 },
+    ],
+    when: [
+      { if: [{ not: LIT }], props: [{ t: 'hearth', x: 160, y: DF }], lights: [{ x: 60, y: 120, r: 70, i: 0.45, kind: 'glow' }, { x: 160, y: 130, r: 110, i: 0.4, kind: 'glow' }] },
+      { if: [LIT], props: [{ t: 'hearth', x: 160, y: DF, lit: 1 }], lights: [{ x: 160, y: 102, r: 130, i: 1.25, kind: 'warm' }] },
+    ],
+  },
+  doors: [{ x0: 36, y0: 107, x1: 52, y1: 109, to: 'tally', x: 276, y: 118, dir: 'left' }],
+  npcs: [
+    { char: 'dead1', x: 104, y: 136, dir: 'right', if: [{ not: RESTED }] },
+    { char: 'dead2', x: 136, y: 152, dir: 'up', if: [{ not: RESTED }] },
+    { char: 'dead3', x: 196, y: 148, dir: 'up', if: [{ not: RESTED }] },
+    { char: 'dead4', x: 232, y: 164, dir: 'up', if: [{ not: RESTED }] },
+    { char: 'dead5', x: 240, y: 136, dir: 'left', if: [{ not: RESTED }] },
+  ],
+  things: [
+    {
+      id: 'hearth', nouns: ['hearth'], x: 160, y: 108, reach: 44, try: ['light hearth'], look: 'A hearth a whole village could stand in front of. The logs are laid as they were laid four thousand years ago, and there is no ash under them. It has never once been lit.',
+      lookWhen: [
+        { if: [RESTED], look: 'A good fire, burning low and steady, with wood stacked ready beside it. Somebody from Hollowmere has been down.' },
+        { if: [LIT], look: 'It is burning as if it had only been waiting to be asked. The coal from the Elder\'s hearth is somewhere in the heart of it.' },
+      ],
+    },
+    {
+      id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, set for a feast: horn cups, wooden platters, knives laid straight. Nothing was ever put on the platters. They sat down to wait for the fire, and it went upstairs.',
+      lookWhen: [{ if: [RESTED], look: 'Long tables, and empty benches, and horn cups set out in rows for a feast that was four thousand years late.' }],
+    },
+    { id: 'highseat', nouns: ['throne'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth. It is the only empty place in the room. Its owner had another made, upstairs, nearer the fire.' },
+    { id: 'arch', nouns: ['arch'], x: 44, y: 108, reach: 400, look: "The foot of the servants' stair. It is the only way out, and it goes up." },
+  ],
+  rules: [
+    { enter: true, if: [{ not: { flag: 'seen.winterhall' } }], do: [{ set: 'seen.winterhall' }, { score: 5, id: 'seen.winterhall' }, { quest: 'rest', stage: 4 }] },
+    { on: 'orun', do: [{ say: 'ORUN. The floor shows its wear. From every bench a path is trodden into the stone, to the hearth and back: thousands of them, crossing and recrossing, the way people go to a fire. From the high seat there is one path only. It goes to the stair, and up, and it does not come back.' }] },
+    // SOL: a blow, while they are cold. A kindness, once they are warm.
+    { on: 'sol', if: [RESTED], do: [{ say: 'Day. There is nobody left in the hall to need telling.' }] },
+    {
+      on: 'sol', if: [LIT],
+      do: [
+        { set: 'dead.rested' }, { muster: true }, { sound: 'win' }, { score: 25, id: 'rest.done' }, { quest: 'rest', stage: 6 },
+        { say: "SOL. You say it quietly, the way you would tell somebody the time. Day.\n\nAlong the tables the last of the frost goes out of nine thousand faces, and what is under it is only people: tired, and warm, and finished with waiting. It was never that they could not bear the word. They could not bear it cold. One by one they lay their heads down on their arms, as people do at the end of a long feast when the fire is good.\n\nWhen you look again the benches are empty. The fire burns on. Somebody ought to keep it in.\n\nYou have finished the third saga of THANE'S QUEST. Tonight, for the first time in four thousand years, nothing is walking in the north that ought to be asleep." },
+      ],
+    },
+    { on: 'sol', do: [{ say: 'SOL. The word goes down the hall like a slap, and nine thousand heads turn away from it together. It is day you are offering them, and they have nothing yet to be warm with. You find that you are ashamed.' }] },
+    { on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'drop ember', 'light', 'cast flame', 'use torch', 'light torch'], if: [LIT], do: [{ say: 'It is burning. It does not need you now. They may.' }] },
+    {
+      on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'drop ember', 'light'], if: [{ has: 'ember' }, { near: 'hearth', d: 60 }],
+      do: [
+        { lose: 'ember' }, { set: 'rest.lit' }, { sound: 'quest' }, { score: 10, id: 'rest.lit' }, { quest: 'rest', stage: 5 },
+        { say: "You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Their own fire was the one thing he took from them. It will not be struck here. It would have to be brought.\n\nSo you open the horn box. The coal from Marta's hearth glows in its bed of ash, as it has every day since she gave it to you: fire from a hall where anybody may come in out of the snow. You tip it onto the old logs.\n\nIt does not gutter. It catches, and keeps catching, as the Elder's hearth did, and the light walks down the hall from table to table, and every face at every table lifts toward it. Nobody gets up. They have waited a long time to be warm. They are not going to hurry it now." },
+      ],
+    },
+    { on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'light'], if: [{ has: 'ember' }], do: [{ say: 'You are not close enough to the hearth.' }] },
+    { on: ['light hearth', 'light', 'cast flame', 'use torch', 'light torch', 'use ember'], do: [{ say: 'You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Along the tables nobody moves; but you have the feeling of a great many people not letting themselves hope. Their own fire was the one thing he took from them. It will not be struck here. It would have to be brought, from a hearth that is shared.' }] },
+    { on: ['sit', 'sit table', 'sit throne'], if: [RESTED], do: [{ say: 'You sit a while at the long table, alone, in front of a good fire. It seems a thing somebody should do.' }] },
+    { on: ['sit throne'], do: [{ say: 'Nine thousand people are looking at the hearth. If you sat there, they would look at you instead. You stay on your feet.' }] },
+    { on: ['sit', 'sit table'], do: [{ say: 'There is one place left at the nearest bench, and you take it. Nobody objects. It is the coldest seat you have ever sat in, and the company is very quiet. After a while you get up again, because you can.' }] },
+    { on: ['attack wight', 'shoot wight', 'shoot'], if: [{ not: RESTED }], do: [{ say: 'They have not lifted a hand to you. They are not going to. You put your own hand down.' }] },
+  ],
+};
+

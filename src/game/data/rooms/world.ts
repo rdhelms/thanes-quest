@@ -545,6 +545,8 @@ export const barrow: RoomDef = {
   name: 'The Barrow',
   look: 'A great mound fills the north, too regular to be a hill. A doorway of three stones is set into it, with a single slab for a door. Nothing grows here, and the snow near the stone has a faint green shine. The village lies south.',
   lookWhen: [
+    { if: [{ flag: 'dead.rested' }], look: 'A great mound fills the north. Both its doors stand open, the great one and the small, and from the crown of the mound a thread of smoke goes straight up into the sky. Somebody is keeping a fire in, down there. The village lies south.' },
+    { if: [{ flag: 'barrow.second' }], look: 'A great mound fills the north, too regular to be a hill. Its doorway of three stones stands open and dark, and so, now, does a second: narrow, low in the flank of the mound, with a stair going down. The village lies south.' },
     { if: [{ flag: 'king.dead' }], look: 'A great mound fills the north, too regular to be a hill. Its doorway of three stones stands open and dark. The green shine has gone out of the snow, and it is only snow. The village lies south.' },
     { if: [{ flag: 'barrow.open' }], look: 'A great mound fills the north, too regular to be a hill. Its doorway of three stones stands open and dark. Nothing grows here, and the snow near the stone has a faint green shine. The village lies south.' },
   ],
@@ -558,10 +560,16 @@ export const barrow: RoomDef = {
       { t: 'boulder', x: 40, y: 152, r: 8, seed: 113 },
       { t: 'boulder', x: 280, y: 156, r: 10, seed: 114 },
     ],
-    when: [{ if: [{ flag: 'barrow.open' }], props: [{ t: 'mound', x: 160, y: 116, w: 250, h: 78, v: 'open' }] }],
+    when: [
+      { if: [{ flag: 'barrow.open' }], props: [{ t: 'mound', x: 160, y: 116, w: 250, h: 78, v: 'open' }] },
+      // The servants' door, once it has been seen and opened; and, when there is a fire under the hill, its smoke.
+      { if: [{ flag: 'barrow.second' }], props: [{ t: 'arch', x: 118, y: 119, w: 18, h: 24 }] },
+      { if: [{ flag: 'dead.rested' }], props: [{ t: 'hall', x: 150, y: 87, w: 20, v: 'smoke' }] },
+    ],
   },
   exits: { s: 'village', w: 'ridge', e: 'tarn' },
   doors: [
+    { x0: 110, y0: 119, x1: 126, y1: 121, to: 'tally', x: 48, y: 118, dir: 'right', if: [{ flag: 'barrow.second' }] },
     {
       x0: 150, y0: 119, x1: 170, y1: 121, to: 'ante', x: 60, y: 126, dir: 'right',
       if: [{ flag: 'barrow.open' }],
@@ -572,12 +580,26 @@ export const barrow: RoomDef = {
     { id: 'door', nouns: ['door', 'rune'], x: 160, y: 120, reach: 34, try: ['read rune'], look: 'A single slab between two uprights, under a lintel as long as a boat. A rune glows on it, the same green as rot in a log.', lookWhen: [{ if: [{ flag: 'barrow.open' }], look: 'Two uprights under a lintel as long as a boat, and a dark way down between them. The slab that closed it has sunk into the earth, and its rune has gone out.' }] },
     { id: 'mound', nouns: ['barrow'], x: 160, y: 120, reach: 400, look: 'A barrow: a hill somebody built, to put somebody in. The somebody has started glowing.', lookWhen: [{ if: [{ flag: 'king.dead' }], look: 'A barrow: a hill somebody built, to put somebody in. The somebody has stopped glowing.' }] },
     { id: 'stones', nouns: ['menhir'], x: 96, y: 138, reach: 60, look: 'Two smaller stones flank the path like door-wardens. Their runes are worn past reading.' },
+    {
+      id: 'sidedoor', nouns: ['arch'], x: 118, y: 122, reach: 40, hidden: true, look: 'Left of the great doorway, low in the flank of the mound: a narrow door, walled up with fitted stone and turfed over. The stones are not mortared.',
+      lookWhen: [{ if: [{ flag: 'barrow.second' }], look: "A narrow doorway in the flank of the mound, with its walling fallen inward. A servants' stair goes down behind it, worn hollow in the middle." }],
+    },
     ...scenery('The snow near the door has a faint green shine and squeaks underfoot.', 'Even the sky seems to keep its distance from this place.').map((t) =>
       t.id === 'snow' ? { ...t, lookWhen: [{ if: [{ flag: 'king.dead' }], look: 'Trodden snow, and no more than that. The green shine has gone out of it.' }] } : t,
     ),
   ],
   rules: [
     firstVisit('barrow'),
+    // The third saga: the small door, which must be seen before it can be told to open.
+    {
+      on: 'veth', if: [{ flag: 'barrow.seen' }, { not: { flag: 'barrow.second' } }],
+      do: [{ set: 'barrow.second' }, { sound: 'door' }, { score: 5, id: 'barrow.second' }, { quest: 'rest', stage: 3 }, { say: "VETH. The fitted stones jump in their courses, hold for one breath, and go inward all together, like a held door giving way. Dust that settled four thousand years ago rolls out over the snow. Behind it, steps go down. Not the King's broad stair: a servants' stair, worn hollow in the middle by people carrying things." }],
+    },
+    { on: 'veth', if: [{ quest: 'rest', min: 2 }, { not: { flag: 'barrow.second' } }], do: [{ say: 'The word goes into the mound and finds nothing to push. If there is another door, you will have to see it before it can hear you.' }] },
+    {
+      on: 'orun', if: [{ quest: 'rest', min: 2 }, { not: { flag: 'barrow.seen' } }],
+      do: [{ set: 'barrow.seen' }, { show: 'sidedoor' }, { say: 'ORUN. The mound shows its bones, and this time you know what you are looking at. Left of the great doorway, low down: a second door, narrow, walled up with fitted stone and turfed over afterward. Whoever built this place built a way out for somebody, and then thought better of it. The stones are not mortared. Now that you can see them, they look like something a word could move.' }],
+    },
     { on: 'veth', if: [{ flag: 'barrow.open' }], do: [{ say: 'The word rolls into the open barrow and comes back changed. You decide not to do that again.' }] },
     { on: 'veth', if: [{ near: 'door', d: 60 }], do: [{ set: 'barrow.open' }, { sound: 'door' }, { score: 10, id: 'barrow.open' }, { say: 'VETH. The rune on the slab flares and goes out. With a groan you feel in your knees, the great stone slides down into the earth. Cold air rolls out of the dark, and it smells of old iron.' }, { quest: 'hearth', stage: 3 }] },
     { on: 'veth', do: [{ say: 'The word goes out across the snow and is lost. You would need to be nearer the door for it to hear you.' }] },

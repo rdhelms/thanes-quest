@@ -394,6 +394,50 @@ describe('a Thane', () => {
     expect(bot.say('talk to elder')).toContain('the well thawed');
     expect(bot.say('deeds')).toBe('');
 
+    // The third saga: the dead still walk. Marta asks, Fenn reasons it out, and the barrow has a second door.
+    expect(bot.say('talk to elder')).toContain('what they are waiting for');
+    bot.door('village');
+    bot.exit('n');
+    bot.exit('e');
+    bot.door('hut');
+    bot.meet('fenn');
+    expect(bot.say('talk to fenn')).toContain('whose dead they are');
+    bot.door('tarn');
+    bot.exit('w');
+    bot.walkTo(140, 132, 10);
+    expect(bot.say('veth')).toContain('see it before it can hear you');
+    bot.waitFor('word:orun');
+    expect(bot.say('orun')).toContain('a second door');
+    bot.waitFor('word:veth');
+    expect(bot.say('veth')).toContain("servants' stair");
+    bot.door('tally');
+    bot.say('cast light');
+    expect(bot.say('read the tally')).toContain('nine thousand and eleven');
+    bot.door('winterhall');
+    expect(bot.say('look')).toContain('never lit');
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(5);
+    bot.walkTo(160, 116, 10);
+    expect(bot.say('cast flame')).toContain('It would have to be brought');
+    bot.waitFor('word:sol');
+    expect(bot.say('sol')).toContain('ashamed');
+    expect(bot.say('light the hearth')).toContain("coal from Marta's hearth");
+    expect(has('ember')).toBe(false);
+    bot.waitFor('word:sol');
+    expect(bot.say('sol')).toContain('third saga');
+    expect(sim.rs.actors.length).toBe(0);
+    // The count on the stair can be closed now, and the Elder has another coal.
+    bot.door('tally');
+    bot.say('cast light');
+    bot.walkTo(236, 150, 20);
+    expect(bot.say('use the chisel')).toContain('Nine thousand and eleven, and done');
+    bot.door('barrow');
+    expect(bot.say('look')).toContain('a thread of smoke');
+    bot.exit('s');
+    bot.door('hall');
+    bot.meet('marta');
+    expect(bot.say('talk to elder')).toContain('I have a hearthful');
+    expect(has('ember')).toBe(true);
+
     // Nothing the content offers has been left undone.
     for (const q of Object.values(content.quests)) if (!q.repeats) expect(sim.state.flags[questKey(q.id)], q.name).toBe(q.done);
     for (const id of awardsOnOffer().keys()) expect(sim.state.scored, id).toContain(id);

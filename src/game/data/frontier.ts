@@ -214,6 +214,8 @@ export const frontier: FrontierDef = {
   rareGame: { kind: 'whitehart', odds: 0.12, minDepth: 3 },
   trinkets: ['token', 'torc', 'hearthstone', 'brooch', 'harefoot'],
   sights,
+  // Once the King's people have been given their fire, nothing walks at night that ought to be asleep.
+  nightIf: [{ not: { flag: 'dead.rested' } }],
   text: {
     pines: {
       first: ['The Hollow', 'The Crowding', 'The Silent', 'The Leaning', 'The Black', 'The Winter', 'The Listening', 'The Wolf', 'The Hare', 'The Owl', 'The Deep', 'The Fox', 'The Raven', 'The Snow-Bent', 'The Long'],

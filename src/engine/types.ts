@@ -422,6 +422,8 @@ export interface FrontierDef {
   game?: Record<string, string>;
   /** A rarer quarry that now and then stands in for the ordinary game, far enough from home. */
   rareGame?: { kind: string; odds: number; minDepth: number };
+  /** What walks after dark walks only while these hold. */
+  nightIf?: Cond[];
   /** Trinkets that may be found among the grave-goods in a vault. */
   trinkets?: string[];
   /** Things worth finding, each written by hand and each met once, somewhere out in the country. */
