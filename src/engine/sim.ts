@@ -15,6 +15,13 @@ import type {
 
 /** How close to a side edge the player gets before stepping into the next room. */
 const EDGE = 6;
+
+/** Somewhere to stand near: a point, and how close counts as within reach of it. */
+export interface Spot {
+  x: number;
+  y: number;
+  d: number;
+}
 export const TICKS_PER_SECOND = 20;
 /** Ticks in a full day and night: eight minutes. */
 export const DAY_LENGTH = 9600;
@@ -287,9 +294,29 @@ export class Sim {
   /** Is the player near a thing or actor, named by id (or a character/enemy id)? */
   isNear(id: string, d?: number): boolean {
     const thing = this.things().find((t) => t.id === id);
-    if (thing) return this.within(thing.x, thing.y, d ?? thing.reach ?? 30);
-    const actor = this.rs.actors.find((a) => a.id === id || a.ref === id);
-    return !!actor && this.within(actor.x, actor.y, d ?? 44);
+    const actor = thing ? undefined : this.rs.actors.find((a) => a.id === id || a.ref === id);
+    const at = thing ? { x: thing.x, y: thing.y, d: d ?? thing.reach ?? 30 } : actor ? { x: actor.x, y: actor.y, d: d ?? 44 } : null;
+    // What is not here at all cannot be walked up to.
+    if (!at) return false;
+    if (this.within(at.x, at.y, at.d)) {
+      if (this.probe) this.probe.hits++;
+      return true;
+    }
+    if (!this.probe) return false;
+    this.probe.misses.push(at);
+    return this.probe.assume;
+  }
+
+  /**
+   * Set while a command is being weighed rather than carried out: counts the things it found
+   * within reach, lists those it found too far off, and can pretend the far ones are near, to
+   * see what the answer would be from there. Never part of a saved game.
+   */
+  probe: { assume: boolean; hits: number; misses: Spot[] } | null = null;
+
+  /** Ask whoever is sending the player's lines to walk within reach of a spot, and send this one again. */
+  approach(at: Spot, line: string): void {
+    this.out.push({ t: 'approach', ...at, line });
   }
 
   /**
@@ -318,6 +345,18 @@ export class Sim {
 
   private makeActor(id: string, kind: 'npc' | 'enemy', ref: string, x: number, y: number, dir: Dir, hp: number): ActorState {
     return { id, kind, ref, x, y, dir, act: 'idle', frame: 0, t: 0, wait: 20, tx: x, ty: y, hp, ai: {} };
+  }
+
+  /**
+   * Let the room's people come and go as things now stand: whoever should be here and is not
+   * arrives at their place, and whoever should not be has left.
+   */
+  muster(): void {
+    const rs = this.rs;
+    const due = (this.room.npcs ?? []).filter((n) => all(this, n.if));
+    rs.actors = rs.actors.filter((a) => a.kind !== 'npc' || due.some((n) => a.id === `npc:${n.char}`));
+    for (const n of due)
+      if (!rs.actors.some((a) => a.id === `npc:${n.char}`)) rs.actors.push(this.makeActor(`npc:${n.char}`, 'npc', n.char, n.x, n.y, n.dir ?? 'down', 1));
   }
 
   enterRoom(id: string, x: number, y: number, dir?: Dir): void {
@@ -415,7 +454,7 @@ export class Sim {
         }
         p.blocking = it.on;
       }
-      else if (it.t === 'say') command(this, it.line);
+      else if (it.t === 'say') command(this, it.line, !!it.afoot);
       else if (it.t === 'ease') this.state.flags.gentle = it.gentle;
       else if (it.t === 'level' && p.pendingLevels > 0) {
         p.pendingLevels--;

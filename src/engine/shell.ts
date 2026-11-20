@@ -60,7 +60,8 @@ export class Shell {
   private acc = 0;
   /** The character being spoken with; their menu reopens after each reply. */
   private talkingTo: string | null = null;
-  private talkSel = 0;
+  /** The row last chosen in this conversation, by its label: where the cursor waits when the menu comes back. */
+  private talkLast: string | null = null;
   /** Shown once as play begins. The browser layer swaps in wording for touch screens. */
   startHint = 'Arrow keys walk. Type HELP for more.';
   /** Space list rows further apart, for fingers. */
@@ -78,9 +79,18 @@ export class Shell {
   private fresh(saved?: GameState): Sim {
     const sim = new Sim(this.content, { seed: 1, saved, behaviours: this.behaviours });
     sim.dev = this.dev;
+    // What the player's hands were doing is no part of a saved game. A save made in mid-stride
+    // (every room is entered walking) would otherwise walk on by itself when taken up again.
+    if (saved) {
+      sim.p.mdx = sim.p.mdy = 0;
+      sim.p.blocking = false;
+    }
+    this.held.clear();
     this.queue = [];
     this.sent = [0, 0];
     this.tapDir = [0, 0];
+    this.bound = null;
+    this.errand = null;
     this.modals = [];
     this.input = '';
     this.talkingTo = null;
@@ -176,7 +186,7 @@ export class Shell {
    * take, which way to keep on once they are taken (off the edge of the picture), and how long
    * the walk has lasted and made no headway.
    */
-  private bound: { x: number; y: number; paces: Pace[]; i: number; on: [number, number] | null; ticks: number; stuck: number; lastX: number; lastY: number } | null = null;
+  private bound: { x: number; y: number; paces: Pace[]; i: number; on: [number, number] | null; ticks: number; stuck: number; lastX: number; lastY: number; careful?: boolean } | null = null;
 
   /**
    * Walk to a point in the picture, round whatever is in the way, or as near as the ground
@@ -185,6 +195,7 @@ export class Shell {
    */
   walkTo(x: number, y: number): void {
     if (this.modal) return;
+    this.errand = null;
     const sc = this.sim.scene();
     const p = this.sim.p;
     const on: [number, number] | null = x < 12 ? [-1, 0] : x > PW - 13 ? [1, 0] : y >= PH - 7 ? [0, 1] : y <= sc.walkTop + 3 ? [0, -1] : null;
@@ -193,6 +204,48 @@ export class Shell {
     if (door) [x, y] = [Math.round((door.x0 + door.x1) / 2), Math.round((door.y0 + door.y1) / 2)];
     this.bound = { x, y, paces: [], i: 0, on: door ? null : on, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y };
     this.plan();
+  }
+
+  /**
+   * A typed line waiting on a walk: what was typed, how near to its object the player must come,
+   * and how many times the walk has been tried.
+   */
+  private errand: { line: string; x: number; y: number; d: number } | null = null;
+  private tries = 0;
+
+  /** True while the player is being walked over to something a typed line named. */
+  get busy(): boolean {
+    return !!this.errand;
+  }
+
+  /**
+   * The simulation says a typed line needs the player nearer to something. Walk there, round
+   * whatever is in the way and without treading on anything that bites, and send the line again
+   * on arriving. If there is no getting nearer, or it has been tried twice (whoever it is keeps
+   * moving off), the line is sent as it stands, and gets the plain answer.
+   */
+  private goFor(e: { x: number; y: number; d: number; line: string }): void {
+    const p = this.sim.p;
+    this.errand = null;
+    if (this.tries < 2) {
+      this.bound = { x: Math.round(e.x), y: Math.round(e.y), paces: [], i: 0, on: null, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y, careful: true };
+      this.plan();
+      if (this.bound.paces.length) {
+        this.tries++;
+        this.errand = { line: e.line, x: e.x, y: e.y, d: e.d };
+        return;
+      }
+      this.bound = null;
+    }
+    this.queue.push({ t: 'say', line: e.line });
+  }
+
+  /** The walk a typed line asked for is over: send the line again from here. */
+  private arrive(): void {
+    const e = this.errand;
+    this.errand = null;
+    this.bound = null;
+    if (e) this.queue.push({ t: 'say', line: e.line, afoot: true });
   }
 
   /** Where a pointed-at walk will end, while one is under way: so the picture can mark the spot. */
@@ -208,7 +261,12 @@ export class Shell {
     const p = this.sim.p;
     // Ground that does something when stepped on is kept off, unless it is where the walk is going or already stands.
     const holds = (z: { x0: number; y0: number; x1: number; y1: number }, x: number, y: number): boolean => x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1;
-    const shut = [...(room.doors ?? []), ...(room.zones ?? [])].filter((z) => !holds(z, b.x, b.y) && !holds(z, p.x, p.y));
+    // A walk the player pointed out may end on such ground. One made on their behalf never sets
+    // foot on a threshold, nor on ground that would do something to them as things now stand.
+    const live = (id: string): boolean => (room.rules ?? []).some((r) => r.zone === id && all(this.sim, r.if));
+    const shut = b.careful
+      ? [...(room.doors ?? []), ...(room.zones ?? []).filter((z) => live(z.id))].filter((z) => !holds(z, p.x, p.y))
+      : [...(room.doors ?? []), ...(room.zones ?? [])].filter((z) => !holds(z, b.x, b.y) && !holds(z, p.x, p.y));
     b.paces = routeTo(this.sim.scene(), p.x, p.y, b.x, b.y, shut.length ? (x, y) => shut.some((z) => holds(z, x, y)) : undefined);
     b.i = 0;
   }
@@ -222,7 +280,9 @@ export class Shell {
       b.stuck = p.x === b.lastX && p.y === b.lastY ? b.stuck + 1 : 0;
       [b.lastX, b.lastY] = [p.x, p.y];
       // A key takes over at once; and a walk that has gone on far too long is given up.
-      if (keys[0] || keys[1] || this.tapDir[0] || this.tapDir[1] || ++b.ticks > 600) this.bound = null;
+      if (keys[0] || keys[1] || this.tapDir[0] || this.tapDir[1] || ++b.ticks > 600) this.bound = this.errand = null;
+      // Near enough for what was typed: no need to tread on its toes.
+      else if (this.errand && this.sim.within(this.errand.x, this.errand.y, this.errand.d - 4)) this.arrive();
       else {
         // Knocked off the way (a blow, a swing, a raised guard): find it again from here.
         const at = b.i ? b.paces[b.i - 1] : null;
@@ -231,6 +291,7 @@ export class Shell {
         if (pace) return [pace.dx, pace.dy];
         // Arrived. At the edge of the picture, keep on until it gives way or will not.
         if (b.on && b.stuck <= 6) return b.on;
+        if (this.errand) this.arrive();
         this.bound = null;
       }
     }
@@ -242,7 +303,11 @@ export class Shell {
   private absorb(): void {
     for (const e of this.sim.drain()) {
       if (e.t === 'say') this.message(e.text, e.who);
-      else if (e.t === 'talk') this.talkingTo = e.char;
+      else if (e.t === 'talk') {
+        // A new conversation starts at the top of its menu, wherever the last one was left.
+        if (this.talkingTo !== e.char) this.talkLast = null;
+        this.talkingTo = e.char;
+      } else if (e.t === 'approach') this.goFor(e);
       else if (e.t === 'note') {
         this.noteText = e.text;
         // Long enough to read: hints are a sentence, not a word.
@@ -253,7 +318,7 @@ export class Shell {
       else if (e.t === 'sound') this.settings.sound && this.sounds.push(e.id);
       else if (e.t === 'room') {
         this.talkingTo = null;
-        this.bound = null;
+        this.bound = this.errand = null;
         // Not at the very start: a new game must not overwrite, or pose as, a game in progress.
         if (this.sim.state.tick > 0) {
           this.save('auto', true);
@@ -272,6 +337,7 @@ export class Shell {
       }
       else if (e.t === 'died') {
         this.talkingTo = null;
+        this.bound = this.errand = null;
         this.message(e.text);
         this.modals.push({
           k: 'list', title: this.sim.text('deathPrompt'), items: ['Restore a saved game', 'Start again'], sel: 0, cancel: false,
@@ -376,7 +442,13 @@ export class Shell {
     else if (verb === 'restart') this.confirmRestart();
     else if (verb === 'help') this.pageOut('How to play', this.sim.text('help').split('\n'));
     else if (verb === 'quit') this.menu();
-    else this.queue.push({ t: 'say', line });
+    else {
+      // A new line drops whatever walk the last one was waiting on.
+      this.bound = this.errand ? null : this.bound;
+      this.errand = null;
+      this.tries = 0;
+      this.queue.push({ t: 'say', line, afoot: true });
+    }
   }
 
   /**
@@ -443,10 +515,13 @@ export class Shell {
       return;
     }
     const leave = (): void => void (this.talkingTo = null);
+    // The cursor waits on the row just chosen. If that row has gone (a thing bought, a thing
+    // given), it waits on Farewell: never on whatever slid up into its place, which may cost silver.
+    const at = this.talkLast === null ? 0 : options.findIndex((o) => o.label === this.talkLast);
     this.modals.push({
-      k: 'list', title: def.name, items: [...options.map((o) => this.sim.fill(o.label)), 'Farewell'], sel: Math.min(this.talkSel, options.length), cancel: true, onCancel: leave,
+      k: 'list', title: def.name, items: [...options.map((o) => this.sim.fill(o.label)), 'Farewell'], sel: at < 0 ? options.length : at, cancel: true, onCancel: leave,
       pick: (i) => {
-        this.talkSel = i;
+        this.talkLast = options[i]?.label ?? null;
         if (i >= options.length) leave();
         else this.queue.push({ t: 'say', line: options[i].say });
       },

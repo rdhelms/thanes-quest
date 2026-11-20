@@ -4,7 +4,7 @@
 import { playerAttack } from './combat';
 import { parseWild, roomOf } from './frontier';
 import { cast, invoke } from './magic';
-import { fire, questKey, run, speak, test } from './rules';
+import { fire, questKey, reach, run, speak, test } from './rules';
 import { DAY_LENGTH, type Sim } from './sim';
 import type { ActorState, CharDef, EnemyDef, ItemDef, ThingDef } from './types';
 
@@ -132,13 +132,17 @@ const USE_VERBS: Record<string, ItemDef['kind'][]> = {
   eat: ['food'],
 };
 
-/** Standard behaviour for common verbs. Returns false if the verb means nothing here. */
-function builtin(sim: Sim, verb: string, nouns: string[]): boolean {
+/**
+ * Standard behaviour for common verbs. Returns false if the verb means nothing here. `afoot` is
+ * the line as typed, when whoever sent it will walk the player over to what it names.
+ */
+function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null): boolean {
   const p = sim.p;
   const target = nouns.length ? find(sim, nouns[0]) : null;
   const needNear = (x: number, y: number, d: number): boolean => {
     if (sim.within(x, y, d)) return true;
-    sim.say(sim.text('notClose'));
+    if (afoot) sim.approach({ x, y, d }, afoot);
+    else sim.say(sim.text('notClose'));
     return false;
   };
 
@@ -189,8 +193,9 @@ function builtin(sim: Sim, verb: string, nouns: string[]): boolean {
       else if (needNear(who.actor.x, who.actor.y, 48)) {
         const topic = verb === 'ask' ? nouns[target?.k === 'char' || anyone ? 1 : 0] : undefined;
         const entry = topic ? who.def.topics?.[topic] : who.def.talk;
-        if (!entry || !speak(sim, entry, who.def.name)) sim.say(who.def.shrug ?? sim.text('shrug'), who.def.name);
-        sim.talked(who.def.id);
+        const said = entry ? speak(sim, entry, who.def.name) : false;
+        if (!said) sim.say(who.def.shrug ?? sim.text('shrug'), who.def.name);
+        if (said !== 'brief') sim.talked(who.def.id);
       }
       return true;
     }
@@ -373,7 +378,12 @@ function looking(sim: Sim, line: string): boolean {
   return verb === 'look' || !verb;
 }
 
-export function command(sim: Sim, line: string): void {
+/**
+ * Carry out a typed line. With `afoot`, a line that would only be told its object is too far
+ * away asks to be walked there instead (see Sim.approach). Looking is always done from where
+ * one stands.
+ */
+export function command(sim: Sim, line: string, afoot = false): void {
   if (sim.dev && devCommand(sim, line)) return;
   const r = sim.parser.parse(line);
   if (!r.ok) {
@@ -390,9 +400,15 @@ export function command(sim: Sim, line: string): void {
     if (invoke(sim, word)) fire(sim, sim.room.rules, word.verb, []) || sim.note(`${word.verb.toUpperCase()}!`);
     return;
   }
-  if (fire(sim, sim.room.rules, verb, nouns)) return;
-  if (builtin(sim, verb, nouns)) return;
-  if (fire(sim, sim.content.rules, verb, nouns)) return;
+  const walk = afoot && verb !== 'look';
+  const nearer = (rules: typeof sim.room.rules): boolean => {
+    const at = walk ? reach(sim, rules, verb, nouns) : null;
+    if (at) sim.approach(at, line);
+    return !!at;
+  };
+  if (nearer(sim.room.rules) || fire(sim, sim.room.rules, verb, nouns)) return;
+  if (builtin(sim, verb, nouns, walk ? line : null)) return;
+  if (nearer(sim.content.rules) || fire(sim, sim.content.rules, verb, nouns)) return;
   const fb = sim.content.fallbacks;
   sim.say(fb[Math.floor(sim.rand() * fb.length)] ?? '...');
 }

@@ -551,8 +551,9 @@ export const tarn: RoomDef = {
   doors: [{ x0: 254, y0: 109, x1: 270, y1: 111, to: 'hut', x: 262, y: 112, dir: 'down' }],
   zones: [{ id: 'thin', x0: 84, y0: 128, x1: 164, y1: 144 }],
   things: [
+    // The amulet's reach stays inside the thin ice: from the very edge of it, it is still a hand too far.
     { id: 'ice', nouns: ['tarn'], x: 124, y: 136, reach: 400, look: 'Grey-green ice, clouded at the edges and almost clear in the middle, where it is thinnest. You can see dark water moving under it.' },
-    { id: 'amulet', nouns: ['amulet'], x: 124, y: 137, reach: 20, icon: 'amulet', take: 'amulet', takeSay: 'You kneel on the hardened ice and chip the amulet free with numb fingers. The stone in it is warm, which makes no sense at all.', look: 'Something on a chain, frozen into the surface out in the middle. It catches the light like an eye.' },
+    { id: 'amulet', nouns: ['amulet'], x: 124, y: 137, reach: 14, icon: 'amulet', take: 'amulet', takeSay: 'You kneel on the hardened ice and chip the amulet free with numb fingers. The stone in it is warm, which makes no sense at all.', look: 'Something on a chain, frozen into the surface out in the middle. It catches the light like an eye.' },
     { id: 'hut', nouns: ['hut', 'door', 'smoke'], x: 262, y: 114, reach: 400, look: "A hermit's hut, low and sound, with a tidy woodpile. The smoke from its roof is steady. Whoever lives here has a fire that stays lit." },
     { id: 'woodpile', nouns: ['woodpile'], x: 206, y: 112, reach: 34, look: 'Birch and pine, stacked to the eaves. Somebody here is not worried about winter.' },
     { id: 'trees', nouns: ['tree'], x: 70, y: 100, reach: 400, look: 'Pines along the far shore, reflected in nothing.' },

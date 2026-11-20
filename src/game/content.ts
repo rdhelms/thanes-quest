@@ -398,6 +398,7 @@ export const content: Content = {
   hints: [
     { if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }], text: 'The crown is unmade. Fenn the hermit, by the tarn, will want to hear all of it.' },
     { if: [{ flag: 'crown.unmade' }], text: 'Two sagas are behind you. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
+    { if: [{ flag: 'hearth.lit' }, { has: 'crown' }, { quest: 'crown', max: 0 }], text: 'You are Thane of Hollowmere, with a dead king\'s crown in your pack that the Elder would not keep under her roof. She has work for you whenever you ask, Odd will temper your blade, and beyond the valley there are people and places you have not found yet.' },
     { if: [{ flag: 'hearth.lit' }], text: 'You are Thane of Hollowmere. The Elder has work for you whenever you ask, Odd will temper your blade, and beyond the valley there are people and places you have not found yet.' },
     { if: [{ flag: 'marta.met' }], text: 'The hermit, the hunter and the farmer all had something to say. So, perhaps, does whoever you have not yet spoken to.' },
   ],

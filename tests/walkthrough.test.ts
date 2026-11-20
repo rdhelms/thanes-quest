@@ -97,7 +97,7 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.exit('n');
   bot.waitFor('word:iska');
   expect(bot.say('iska')).toContain('thickens');
-  bot.walkTo(124, 142, 8);
+  bot.walkTo(124, 137, 4);
   bot.say('take amulet');
   expect(has('amulet')).toBe(true);
   bot.door('hut');
@@ -160,9 +160,14 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.walkTo(160, 110, 10);
   bot.say('light hearth');
   expect(sim.state.won).toBe(true);
+  // The village has come in to see it. The night ends at the door, with the ember and the crown.
+  expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(6);
+  expect(has('ember')).toBe(false);
 
   // Loose ends, for every last point: the hidden cache and the last two spell books.
   bot.door('village');
+  expect(bot.log.join(' ')).toContain("So ends the first saga of THANE'S QUEST");
+  expect(has('ember') && has('crown')).toBe(true);
   bot.exit('e');
   bot.exit('s');
   bot.say('orun');
@@ -325,7 +330,7 @@ describe('a Thane', () => {
     bot.travel('bellmere');
     bot.waitFor('word:iska');
     expect(bot.say('iska')).toContain('out to the bell');
-    bot.walkTo(160, 154, 6);
+    bot.walkTo(160, 142, 4);
     const mana = sim.p.maxMp;
     expect(bot.say('ring the bell')).toContain('one note');
     expect(sim.p.maxMp).toBe(mana + 10);

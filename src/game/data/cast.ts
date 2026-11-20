@@ -15,6 +15,8 @@ export const chars: Record<string, CharDef> = {
     spec: { skin: 'skin', hair: 'brown', hairStyle: 'long', tunic: 'blue', legs: 'blue', boots: 'leather', dress: true, apron: 'cream' },
     look: 'A woman in a blue wool dress, with flour on her apron and the look of someone counting firewood in her head.',
     talk: [
+      // The night the hearth is lit, in the Elder's hall with everybody else.
+      { if: [{ flag: 'hall.feast' }], brief: true, say: '"Nine days I have had dough that would not rise." Sigga has a loaf in each hand and has plainly forgotten which one was meant for you. "Tomorrow you will not be able to cross the square for bread. Here. Take both."' },
       {
         if: [{ not: { flag: 'sigga.met' } }],
         say: '"A stranger, on foot, in this cold. Either you are brave or you are lost." She looks you over, and seems to settle on lost. "I am Sigga. If it is work you are after, Marta is the one to see. The big hall, west side of the square."',
@@ -64,6 +66,8 @@ export const chars: Record<string, CharDef> = {
     spec: { skin: 'skin', hair: 'white', hairStyle: 'long', tunic: 'purple', legs: 'purple', boots: 'leather', dress: true, collar: 'fur' },
     look: 'Marta Coldhand, Elder of Hollowmere: white-haired, straight-backed, wrapped in purple wool and a wolf-fur collar. She has the eyes of someone who has buried a lot of people and intends to bury a few more before she is done.',
     talk: [
+      // The night the hearth is lit, in the Elder's hall with everybody else.
+      { if: [{ flag: 'hall.feast' }], brief: true, say: '"Let them shout," says Marta. She is standing beside her chair, not in it, counting heads the way she must have counted them every night for nine days, and arriving for once at the number she wanted. "They have been quiet long enough."' },
       {
         if: [{ not: { flag: 'marta.met' } }],
         say: '"So you are the one walking about my village." She studies you the way a farmer studies weather. "Nine days ago every hearth in Hollowmere went out, and none will stay lit. Nine days ago the old barrow north of here began to glow. I do not believe in coincidence. I need someone to go and look, and I cannot spare anyone I would miss." She drops ten silver into your hand. "The door is sealed with a rune. The hermit Fenn, by the tarn, knows about such things. Start with him."',
@@ -135,6 +139,8 @@ export const chars: Record<string, CharDef> = {
     look: 'A broad, bald man in a leather apron, working cold iron with a hammer and no enthusiasm.',
     lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: 'A broad, bald man in a leather apron, red to the elbows with forge-light and hammering as if the iron owed him nine days.' }],
     talk: [
+      // The night the hearth is lit, in the Elder's hall with everybody else.
+      { if: [{ flag: 'hall.feast' }], brief: true, say: 'Odd is standing as close to the fire as a man can get without being in it. "Forge," he says, and then, because the occasion seems to call for more: "Tomorrow." By his standards it is an oration.' },
       { if: [{ not: { flag: 'odd.met' } }], say: '"Forge is dead. Fire will not hold." He does not look up. "I finished one blade before it went out. Twenty-five silver. A shield is fifteen. I do not haggle and I do not chat."', do: [{ set: 'odd.met' }] },
       { if: [{ flag: 'crown.unmade' }], say: '"Iron works sweeter since the wind dropped. Do not ask me why. I only hit it." He jerks his head at the forge. "Edge or mail, whenever you have the silver."' },
       { if: [{ flag: 'hearth.lit' }], say: '"Forge is lit." It is the most cheerful you have ever seen him, which is to say he very nearly looks at you. "Bring me a blade and silver and I will put a better edge on it than it came with. Mail too. Each time costs more than the last; that is how iron is."' },
@@ -182,6 +188,8 @@ export const chars: Record<string, CharDef> = {
     look: 'The innkeeper: a big, tired woman with her sleeves rolled and soot to the elbows from nursing that fire.',
     lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: 'The innkeeper: a big woman with her sleeves rolled, who has plainly slept, and washed, and is enjoying both.' }],
     talk: [
+      // The night the hearth is lit, in the Elder's hall with everybody else.
+      { if: [{ flag: 'hall.feast' }], brief: true, say: 'Halla is asleep on her feet. She is propped in the corner by the hearth with a horn of ale going warm in her hand, and for the first time in nine days there is no fire that she has to feed. Nobody wakes her. You do not either.' },
       { if: [{ not: { flag: 'halla.met' } }], say: '"In, in, and shut the door behind you. Halla. This is the Kettle and Helm, and that," she nods at the hearth, "is the last fire in Hollowmere." She wipes the counter without looking at it. "Ale is a silver. So is stew. A red draught is six, a torch is three, and the bed is four a night, fleas included." She looks you over, sighs, and slides a stoppered flask across the counter. "You have the look of someone about to do something brave. First one is free. Drink it when you are hurt, not before."', do: [{ set: 'halla.met' }, { give: 'potion' }] },
       { if: [{ flag: 'crown.unmade' }], say: '"There was a drip off the eaves this morning. A drip! In this month!" Halla pushes a horn across the counter without being asked. "I do not know what you did, and I have decided I do not want to. Drink that."', do: [{ heal: 6 }] },
       { if: [{ flag: 'hearth.lit' }], say: '"I slept. A whole night. I had forgotten what it was like." She pushes a horn of ale across the counter. "That one is on the house, Thane. Do not get used to it."', do: [{ heal: 4 }] },
@@ -336,6 +344,8 @@ export const chars: Record<string, CharDef> = {
       { if: [{ flag: 'toke.mended' }], look: 'A lean man in a green hood with a bow on his back. The bite on his hand has closed to a pink seam. He is watching the trees, not you.' },
     ],
     talk: [
+      // The night the hearth is lit, in the Elder's hall with everybody else.
+      { if: [{ flag: 'hall.feast' }], brief: true, say: 'Toke stands a little apart, as hunters do indoors, with a horn of ale in his good hand. "They will want a speech," he says. "Do not give them one. Nobody ever went back out into a winter the better for a speech."' },
       {
         if: [{ quest: 'wolves', is: 0 }],
         say: '"Keep your voice down." He nods west, into the trees. "Wolves. A pack came down off the ridge when the cold got bad, and one of them had my hand before I could draw. I cannot pull a bow like this." He flexes the bandage and winces. "Kill three of them for me and the bow is yours. It is no use to me before spring."',
@@ -518,6 +528,8 @@ export const chars: Record<string, CharDef> = {
     spec: { skin: 'skin', hair: 'blond', hairStyle: 'short', beard: true, tunic: 'leather', legs: 'grey', boots: 'leather', collar: 'white' },
     look: 'A big, slow farmer in a sheepskin jerkin, with the stunned look of a man who has been robbed and has not finished being angry about it.',
     talk: [
+      // The night the hearth is lit, in the Elder's hall with everybody else.
+      { if: [{ flag: 'hall.feast' }], brief: true, say: 'Gorm has walked in from the east farm with snow to his knees. He stands looking at the fire the way he looks at a field in a good year. "That will do," he says, to nobody in particular. "That will do."' },
       {
         if: [{ quest: 'stores', is: 0 }],
         say: '"They came at night, a week gone. Took the seed grain. All of it." Gorm kicks the empty barrel. "A farm can lose a winter. It cannot lose a spring. They are camped somewhere south-west, past the ford; I saw their smoke. I am no fighter. Bring back my grain and I will pay you everything I have, which is twenty-five silver."',

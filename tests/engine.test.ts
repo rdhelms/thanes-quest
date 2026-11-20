@@ -355,8 +355,9 @@ describe('things found in QA', () => {
   it('splits long messages across boxes that each fit', () => {
     const shell = new Shell(content, memoryStore(), false, behaviours);
     shell.modals = [];
-    const win = content.rooms.hall.rules!.flatMap((r) => r.do).find((e) => 'win' in e) as { win: string };
-    shell.message(win.win);
+    // The longest thing anybody is told at once: the end of the first saga, at the hall door.
+    const end = content.rooms.hall.rules!.find((r) => r.zone === 'leaving')!.do.find((e) => 'say' in e) as { say: string };
+    shell.message(end.say);
     expect(shell.modals.length).toBeGreaterThan(1);
     for (const m of shell.modals) {
       if (m.k !== 'msg') throw new Error('expected a message');
@@ -2437,4 +2438,247 @@ describe('the order in the Cold Forge', () => {
     expect(type(sim, 'talk to fenn').join(' ')).toContain('He asked for it himself');
     expect(type(sim, 'think').join(' ')).toContain('Two sagas');
   });
+});
+
+/** A game past its opening words, optionally set down in a room, as the player's side sees it. */
+function playing(room?: string, x = 160, y = 140): Shell {
+  const shell = new Shell(content, memoryStore(), false, behaviours);
+  shell.modals = [];
+  if (room) shell.sim.enterRoom(room, x, y);
+  shell.tick();
+  shell.modals = [];
+  return shell;
+}
+
+/** Type a line as a player would, and read every box it leads to, walking included. A menu is left open. */
+function typed(shell: Shell, line: string): string[] {
+  const said: string[] = [];
+  shell.submit(line);
+  for (let quiet = 0, i = 0; quiet < 3 && i < 900; i++) {
+    const m = shell.modal;
+    if (m?.k === 'list') break;
+    if (m) {
+      // A long message comes as several boxes, each already wrapped to fit: read it as running text.
+      if (m.k === 'msg') said.push(m.text.replace(/\s+/g, ' '));
+      shell.keyDown('Enter');
+      quiet = 0;
+    } else {
+      shell.tick();
+      quiet = shell.busy ? 0 : quiet + 1;
+    }
+  }
+  return said;
+}
+
+describe('typed lines and walking', () => {
+  it('walks over to what a line names, and then does it', () => {
+    const shell = playing();
+    const from = shell.sim.p.x;
+    expect(typed(shell, 'read sign').join(' ')).toContain('HOLLOWMERE, north');
+    expect(shell.sim.p.x).not.toBe(from);
+    expect(shell.busy).toBe(false);
+  });
+
+  it('walks over to somebody to talk, to take, and to buy', () => {
+    const shell = playing('village', 160, 160);
+    expect(typed(shell, 'talk to sigga').join(' ')).toContain('I am Sigga');
+    shell.keyDown('Escape');
+    expect(typed(shell, 'take hatchet').join(' ')).toContain('It is yours now');
+    expect(typed(shell, 'buy sword').join(' ')).toContain('you do not have twenty-five silver');
+  });
+
+  it('looks from where it stands', () => {
+    const shell = playing('farm', 20, 150);
+    const { x, y } = shell.sim.p;
+    expect(typed(shell, 'look at haystack')[0]).toContain('Two haystacks');
+    expect([shell.sim.p.x, shell.sim.p.y]).toEqual([x, y]);
+    expect(shell.sim.state.flags['farm.hay']).toBeUndefined();
+    // Reaching into it is another matter.
+    typed(shell, 'take haystack');
+    expect(shell.sim.state.flags['farm.hay']).toBe(true);
+  });
+
+  it('never walks the player onto ground that would kill them', () => {
+    const shell = playing('tarn', 238, 116);
+    expect(typed(shell, 'take amulet')).toEqual([content.text.notClose]);
+    expect(shell.sim.p.dead).toBe(false);
+    expect(shell.sim.p.inv.amulet).toBeUndefined();
+    // With the ice hardened, the same line walks out and fetches it.
+    shell.sim.state.flags['tarn.frozen'] = true;
+    typed(shell, 'take amulet');
+    expect(shell.sim.p.inv.amulet).toBe(1);
+  });
+
+  it('leaves a line alone that somebody at hand already answers', () => {
+    const shell = playing('village', 160, 160);
+    const odd = shell.sim.rs.actors.find((a) => a.ref === 'odd')!;
+    shell.sim.p.x = odd.x + 14;
+    shell.sim.p.y = odd.y;
+    shell.sim.p.inv.pelt = 1;
+    const { x } = shell.sim.p;
+    expect(typed(shell, 'give pelt').join(' ')).toContain('Bellows leather');
+    expect(shell.sim.p.x).toBe(x);
+  });
+
+  it('gives the walk up when a key is pressed, and the line with it', () => {
+    const shell = playing();
+    shell.submit('read sign');
+    for (let i = 0; i < 4; i++) shell.tick();
+    expect(shell.busy).toBe(true);
+    shell.keyDown('ArrowLeft');
+    shell.tick();
+    shell.keyUp('ArrowLeft');
+    for (let i = 0; i < 200; i++) shell.tick();
+    expect(shell.busy).toBe(false);
+    expect(shell.modal).toBeUndefined();
+  });
+
+  it('still answers plainly when nobody is walking the player about', () => {
+    const sim = game();
+    expect(type(sim, 'read sign')[0]).toContain('cannot make it out');
+  });
+});
+
+describe('saving in mid-stride', () => {
+  it('does not walk on by itself when the game is taken up again', () => {
+    const store = memoryStore();
+    const shell = new Shell(content, store, false, behaviours);
+    shell.modals = [];
+    // Up the bridge and into the village with the key held down: the room is saved on entering it.
+    shell.sim.p.x = 160;
+    shell.keyDown('ArrowUp');
+    for (let i = 0; i < 400 && shell.sim.state.room !== 'village'; i++) shell.tick();
+    expect(shell.sim.state.room).toBe('village');
+    shell.keyUp('ArrowUp');
+    expect(JSON.parse(store.get('thanes-quest:save:auto')!).state.player.mdy).toBe(-1);
+
+    expect(shell.restore('auto')).toBe(true);
+    const { x, y } = shell.sim.p;
+    for (let i = 0; i < 40; i++) shell.tick();
+    expect([shell.sim.p.x, shell.sim.p.y]).toEqual([x, y]);
+  });
+});
+
+describe('the conversation menu', () => {
+  const menu = (shell: Shell): { items: string[]; sel: number } => {
+    for (let i = 0; i < 6 && shell.modal?.k !== 'list'; i++) shell.modal ? shell.keyDown('Enter') : shell.tick();
+    const m = shell.modal;
+    if (m?.k !== 'list') throw new Error('expected a menu');
+    return m;
+  };
+  const choose = (shell: Shell, label: string): void => {
+    const m = menu(shell);
+    const want = m.items.findIndex((it) => it.startsWith(label));
+    while (m.sel !== want) shell.keyDown('ArrowDown');
+    shell.keyDown('Enter');
+    shell.tick();
+  };
+
+  it('waits on the row just asked, and starts each new conversation at the top', () => {
+    const shell = playing('village', 160, 160);
+    typed(shell, 'talk to sigga');
+    choose(shell, 'The wolves');
+    expect(menu(shell).items[menu(shell).sel]).toBe('The wolves');
+    choose(shell, 'Farewell');
+    typed(shell, 'talk to odd');
+    expect(menu(shell).sel).toBe(0);
+    choose(shell, 'Farewell');
+    typed(shell, 'talk to sigga');
+    expect(menu(shell).sel).toBe(0);
+  });
+
+  it('never leaves the cursor on a purchase that slid up into a bought row', () => {
+    const shell = playing('village', 160, 160);
+    shell.sim.p.gold = 200;
+    typed(shell, 'talk to odd');
+    choose(shell, 'Buy the iron sword');
+    expect(shell.sim.p.inv.sword).toBe(1);
+    const m = menu(shell);
+    expect(m.items[m.sel]).toBe('Farewell');
+  });
+});
+
+describe('the night the hearth is lit', () => {
+  /** In the hall with the crown delivered and a dry log in hand: everything but the spark. */
+  const ready = (): Shell => {
+    const shell = playing('hall', 120, 150);
+    Object.assign(shell.sim.state.flags, { 'marta.met': true, 'king.dead': true, 'quest:hearth': 4 });
+    shell.sim.give('log');
+    shell.sim.give('crown');
+    return shell;
+  };
+  const folk = (shell: Shell): string[] => shell.sim.rs.actors.filter((a) => a.kind === 'npc').map((a) => a.ref).sort();
+
+  it('fills the hall with the village, who each have a word for the Thane and nothing to sell', () => {
+    const shell = ready();
+    expect(folk(shell)).toEqual(['marta']);
+    const said = typed(shell, 'light hearth').join(' ');
+    expect(said).toContain('The hall, which has been filling quietly behind you, roars.');
+    expect(shell.sim.state.won).toBe(true);
+    expect(folk(shell)).toEqual(['gorm', 'halla', 'marta', 'odd', 'sigga', 'toke']);
+    expect(typed(shell, 'look')[0]).toContain('The hall is full');
+
+    for (const [who, word] of [['odd', 'oration'], ['halla', 'asleep on her feet'], ['sigga', 'Take both'], ['gorm', 'That will do'], ['toke', 'speech'], ['elder', 'Let them shout']]) {
+      expect(typed(shell, `talk to ${who}`).join(' ')).toContain(word);
+      // Said in passing: no menu opens, on a night when nobody is selling anything.
+      for (let i = 0; i < 5; i++) shell.tick();
+      expect(shell.modal).toBeUndefined();
+    }
+    expect(typed(shell, 'sleep')[0]).toContain('See them out first');
+    expect(typed(shell, 'look at table')[0]).toContain('seven-pointed crown');
+  });
+
+  it('ends at the door, where Marta hands over the ember and will not keep the crown', () => {
+    const shell = ready();
+    typed(shell, 'light hearth');
+    expect(shell.sim.p.inv.ember).toBeUndefined();
+
+    // Point at the door, as a player would, and read whatever is said on the way out.
+    const said: string[] = [];
+    shell.walkTo(60, 100);
+    for (let i = 0; i < 600 && shell.sim.state.room === 'hall'; i++) {
+      const m = shell.modal;
+      if (m?.k === 'msg') said.push(m.text.replace(/\s+/g, ' '));
+      m ? shell.keyDown('Enter') : shell.tick();
+    }
+    const farewell = said.join(' ');
+    expect(farewell).toContain('It knows where it was lit');
+    expect(farewell).toContain('that goes with you');
+    expect(farewell).toContain("So ends the first saga of THANE'S QUEST");
+    expect(shell.sim.p.inv.ember).toBe(1);
+    expect(shell.sim.p.inv.crown).toBe(1);
+    expect(shell.sim.state.flags['hall.feast']).toBe(false);
+
+    // Everybody has gone home: the square has its people back, and the hall only its Elder.
+    expect(shell.sim.state.room).toBe('village');
+    expect(folk(shell)).toEqual(['odd', 'sigga']);
+    shell.sim.enterRoom('hall', 60, 112);
+    expect(folk(shell)).toEqual(['marta']);
+    shell.modals = [];
+    expect(typed(shell, 'talk to elder').join(' ')).toContain('inclines her head');
+  });
+});
+
+describe('walking over for a typed line, everywhere', () => {
+  it('reaches whatever a room offers, or says why not, and never hangs or kills the player on the way', () => {
+    const missed: string[] = [];
+    for (const room of Object.values(content.rooms)) {
+      const things = (room.things ?? []).filter((t) => !t.hidden && (t.take || t.try?.length) && (t.reach ?? 30) <= 100);
+      for (const thing of things) {
+        // Each from the middle of the room, in daylight, with nothing about that bites.
+        const shell = playing(room.id, 160, 150);
+        shell.sim.state.flags.light = 1e9;
+        shell.sim.rs.actors = shell.sim.rs.actors.filter((a) => a.kind === 'npc');
+        const line = thing.take ? `take ${thing.nouns[0]}` : thing.try![0];
+        const said = typed(shell, line);
+        const where = `${room.id}: ${line}`;
+        expect(shell.busy, where).toBe(false);
+        expect(shell.sim.p.dead, where).toBe(false);
+        expect(shell.sim.state.room, where).toBe(room.id);
+        // Nothing offered should be out of reach of a walk, except across ground that would kill.
+        if (said.includes(content.text.notClose)) missed.push(where);
+      }
+    }
+    expect(missed).toEqual(['tarn: take amulet']);
+  }, 60000);
 });

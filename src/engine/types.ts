@@ -114,6 +114,8 @@ export type Effect =
   | { hide: string }
   | { show: string }
   | { spawn: string; x: number; y: number; level?: number }
+  /** Let the room's people come and go as things now stand, without the player having to leave and return. */
+  | { muster: true }
   | { sound: string }
   | { run: string; arg?: Value }
   /** Carry on as if this line had been typed instead: one phrasing standing for another. */
@@ -238,7 +240,11 @@ export interface RoomDef {
 // ---------------------------------------------------------------------------------------------
 // Everything else a game is made of
 
-export type Topic = string | { if?: Cond[]; say: string; do?: Effect[] }[];
+/**
+ * What a character says: one line, or the first of several whose conditions hold. A `brief`
+ * line is said in passing: no menu of things to ask follows it.
+ */
+export type Topic = string | { if?: Cond[]; say: string; do?: Effect[]; brief?: boolean }[];
 
 export interface CharDef {
   id: string;
@@ -616,7 +622,11 @@ export type Intent =
   | { t: 'move'; dx: number; dy: number }
   | { t: 'attack' }
   | { t: 'block'; on: boolean }
-  | { t: 'say'; line: string }
+  /**
+   * A typed line. `afoot` says the sender will walk the player over if the answer would otherwise
+   * be that something is too far away: the simulation then asks for that walk instead of refusing.
+   */
+  | { t: 'say'; line: string; afoot?: boolean }
   | { t: 'level'; pool: 'hp' | 'mp' | 'sp' }
   /** How hard the world hits: gentle takes two fifths off every blow the player takes. */
   | { t: 'ease'; gentle: boolean };
@@ -633,4 +643,6 @@ export type SimEvent =
   | { t: 'won'; text: string }
   | { t: 'page'; title: string; lines: string[] }
   /** The player has asked to see the map. */
-  | { t: 'map' };
+  | { t: 'map' }
+  /** A typed line wants the player within `d` of a point first; the line is to be sent again there. */
+  | { t: 'approach'; x: number; y: number; d: number; line: string };

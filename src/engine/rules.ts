@@ -1,6 +1,6 @@
 // The interpreter for the small condition/effect language rooms and characters are written in.
 
-import type { Sim } from './sim';
+import type { Sim, Spot } from './sim';
 import type { Cond, Effect, Rule, Topic } from './types';
 import { hasPerk, hostile } from './combat';
 import { command } from './commands';
@@ -58,6 +58,7 @@ export function run(sim: Sim, effects: Effect[]): void {
     else if ('hide' in e) sim.setThing(e.hide, false);
     else if ('show' in e) sim.setThing(e.show, true);
     else if ('spawn' in e) sim.spawn(e.spawn, e.x, e.y, e.level);
+    else if ('muster' in e) sim.muster();
     else if ('sound' in e) sim.sound(e.sound);
     else if ('run' in e) sim.behaviours[e.run]?.(sim, e.arg);
     else if ('cmd' in e) command(sim, e.cmd);
@@ -66,20 +67,53 @@ export function run(sim: Sim, effects: Effect[]): void {
   }
 }
 
-/** Run the first rule whose pattern matches the command and whose conditions hold. */
-export function fire(sim: Sim, rules: Rule[] | undefined, verb: string, nouns: string[]): boolean {
-  for (const r of rules ?? []) {
-    if (!r.on) continue;
-    const pats = typeof r.on === 'string' ? [r.on] : r.on;
-    if (!pats.some((pat) => matches(pat, verb, nouns)) || !all(sim, r.if)) continue;
-    run(sim, r.do);
-    return true;
-  }
-  return false;
+/** The rules a command could be answered by: those whose pattern it matches, in order. */
+function answering(rules: Rule[] | undefined, verb: string, nouns: string[]): Rule[] {
+  return (rules ?? []).filter((r) => r.on && (typeof r.on === 'string' ? [r.on] : r.on).some((pat) => matches(pat, verb, nouns)));
 }
 
-/** Say whichever branch of a topic applies. Returns false if none did. */
-export function speak(sim: Sim, topic: Topic, who?: string): boolean {
+/** Run the first rule whose pattern matches the command and whose conditions hold. */
+export function fire(sim: Sim, rules: Rule[] | undefined, verb: string, nouns: string[]): boolean {
+  const r = answering(rules, verb, nouns).find((r) => all(sim, r.if));
+  if (r) run(sim, r.do);
+  return !!r;
+}
+
+/**
+ * Would this command be answered differently if the player stood nearer to something in the room?
+ * If so, where to stand. Nothing is carried out: the rules are only weighed, once as things are
+ * and once as if everything here were within reach.
+ *
+ * A command already being answered by something at hand is left alone, so that selling to the
+ * smith one is standing beside is never turned into a walk across the square to somebody else.
+ */
+export function reach(sim: Sim, rules: Rule[] | undefined, verb: string, nouns: string[]): Spot | null {
+  const cands = answering(rules, verb, nouns);
+  if (!cands.length) return null;
+  const weigh = (assume: boolean): { rule: Rule; hits: number; own?: Spot; passed?: Spot } | null => {
+    let passed: Spot | undefined;
+    try {
+      for (const rule of cands) {
+        sim.probe = { assume, hits: 0, misses: [] };
+        const ok = all(sim, rule.if);
+        const { hits, misses } = sim.probe;
+        if (ok) return { rule, hits, own: misses[0], passed };
+        passed ??= misses[0];
+      }
+      return null;
+    } finally {
+      sim.probe = null;
+    }
+  };
+  const now = weigh(false);
+  if (now?.hits) return null;
+  const nearer = weigh(true);
+  if (!nearer || nearer.rule === now?.rule) return null;
+  return nearer.own ?? nearer.passed ?? null;
+}
+
+/** Say whichever branch of a topic applies. Returns false if none did, and 'brief' if it was only said in passing. */
+export function speak(sim: Sim, topic: Topic, who?: string): boolean | 'brief' {
   if (typeof topic === 'string') {
     sim.say(topic, who);
     return true;
@@ -88,7 +122,7 @@ export function speak(sim: Sim, topic: Topic, who?: string): boolean {
     if (!all(sim, branch.if)) continue;
     sim.say(branch.say, who);
     if (branch.do) run(sim, branch.do);
-    return true;
+    return branch.brief ? 'brief' : true;
   }
   return false;
 }

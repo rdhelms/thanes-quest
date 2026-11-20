@@ -1,5 +1,6 @@
 import { PH, PW } from '../src/engine/scene';
 import { roomOf } from '../src/engine/frontier';
+import { all } from '../src/engine/rules';
 import { Sim } from '../src/engine/sim';
 import type { ActorState, Intent, SimEvent } from '../src/engine/types';
 import { behaviours } from '../src/game/behaviours';
@@ -75,10 +76,14 @@ export class Bot {
     return !sc.blocked(x, y) && !sc.blocked(x - 4, y) && !sc.blocked(x + 4, y);
   }
 
-  /** Breadth-first search over the walkable ground. Trigger zones are avoided unless aimed for. */
+  /**
+   * Breadth-first search over the walkable ground. Doors, and ground that would do something to
+   * whoever steps on it as things now stand, are avoided unless aimed for.
+   */
   private route(goal: (x: number, y: number) => boolean, avoidZones = true): [number, number][] | null {
     const room = this.sim.room;
-    const zones = avoidZones ? [...(room.doors ?? []), ...(room.zones ?? [])] : [];
+    const live = (id: string): boolean => (room.rules ?? []).some((r) => r.zone === id && all(this.sim, r.if));
+    const zones = avoidZones ? [...(room.doors ?? []), ...(room.zones ?? []).filter((z) => live(z.id))] : [];
     const inZone = (x: number, y: number): boolean => zones.some((z) => x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1);
     const sx = Math.round(this.p.x);
     const sy = Math.round(this.p.y);

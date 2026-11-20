@@ -82,9 +82,19 @@ for the first time in nine days the fire keeps burning. Marta takes the brass ri
 hand, puts it on the hero's, and names the hero Thane of Hollowmere. The hall has filled quietly
 behind them, and it roars.
 
+Sigga, Odd, Halla, Gorm and Toke have all come in to stand at a fire that stays lit, and each has
+a word for the new Thane. Halla, with no fire left to feed, is asleep on her feet, and nobody
+wakes her. The crown lies at the end of the long table where the hero put it down, and in a hall
+packed to the walls nobody stands within arm's reach of it.
+
+It is late before the hall empties. Marta sees the Thane to the door herself and hands over two
+things. One is a coal from the hearth in a horn box, which carries the Thane home to Hollowmere
+when it is breathed on. The other is the crown. The candle beside it went out three times that
+night, and Marta will not have it under her roof. It has lain all night beside the biggest fire in
+the north and has not warmed at all. The Thane wraps it in a cloth and carries it out.
+
 Afterward the barrow stops glowing, there is smoke from every roof, the forge is lit, and Halla
-sleeps. Marta gives the Thane a coal from the hearth in a horn box, which carries the Thane home
-to Hollowmere when it is breathed on, and has a bed made up for the Thane beside the fire.
+sleeps. A bed is made up for the Thane beside the Elder's hearth.
 
 ## The second saga: The Seven Points
 

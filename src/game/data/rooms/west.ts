@@ -187,7 +187,8 @@ export const bellmere: RoomDef = {
   zones: [{ id: 'thin', x0: 104, y0: 127, x1: 216, y1: 149 }],
   things: [
     { id: 'ice', nouns: ['tarn', 'water'], x: 160, y: 138, reach: 400, look: 'Grey at the shore, and clearer toward the middle, where you can see down a long way. The bell goes on under the ice much further than it shows above. So do other shapes: a roof-tree, perhaps, and something like a wall.' },
-    { id: 'bell', nouns: ['bell', 'inscription'], x: 160, y: 140, reach: 30, try: ['ring bell', 'read bell'], look: 'Bronze gone green, as tall as a man where it stands clear of the ice, and at least as much again below. Letters a hand high are cast into the rim.' },
+    // Its reach stays inside the thin ice: the bell cannot be rung from the edge of it.
+    { id: 'bell', nouns: ['bell', 'inscription'], x: 160, y: 140, reach: 18, try: ['ring bell', 'read bell'], look: 'Bronze gone green, as tall as a man where it stands clear of the ice, and at least as much again below. Letters a hand high are cast into the rim.' },
     { id: 'trees', nouns: ['tree'], x: 30, y: 106, reach: 400, look: 'A few pines along the shore. Their roots have lifted old dressed stones out of the ground.' },
     { id: 'snow', nouns: ['snow', 'ground'], x: 160, y: 160, reach: 400, look: 'Blown thin over the ice. Where it has drifted against the bell it has a green shine.' },
     { id: 'sky', nouns: ['sky', 'mountain'], x: 160, y: 100, reach: 400, look: 'A wide grey sky, with nothing in it to ring a bell for.' },

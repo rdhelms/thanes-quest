@@ -11,7 +11,10 @@ export const hall: RoomDef = {
   music: 'hearth',
   name: "The Elder's Hall",
   look: "A long hall hung with banners. A great hearth of river-stone fills the middle of the back wall, and beside it stands the Elder's carved chair. It is colder in here than it has any right to be.",
-  lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: "A long hall hung with banners, and warm. The great hearth of river-stone is alight from end to end, and the Elder's carved chair has been drawn up beside it. The banners stir in the heat." }],
+  lookWhen: [
+    { if: [{ flag: 'hall.feast' }], look: 'The hall is full, and warm, and loud. Half of Hollowmere has come in out of the snow to stand in front of a fire that stays lit, and to have a look at whoever lit it. The banners stir in the heat. Nobody is in any hurry to go home.' },
+    { if: [{ flag: 'hearth.lit' }], look: "A long hall hung with banners, and warm. The great hearth of river-stone is alight from end to end, and the Elder's carved chair has been drawn up beside it. The banners stir in the heat." },
+  ],
   scene: {
     kind: 'indoor', walkTop: 104, ambient: 0.5,
     layers: [{ t: 'interior', floor: FL, wall: 'log' }],
@@ -31,7 +34,17 @@ export const hall: RoomDef = {
     ],
   },
   doors: [{ x0: 52, y0: 105, x1: 68, y1: 107, to: 'village', x: 69, y: 124, dir: 'down' }],
-  npcs: [{ char: 'marta', x: 222, y: 120, wander: [196, 118, 236, 128] }],
+  // The night the hearth is lit, the village comes in to see it. They stay until the Thane makes for the door.
+  zones: [{ id: 'leaving', x0: 40, y0: 105, x1: 80, y1: 114 }],
+  npcs: [
+    { char: 'marta', x: 222, y: 120, wander: [196, 118, 236, 128] },
+    // Behind whoever is standing at the hearth: nobody arrives on top of the Thane.
+    { char: 'halla', x: 116, y: 118, dir: 'right', if: [{ flag: 'hall.feast' }] },
+    { char: 'sigga', x: 144, y: 152, dir: 'up', if: [{ flag: 'hall.feast' }] },
+    { char: 'odd', x: 170, y: 160, dir: 'up', if: [{ flag: 'hall.feast' }] },
+    { char: 'gorm', x: 196, y: 152, dir: 'up', if: [{ flag: 'hall.feast' }] },
+    { char: 'toke', x: 228, y: 146, dir: 'up', if: [{ flag: 'hall.feast' }] },
+  ],
   things: [
     {
       id: 'hearth', nouns: ['hearth'], x: 160, y: 106, reach: 40, try: ['light hearth'], look: 'A hearth you could roast an ox in. The logs are laid and dry. The ash under them is nine days cold.',
@@ -39,7 +52,10 @@ export const hall: RoomDef = {
     },
     { id: 'throne', nouns: ['throne'], x: 252, y: 112, reach: 40, look: "The Elder's chair, carved with knotwork and capped with brass. Nobody but the Elder sits in it, and lately not even she." },
     { id: 'banner', nouns: ['banner'], x: 160, y: 106, reach: 400, look: 'Two banners, purple and red, each with a gold lozenge: the mark of Hollowmere. They hang very still.' },
-    { id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle and one mug. Feasts were held here. The table remembers; you can tell by the stains.' },
+    {
+      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle and one mug. Feasts were held here. The table remembers; you can tell by the stains.',
+      lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the far end lies the seven-pointed crown, where you put it down in front of Marta. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
+    },
     { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: nine books, three of them about sheep." },
     { id: 'door', nouns: ['door'], x: 60, y: 106, reach: 400, look: 'The way out, back to the square.' },
     { id: 'bench', nouns: ['bed'], x: 262, y: 162, reach: 44, hidden: true, try: ['sleep'], look: 'A bench made up as a bed, with a bearskin over it, where the heat of the hearth reaches. Nobody has said whose it is. Nobody has needed to.' },
@@ -51,10 +67,17 @@ export const hall: RoomDef = {
       if: [{ quest: 'hearth', is: 4 }, { has: 'log' }, { near: 'hearth', d: 60 }],
       do: [
         { lose: 'log' }, { set: 'hearth.lit' }, { sound: 'win' }, { score: 25, id: 'hearth.done' }, { quest: 'hearth', stage: 5 }, { gold: 50 },
-        { win: 'You lay the log on the old ash and strike a spark. It catches. It keeps catching. Flame climbs the wood the way it is supposed to, and for the first time in nine days the hall is warm.\n\nMarta Coldhand watches it for a long moment. Then she takes the brass ring from her own hand and puts it on yours. "Hollowmere has no gold worth the name," she says, "so take a title instead. Thane." The hall, which has been filling quietly behind you, roars.\n\nYou have finished the first saga of THANE\'S QUEST. The valley is still yours to walk, and there is a great deal more of it than you have seen.' },
-        { give: 'ember' },
-        { show: 'bench' },
-        { say: 'Later, when the hall has emptied, Marta presses a small horn box into your hand. Inside, on a bed of ash, a single coal from the hearth glows without burning down. "It knows where it was lit," she says. "When you are far out and have had enough of the far out, breathe on it."' },
+        { set: 'hall.feast' }, { muster: true }, { show: 'bench' },
+        { win: 'You lay the log on the old ash and strike a spark. It catches. It keeps catching. Flame climbs the wood the way it is supposed to, and for the first time in nine days the hall is warm.\n\nMarta Coldhand watches it for a long moment. Then she takes the brass ring from her own hand and puts it on yours. "Hollowmere has no gold worth the name," she says, "so take a title instead. Thane." The hall, which has been filling quietly behind you, roars.' },
+        { note: 'They came to see you. The door is there when you have had enough of it.' },
+      ],
+    },
+    {
+      // Making for the door ends the night: the hall empties, and Marta has two things to hand over.
+      zone: 'leaving', if: [{ flag: 'hall.feast' }],
+      do: [
+        { set: 'hall.feast', to: false }, { muster: true }, { give: 'ember' }, { sound: 'quest' },
+        { say: 'It is late before the hall empties. They go out by twos and threes into a night with woodsmoke in it, and every one of them finds some reason to pass close to you on the way.\n\nMarta sees you to the door herself. She presses a small horn box into your hand. Inside, on a bed of ash, a single coal from the hearth glows without burning down. "It knows where it was lit," she says. "When you are far out and have had enough of the far out, breathe on it."\n\nThen she nods back at the long table, and at the thing still lying at the end of it. "And that goes with you. The candle beside it has gone out three times tonight, and nothing in this hall is going out again while I am Elder of it." You wrap the crown in a cloth and put it at the bottom of your pack.\n\nSo ends the first saga of THANE\'S QUEST. The valley is still yours to walk, and there is a great deal more of it than you have seen. In your pack is a crown that has spent a whole night beside the biggest fire in the north, and has not warmed at all.' },
         { note: 'The Elder has work for a Thane, and the forge is lit again.' },
       ],
     },
@@ -66,7 +89,9 @@ export const hall: RoomDef = {
       on: ['give bearskin elder', 'give elder bearskin', 'give bearskin', 'use bearskin', 'drop bearskin'], if: [{ has: 'bearskin' }, { not: { flag: 'hall.rug' } }],
       do: [{ lose: 'bearskin' }, { set: 'hall.rug' }, { gold: 20 }, { heal: 10 }, { sound: 'take' }, { say: 'You unroll the white bearskin in front of the Elder\'s chair. Marta looks at it for a while. "My father had one of those," she says. "It went for boots, the winter I was nine." She puts her feet on it, experimentally, and her face does something it has not done in your hearing. "Twenty silver. Do not tell the smith what I paid; he will want the same for nails."' }],
     },
+    { on: ['take crown', 'look crown'], if: [{ flag: 'hall.feast' }], do: [{ say: 'It lies at the end of the long table, black against the wood. The feast has left a clear space round it, the way a crowd leaves room for a dog it does not know.' }] },
     { on: ['sit throne', 'sit'], do: [{ say: 'Marta looks at you. You discover you were only admiring the carving.' }] },
+    { on: ['sleep', 'sleep *'], if: [{ flag: 'hall.feast' }], do: [{ say: 'With half of Hollowmere standing round the bed? They would only watch. See them out first.' }] },
     { on: ['sleep', 'sleep *'], if: [{ flag: 'hearth.lit' }], do: [{ run: 'rest' }, { say: 'Marta has had a bench made up for you by the hearth, with a bearskin over it. Nobody has said anything about it; it is simply there. You sleep nine hours without moving, and wake warm, which you had forgotten was possible.' }] },
     { on: ['warm', 'warm *', 'sit hearth'], if: [{ flag: 'hearth.lit' }], do: [{ say: 'You stand in front of your own fire and let it soak into you. It is a thing you could get used to.' }] },
     { on: ['read tome', 'take tome', 'look tome', 'read shelf'], do: [{ say: 'You open one at random. It is about sheep. So is the next.' }] },

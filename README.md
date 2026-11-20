@@ -44,6 +44,9 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
   how to play, start again, and settings: music, sound effects, how walking works, and whether
   fights are fair or gentle).
 - **Everything else is typed.** Enter sends the line; Enter on an empty line repeats the last one.
+  Naming something across the picture (`talk to smith`, `read sign`) walks you over to it first,
+  round whatever is in the way and never onto ground that would hurt you; an arrow key stops the
+  walk. Looking is done from where you stand.
 - **F1** is help, **F2** turns sound on and off, **F3** brings back your last line to edit, **F4**
   is the map.
 - **The mouse** also answers a message (click it), picks a row from a menu, and looks about the

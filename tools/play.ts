@@ -73,7 +73,7 @@ class Play {
       title = '';
       lines = [];
     };
-    for (let quiet = 0, guard = 0; quiet < 3 && guard < 400; guard++) {
+    for (let quiet = 0, guard = 0; quiet < 3 && guard < 1200; guard++) {
       const m = this.shell.modal;
       if (m?.k === 'page') {
         if (m.title !== title) flush();
@@ -97,7 +97,8 @@ class Play {
         return;
       } else {
         this.shell.tick();
-        quiet++;
+        // A typed line may first walk the player over to what it names; that is not yet an answer.
+        if (!this.shell.busy) quiet++;
       }
       this.note();
     }
