@@ -638,6 +638,8 @@ function looking(sim: Sim, line: string): boolean {
  */
 export function command(sim: Sim, line: string, afoot = false): void {
   if (sim.dev && devCommand(sim, line)) return;
+  // "put the pelts down" is "put down the pelts" said the other way about.
+  line = line.replace(/^\s*(put|set|lay)\s+(.+?)\s+down\s*$/i, '$1 down $2');
   let r = sim.parser.parse(line);
   // How many are meant, by somebody taking, dropping or putting away: "drop 3 pelts", "drop two
   // pelts", "drop all the pelts", "drop pelts". Anything else may use numbers as it likes.

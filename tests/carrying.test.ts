@@ -191,7 +191,8 @@ describe('putting things down', () => {
     expect(type(sim, 'drop two pelts')[0]).toBe('You put down 2 wolf pelts.');
     expect(sim.p.inv.pelt).toBe(1);
     expect(sim.pile('pelt')?.n).toBe(3);
-    expect(type(sim, 'drop draughts')[0]).toBe('You put down the red draught.');
+    // Said either way about.
+    expect(type(sim, 'put the draught down')[0]).toBe('You put down the red draught.');
     // Each kind lies in its own place, beside the other, as a thing to look at and take.
     const piles = sim.things().filter((t) => t.pile);
     expect(piles.map((t) => t.take).sort()).toEqual(['pelt', 'potion']);
