@@ -16,9 +16,9 @@ export const text: Record<string, string> = {
   handsEmpty: 'Your hands are already empty.',
   unequipped: 'You put it away.',
   noHint: 'Nothing presses. Talk to people: in this valley somebody always wants something.',
-  wayTo: 'To the %s lies %r. Walk off that side of the picture to go there.',
+  wayTo: 'To the %s lies %r.',
   noWay: 'There is no way %s from here.',
-  walkHint: 'Walk off the edge of the picture to leave.',
+  walkHint: 'GO NORTH (or N, S, E, W) walks off that side of the picture.',
   shrug: 'That gets you a blank look.',
   emptyHanded: 'Nothing but your wits, such as they are.',
   noQuests: 'Nobody has asked anything of you yet.',
@@ -127,7 +127,7 @@ export const text: Record<string, string> = {
   deathPrompt: 'Your saga ends here. For now.',
   dark: 'It is pitch dark. Something nearby is breathing, and you hope it is you.',
   help:
-    'Arrow keys walk; so does a click or a tap on the place you want to go. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
+    'Arrow keys walk; so does a click or a tap on the place you want to go, and so does typing it: GO NORTH (or just N), GO TO THE INN, LEAVE. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
     'Hold Shift to guard. Raise it when a foe shows a gold ! and the blow is turned aside, leaving them open.\n\n' +
     'Tab opens your bag: what each thing weighs, and how full your pack is. Choose a thing to drink, eat, read, use, ready, wear, drop or store it; a full pack takes nothing more. Esc opens the menu; its Settings can make fights gentler. Whatever the menu opens goes back to it when closed.\n\n' +
     'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. Name something across the picture and you walk over to it first; an arrow key stops you. SWAP changes between your last two weapons.\n\n' +

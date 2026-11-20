@@ -4,11 +4,12 @@
 import { PH, PW, type Scene } from './scene';
 
 /** Mark every ground pixel the player could stand on, starting from one point. */
-export function reachable(sc: Scene, sx: number, sy: number): Uint8Array {
+export function reachable(sc: Scene, sx: number, sy: number, shut: (x: number, y: number) => boolean = () => false): Uint8Array {
   const seen = new Uint8Array(PW * PH);
   // Exactly where the player's feet may be: below the top of the ground and above the foot of the
-  // picture (stepping past either is leaving the room), and clear to either side.
-  const free = (x: number, y: number): boolean => y > sc.walkTop && y < PH - 2 && !sc.blocked(x, y) && !sc.blocked(x - 4, y) && !sc.blocked(x + 4, y);
+  // picture (stepping past either is leaving the room), and clear to either side. `shut` marks
+  // ground that is not to be crossed.
+  const free = (x: number, y: number): boolean => y > sc.walkTop && y < PH - 2 && !sc.blocked(x, y) && !sc.blocked(x - 4, y) && !sc.blocked(x + 4, y) && !shut(x, y);
   const stack: number[] = [];
   // Start from the nearest free spot, as arriving players are nudged the same way.
   for (let r = 0; r < 60 && !stack.length; r += 2)

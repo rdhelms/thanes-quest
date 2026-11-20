@@ -10,7 +10,7 @@ import { all, questKey, run } from './rules';
 import { PH, PW, type Scene } from './scene';
 import { nearestGround } from './walk';
 import type {
-  ActorState, Content, Dir, GameState, Intent, ItemDef, LookWhen, Pile, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
+  ActorState, Content, Dir, DoorDef, GameState, Intent, ItemDef, LookWhen, Pile, PlayerState, RoomDef, RoomState, SimEvent, ThingDef, Value,
 } from './types';
 
 /** How close to a side edge the player gets before stepping into the next room. */
@@ -471,6 +471,11 @@ export class Sim {
     this.out.push({ t: 'approach', ...at, line });
   }
 
+  /** Ask to be walked somewhere, as a click there would: through a door, or off an edge. */
+  walk(x: number, y: number, door?: number, side?: Side): void {
+    this.out.push({ t: 'walk', x: Math.round(x), y: Math.round(y), ...(door === undefined ? {} : { door }), ...(side ? { side } : {}) });
+  }
+
   /**
    * How much daylight there is, from 1 (day) to 0 (deep night). The day turns with the game
    * clock: a long day, a short dusk, a night, a dawn.
@@ -608,6 +613,7 @@ export class Sim {
       }
       else if (it.t === 'say') command(this, it.line, !!it.afoot);
       else if (it.t === 'ease') this.state.flags.gentle = it.gentle;
+      else if (it.t === 'through') this.through(it.door);
       else if (it.t === 'level' && p.pendingLevels > 0) {
         p.pendingLevels--;
         if (it.pool === 'hp') p.hp = p.maxHp += 10;
@@ -817,13 +823,24 @@ export class Sim {
     }
   }
 
-  /** Zones and doors fire once when stepped into. */
+  /**
+   * Zones and doors fire once when stepped into. A door that was shut when it was stepped into
+   * (marked with a "!" in `inside`) is gone through once it opens, as soon as the player presses
+   * on into it, without first having to step off the threshold and back.
+   */
   private checkTriggers(): void {
     const p = this.p;
     const now = this.standingIn();
-    const entered = now.filter((id) => !p.inside.includes(id));
-    p.inside = now;
+    const refused = now.filter((id) => p.inside.includes(`${id}!`));
+    const entered = now.filter((id) => !p.inside.includes(id) && !refused.includes(id));
+    p.inside = now.map((id) => (refused.includes(id) ? `${id}!` : id));
     const room = this.room;
+    const go = (d: DoorDef): void => {
+      this.sound('door');
+      this.enterRoom(d.to, d.x, d.y, d.dir);
+      // Stop on the threshold, or a held key would walk straight back out.
+      p.mdx = p.mdy = 0;
+    };
     for (const id of entered) {
       if (this.room !== room || p.dead) return;
       const [kind, key] = id.split(':');
@@ -831,13 +848,33 @@ export class Sim {
         for (const r of room.rules ?? []) if (r.zone === key && all(this, r.if)) run(this, r.do);
       } else {
         const d = room.doors![Number(key)];
-        if (all(this, d.if)) {
-          this.sound('door');
-          this.enterRoom(d.to, d.x, d.y, d.dir);
-          // Stop on the threshold, or a held key would walk straight back out.
-          p.mdx = p.mdy = 0;
-        } else if (d.locked) this.say(d.locked);
+        if (all(this, d.if)) go(d);
+        else {
+          p.inside = p.inside.map((i) => (i === id ? `${id}!` : i));
+          if (d.locked) this.say(d.locked);
+        }
       }
     }
+    // Every door is a threshold in a back wall, walked into by going up.
+    for (const id of refused) {
+      if (this.room !== room || p.dead || p.mdy >= 0) return;
+      const d = room.doors![Number(id.split(':')[1])];
+      if (all(this, d.if)) return go(d);
+    }
+  }
+
+  /**
+   * Go through a door the player stands at, as if they had walked on into it: for a walk that
+   * ended on a threshold that was not open when it was reached, or was reached from the door's
+   * own ground. Said to be shut if it is.
+   */
+  through(i: number): void {
+    const d = this.room.doors?.[i];
+    if (!d || !this.within((d.x0 + d.x1) / 2, (d.y0 + d.y1) / 2, 14)) return;
+    if (all(this, d.if)) {
+      this.sound('door');
+      this.enterRoom(d.to, d.x, d.y, d.dir);
+      this.p.mdx = this.p.mdy = 0;
+    } else if (d.locked) this.say(d.locked);
   }
 }

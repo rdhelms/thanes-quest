@@ -344,7 +344,7 @@ function phrases(): void {
       sim.drain();
       sim.step([{ t: 'say', line }]);
       const ev = sim.drain();
-      const said = ev.flatMap((e) => (e.t === 'say' ? [e.text] : e.t === 'page' ? ['(page)'] : e.t === 'map' ? ['(map)'] : e.t === 'note' ? [e.text] : []));
+      const said = ev.flatMap((e) => (e.t === 'say' ? [e.text] : e.t === 'page' ? ['(page)'] : e.t === 'map' ? ['(map)'] : e.t === 'note' ? [e.text] : e.t === 'walk' ? ['(walks)'] : []));
       asked++;
       const first = said[0] ?? '(nothing)';
       if (stock.has(first) || first.startsWith('The saga has no use') || first === '(nothing)' || first === content.text.notHere || first === content.text.shrug) {
