@@ -324,7 +324,24 @@ describe('a Thane', () => {
     bot.meet('brekka');
     expect(bot.say('talk to brekka')).toContain('keep you warm');
     expect(sim.p.armor).toBe('bearcloak');
-    // Six of the wolves met on the way are worth more to Brekka than to anybody: she makes a pack of them.
+    // Six wolf pelts are worth more to Brekka than to anybody: she makes a pack of them. Much of
+    // the country is empty, so whatever the way here has not provided is hunted for.
+    // The spear and the cloak have taken the place of the longsword and the mail, which only weigh
+    // the pack down now: they are left with Brekka, who has a use for everything.
+    expect(bot.say('drop mail')).not.toContain('not');
+    bot.say('drop longsword');
+    const wolves = (x: number, y: number): boolean =>
+      !!roomOf(content, cell([x, y]))?.spawns?.some((s) => s.kind === 'wolf' && !s.when) && !sim.state.rooms[cell([x, y])]?.dead.length;
+    for (let r = 3; r <= 5 && (sim.p.inv.pelt ?? 0) < 6; r++)
+      for (let y = -r; y <= r; y++)
+        for (let x = -r; x <= r && (sim.p.inv.pelt ?? 0) < 6; x++)
+          if (Math.max(Math.abs(x), Math.abs(y)) === r && wolves(x, y)) {
+            bot.travel(cell([x, y]));
+            bot.fight();
+          }
+    expect(sim.p.inv.pelt ?? 0, `${sim.load()}/${sim.limit()} ${JSON.stringify(sim.p.inv)} wolves killed ${sim.state.flags['wolves.killed']}`).toBeGreaterThanOrEqual(6);
+    bot.travel(cell(at.brekka));
+    bot.meet('brekka');
     const room = sim.limit();
     expect(bot.say('ask brekka about a pack')).toContain('They can carry yours');
     expect(sim.limit()).toBe(room + 20);

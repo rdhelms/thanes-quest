@@ -40,6 +40,14 @@ to keep shut. The people of the wild say the winter is wrong. Brekka says it was
 when she was a girl, and that something has got into it. Ivar says the cold in this country comes
 out of the west, not the north, and comes harder every year.
 
+A long day's walk out, past every place with a name, the land goes up in a wall of sheer rock
+that runs right round the country, and beyond it there is another, and another. Each wall is
+crossed only at a few passes, and every pass is held: by reavers who take a toll of whatever a
+traveller carries, by a pack denned in the gap, or by the dead guards of a gate from some
+forgotten kingdom, still at their posts. Once beaten, a pass stays open. Out in the wild, whatever
+has a traveller's scent follows it from place to place, and gives up only at the valley or at a
+haven: a shrine, or a steading where somebody lives.
+
 Old words of power are cut into standing stones. A word cannot be taught. A person learns it by
 reading the rune on the stone that holds it. There are four:
 

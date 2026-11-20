@@ -8,7 +8,7 @@ import { mix, stream } from './noise';
 import type { Content, DoorDef, Effect, LayerDef, NpcDef, PropDef, RoomDef, Rule, SightDef, SpawnDef, ThingDef } from './types';
 import { blockedEdges, canReach, reachable } from './walk';
 
-type Biome = 'pines' | 'open' | 'mere' | 'ruin' | 'camp' | 'crags' | 'deadwood' | 'shrine' | 'steading' | 'valley';
+type Biome = 'pines' | 'open' | 'mere' | 'ruin' | 'camp' | 'crags' | 'deadwood' | 'shrine' | 'steading' | 'valley' | 'pass';
 
 type Side = 'n' | 's' | 'e' | 'w';
 const STEP: Record<Side, [number, number]> = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
@@ -58,7 +58,7 @@ export function roomOf(c: Content, id: string): RoomDef | undefined {
   if (def && f?.gates[id] && f.grid[id]) {
     const [x, y] = f.grid[id];
     const exits = { ...def.exits };
-    for (const side of f.gates[id] as Iterable<Side>) exits[side] ??= wildId(x + STEP[side][0], y + STEP[side][1]);
+    for (const side of f.gates[id] as Iterable<Side>) if (edgeOf(c, x, y, side) !== 'wall') exits[side] ??= wildId(x + STEP[side][0], y + STEP[side][1]);
     def = { ...def, exits };
   } else if (!def && f) {
     const at = parseWild(id);
@@ -153,12 +153,60 @@ export function depthOf(c: Content, x: number, y: number): number {
   return r <= reachOf(c) ? 0 : r - reachOf(c);
 }
 
+const ringOf = (x: number, y: number): number => Math.max(Math.abs(x), Math.abs(y));
+
+/** Which march (counting from 0, nearest home first) runs along the outer edge of a ring, if any. */
+function marchOf(c: Content, ring: number): number {
+  return c.frontier?.marches?.rings.indexOf(ring) ?? -1;
+}
+
+/** The side of its ring a cell faces outward on, if it is on a side and not a corner. */
+function outward(x: number, y: number): Side | null {
+  const r = ringOf(x, y);
+  if (Math.abs(x) === r && Math.abs(y) < r) return x > 0 ? 'e' : 'w';
+  if (Math.abs(y) === r && Math.abs(x) < r) return y > 0 ? 's' : 'n';
+  return null;
+}
+
+/**
+ * Is this cell one of the passes through a march? Each side of the ring is cut into as many
+ * stretches as it has passes, and each stretch has one, somewhere along it.
+ */
+export function isPass(c: Content, X: number, Y: number): boolean {
+  const f = c.frontier;
+  const r = ringOf(X, Y);
+  const side = outward(X, Y);
+  if (!f?.marches || !side || marchOf(c, r) < 0 || handAt(c, X, Y)) return false;
+  const along = side === 'e' || side === 'w' ? Y : X;
+  const span = 2 * r - 1;
+  const n = Math.max(1, f.marches.passes);
+  for (let k = 0; k < n; k++) {
+    const lo = -(r - 1) + Math.floor((span * k) / n);
+    const hi = -(r - 1) + Math.floor((span * (k + 1)) / n) - 1;
+    if (along >= lo && along <= hi && along === lo + (mix(r, 'nsew'.indexOf(side), k, f.seed + 17) % (hi - lo + 1))) return true;
+  }
+  return false;
+}
+
+/**
+ * What lies between a cell and its neighbour on one side: open country, the wall of a march, or
+ * a pass through one.
+ */
+export function edgeOf(c: Content, X: number, Y: number, side: Side): 'open' | 'wall' | 'pass' {
+  const [nx, ny] = [X + STEP[side][0], Y + STEP[side][1]];
+  const [r1, r2] = [ringOf(X, Y), ringOf(nx, ny)];
+  if (Math.abs(r1 - r2) !== 1 || marchOf(c, Math.min(r1, r2)) < 0) return 'open';
+  const [ix, iy, out] = r1 < r2 ? [X, Y, side] : [nx, ny, BACK[side]];
+  return isPass(c, ix, iy) && outward(ix, iy) === out ? 'pass' : 'wall';
+}
+
 /** The biome a cell of the frontier will be, without building it. Cheap enough to scan with. */
 export function kindAt(c: Content, X: number, Y: number): string | null {
   const f = c.frontier;
   if (!f || handAt(c, X, Y)) return null;
   // Between the places of the valley there is only the valley's own country: roads.
   if (f.valley && !depthOf(c, X, Y)) return 'valley';
+  if (isPass(c, X, Y)) return 'pass';
   let roll = (mix(X, Y, f.seed) / 4294967296) * Object.values(f.odds).reduce((n, v) => n + v, 0);
   for (const [biome, weight] of Object.entries(f.odds)) if ((roll -= weight) < 0) return biome;
   return Object.keys(f.odds)[0];
@@ -319,8 +367,15 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
   // A valley road is drawn as the woodland, open ground or mere it runs through; elsewhere the
   // kind of country is what is drawn.
   const valley = biome === 'valley' ? f.valley ?? null : null;
-  const ground = valley ? groundAt(c, X, Y) : biome;
+  // A pass is drawn as the crags it cuts through.
+  const ground = valley ? groundAt(c, X, Y) : biome === 'pass' ? 'crags' : biome;
   const road = valley ? roadOf(c, X, Y) : null;
+  // Whoever holds this pass, if it is one, and which way it leads out; and where the walls of a
+  // march close the country off. These come from the cell's position alone, never from a retry.
+  const holds = f.marches?.holds ?? [];
+  const hold = biome === 'pass' && holds.length ? holds[mix(X, Y, f.seed, 23) % holds.length] : null;
+  const out = hold ? outward(X, Y) : null;
+  const walls = (['n', 's', 'e', 'w'] as Side[]).filter((w) => edgeOf(c, X, Y, w) !== 'open');
 
   const hz = 60 + Math.floor(roll() * 10);
   const walkTop = hz + 30;
@@ -373,7 +428,7 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
     return null;
   };
 
-  const text = f.text[biome as Biome];
+  const text = f.text[biome as Biome] ?? f.text.crags;
   const things: ThingDef[] = [
     { id: 'snow', nouns: ['snow', 'ground'], x: 160, y: 140, reach: 400, look: pick(text.snow ?? f.text.snow) },
     { id: 'sky', nouns: ['mountain', 'sky'], x: 160, y: 100, reach: 400, look: pick(text.sky ?? f.text.sky) },
@@ -468,6 +523,12 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
         { on: ['take shrine', 'take work', 'take treasure', 'take cairn'], do: [{ say: f.text.shrineTake }] },
       );
       pines(2 + Math.floor(roll() * 3));
+    } else if (biome === 'pass') {
+      // The one way through the wall for miles, and somebody standing in it.
+      mark = 'crag';
+      chest = false;
+      boulders(2 + Math.floor(roll() * 2));
+      pines(Math.floor(roll() * 2));
     } else if (biome === 'steading') {
       // A lone hut. Either somebody lives here and trades, or nobody does and something has moved in.
       const w = 62 + Math.floor(roll() * 14);
@@ -485,11 +546,23 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
       pines(2 + Math.floor(roll() * 3));
     }
   }
+  // The wall of a march, along whichever sides it closes; a pass leaves a gap in it.
+  for (const w of walls) props.push({ t: 'scarp', x: 160, y: w === 'n' ? walkTop + 9 : w === 's' ? 167 : 124, v: w, w: edgeOf(c, X, Y, w) === 'pass' ? 46 : 0, seed: mix(X, Y, 'nsew'.indexOf(w)) % 900 });
+  if (walls.length && f.text.scarp) {
+    const sx = walls.includes('e') ? 306 : walls.includes('w') ? 14 : 160;
+    const sy = walls.includes('s') ? 160 : walls.includes('n') ? walkTop + 6 : 134;
+    things.push({ id: 'scarp', nouns: ['scarp'], x: sx, y: sy, reach: 400, look: f.text.scarpLook ?? f.text.scarp.replace('%s', WAY[walls[0]]) });
+    rules.push({ on: ['climb scarp', 'climb mountain', 'climb', 'climb boulder', 'climb crag'], do: [{ say: f.text.scarpClimb ?? f.text.scarpLook ?? '' }] });
+  }
   if (biome !== 'deadwood' || bare) things.push({ id: 'trees', nouns: ['tree'], x: 160, y: 110, reach: 400, look: pick(text.trees ?? f.text.trees) });
   else things.push({ id: 'trees', nouns: ['tree'], x: 160, y: 110, reach: 400, look: f.text.deadtrees });
   // Trees in the foreground frame the picture and block nothing: their feet are off the screen.
+  // Not where the wall of a march stands, which wants to be seen.
   for (const x of [4 + Math.floor(roll() * 20), 296 + Math.floor(roll() * 20)])
-    if (roll() < 0.75) props.push({ t: biome === 'deadwood' && !bare ? 'deadtree' : 'pine', x, y: 180 + Math.floor(roll() * 8), h: 86 + Math.floor(roll() * 30), seed: Math.floor(roll() * 900) });
+    if (roll() < 0.75) {
+      const tree: PropDef = { t: biome === 'deadwood' && !bare ? 'deadtree' : 'pine', x, y: 180 + Math.floor(roll() * 8), h: 86 + Math.floor(roll() * 30), seed: Math.floor(roll() * 900) };
+      if (!walls.includes(x < 160 ? 'w' : 'e')) props.push(tree);
+    }
 
   // What lives here. Further out, more of it, and tougher.
   const tiers = f.life[biome] ?? [[]];
@@ -497,10 +570,35 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
   // On a valley road, by day, there is one at most, and as often nothing; by night, nothing at all.
   // The roads straight into the middle of the valley are kept clear altogether.
   const quiet = valley && Math.abs(X) + Math.abs(Y) <= (valley.quiet ?? 0);
-  const count = peaceful || quiet || !kinds.length ? 0 : valley ? (roll() < 0.5 ? 1 : 0) : Math.min(4, 1 + (roll() < 0.5 ? 1 : 0) + Math.floor(level / 3));
+  // Much of the wild has nothing living in it, more of it near home than far out. Drawn from the
+  // cell's own numbers, apart from everything else, so a place's look does not hang on it.
+  const still = stream(mix(X, Y, f.seed, 211));
+  const q = f.quiet;
+  const empty = !valley && !hold && !!q && still() < (q.odds[biome] ?? 0) * (1 - (1 - q.far) * Math.min(1, Math.max(0, depth - 1) / Math.max(1, q.farDepth - 1)));
+  // How many would live here: drawn even where none do, so the rest of the place comes out the same.
+  const might = peaceful || quiet || !kinds.length ? 0 : valley ? (roll() < 0.5 ? 1 : 0) : Math.min(4, 1 + (roll() < 0.5 ? 1 : 0) + Math.floor(level / 3));
+  const count = empty || hold ? 0 : might;
   const spawns: SpawnDef[] = [];
-  for (let k = 0; k < count; k++)
-    spawns.push({ id: `${id}:${k}`, kind: kinds[k % kinds.length], x: Math.round(70 + roll() * 180), y: Math.round(128 + roll() * 18), respawn: 3000, level, ...(valley ? { when: 'day' as const } : {}) });
+  for (let k = 0; k < might; k++) {
+    const s: SpawnDef = { id: `${id}:${k}`, kind: kinds[k % kinds.length], x: Math.round(70 + roll() * 180), y: Math.round(128 + roll() * 18), respawn: 3000, level, ...(valley ? { when: 'day' as const } : {}) };
+    if (k < count) spawns.push(s);
+  }
+  // A pass is held instead by whatever holds it, and once they are beaten they stay beaten.
+  if (hold) {
+    const m = marchOf(c, ringOf(X, Y));
+    const band = hold.life[Math.min(hold.life.length - 1, m)];
+    // They stand across the gap, between the player and the way out.
+    const [gx, gy] = out === 'e' ? [250, 134] : out === 'w' ? [70, 134] : out === 'n' ? [160, walkTop + 24] : [160, 150];
+    band.forEach((kind, k) => {
+      const off = (k - (band.length - 1) / 2) * 16;
+      const [x, y] = out === 'e' || out === 'w' ? [gx + (k % 2 ? -14 : 0) * (out === 'e' ? 1 : -1), gy + off * 0.7] : [gx + off * 1.4, gy + (k % 2 ? 6 : 0) * (out === 'n' ? 1 : -1)];
+      spawns.push({ id: `${id}:hold${k}`, kind, x: Math.round(x), y: Math.round(y), level: level + 1 });
+    });
+    const [tx, ty] = out === 'e' ? [300, 134] : out === 'w' ? [20, 134] : out === 'n' ? [160, walkTop + 4] : [160, 160];
+    things.push({ id: 'gap', nouns: ['gap'], x: tx, y: ty, reach: 400, look: hold.look.replace('%s', WAY[out!]) });
+    rules.push({ on: ['enter gap', 'climb gap', 'enter'], do: [{ say: `It is the way ${WAY[out!]}: walk on through it, if they let you.` }] });
+    rules.push({ cleared: true, if: [{ not: { flag: `pass.${id}` } }], do: [{ set: `pass.${id}` }, { sound: 'quest' }, { score: 5, id: `pass.${id}` }, { say: hold.open }] });
+  }
 
   // By day there may be game, for anyone with a bow and the patience to use it.
   const game = f.game?.[biome];
@@ -509,9 +607,14 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
 
   // After dark, something else is abroad as well.
   const night = f.life.night;
-  if (count && night?.length && !valley) {
+  // Where nothing lives by day, something may still pass through by night.
+  const dark = count > 0 || (empty && still() < 0.5);
+  if (might && night?.length && !valley) {
     const abroad = night[Math.min(night.length - 1, Math.ceil(level / 2))];
-    if (abroad.length) spawns.push({ id: `${id}:night`, kind: pick(abroad), x: Math.round(70 + roll() * 180), y: Math.round(128 + roll() * 18), respawn: 3000, level, when: 'night', if: f.nightIf });
+    if (abroad.length) {
+      const s: SpawnDef = { id: `${id}:night`, kind: pick(abroad), x: Math.round(70 + roll() * 180), y: Math.round(128 + roll() * 18), respawn: 3000, level, when: 'night', if: f.nightIf };
+      if (dark && !hold) spawns.push(s);
+    }
   }
 
   // Anything that has made this place its own.
@@ -524,6 +627,8 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
   for (const way of ['n', 's', 'e', 'w'] as Side[]) {
     const [x, y] = [X + STEP[way][0], Y + STEP[way][1]];
     const hand = handAt(c, x, y);
+    // Nobody climbs the wall of a march.
+    if (edgeOf(c, X, Y, way) === 'wall') continue;
     // A hand-made neighbour is only joined where it has a gate facing this way.
     if (!hand) exits[way] = wildId(x, y);
     else if (f.gates[hand]?.includes(BACK[way])) exits[way] = hand;
@@ -593,13 +698,23 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
 
   const ways = Object.keys(exits).length;
   const far = level >= 3 ? ' ' + f.text.deep : '';
+  // The walls, as the country round them describes them.
+  // In a pass, whoever holds it is description enough.
+  const told = hold ? [] : walls;
+  const gaps = told.filter((w) => edgeOf(c, X, Y, w) === 'pass');
+  const scarp =
+    (told.length && f.text.scarp ? ' ' + f.text.scarp.replace('%s', listed(told.map((w) => WAY[w]))) : '') +
+    (gaps.length && f.text.scarpGap ? ' ' + f.text.scarpGap.replace('%s', listed(gaps.map((w) => WAY[w]))) : '');
+  // A place's name is always drawn, so that the same numbers follow whether or not a sight took it.
+  const called = placeName(pick(text.first), text.second, pick);
   return {
     id,
-    // The name is always drawn, so that the same numbers follow whether or not a sight took the place.
-    name: [placeName(pick(text.first), text.second, pick), sight?.name][sight ? 1 : 0]!,
-    music: valley ? valley.music : peaceful ? f.calm : f.music,
+    name: hold ? placeName(hold.first[mix(X, Y, f.seed, 29) % hold.first.length], text.second, pick) : sight ? sight.name : called,
+    music: valley ? valley.music : peaceful ? f.calm : empty && q ? q.music : f.music,
     mark,
-    look: `${pick(text.look)}${sight ? ' ' + sight.seen : ''}${far}${road ? ' ' + road.says : ''} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`,
+    ...(valley || peaceful ? { haven: true } : {}),
+    ...(hold && out ? { holds: { [out]: hold.held } } : {}),
+    look: `${pick(text.look)}${hold ? ' ' + hold.look.replace('%s', WAY[out!]) : ''}${sight ? ' ' + sight.seen : ''}${far}${road ? ' ' + road.says : ''}${scarp} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`,
     ...(biome === 'camp' && !bare ? { lookWhen: [{ if: [{ quiet: true }], look: f.text.campQuiet }] } : {}),
     scene: { kind: 'outdoor', horizon: hz, walkTop, layers, props, ...(when.length ? { when } : {}) },
     exits,
@@ -731,6 +846,21 @@ export function frontierProblems(c: Content): string[] {
     for (const id of Object.keys(f.valley.called)) f.grid[id] || errs.push(`frontier: the valley names "${id}", which is not on the grid`);
     if (!f.life.valley) errs.push('frontier: nothing listed as living in the valley');
     if (!f.text.valley) errs.push('frontier: no wording for the valley');
+  }
+  if (f.quiet) {
+    if (!c.music[f.quiet.music]) errs.push(`frontier: unknown tune "${f.quiet.music}" for quiet country`);
+    for (const biome of Object.keys(f.quiet.odds)) f.odds[biome] || errs.push(`frontier: quiet odds for "${biome}" country, which does not exist`);
+  }
+  if (f.marches) {
+    const rings = f.marches.rings;
+    if (!f.text.pass) errs.push('frontier: marches, but no wording for a pass');
+    if (!f.marches.holds.length) errs.push('frontier: marches, but nobody to hold their passes');
+    if (rings.some((r, i) => r <= reachOf(c) || (i && r <= rings[i - 1]))) errs.push('frontier: the rings of the marches must lie beyond the valley, nearest first');
+    for (const h of f.marches.holds) for (const kind of h.life.flat()) c.enemies[kind] || errs.push(`frontier: unknown enemy "${kind}" holding a pass`);
+    for (const [id, at] of Object.entries(f.grid)) {
+      if (rings.includes(Math.max(Math.abs(at[0]), Math.abs(at[1])))) errs.push(`frontier: "${id}" stands on a march, where its wall would run through it`);
+      for (const side of (f.gates[id] ?? '') as Iterable<Side>) if (STEP[side] && edgeOf(c, at[0], at[1], side) === 'wall') errs.push(`frontier: the ${side} gate of "${id}" opens onto the wall of a march`);
+    }
   }
   for (const [biome, tiers] of Object.entries(f.life))
     for (const kind of tiers.flat()) c.enemies[kind] || errs.push(`frontier: unknown enemy "${kind}" in ${biome} country`);

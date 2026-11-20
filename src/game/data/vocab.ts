@@ -117,6 +117,8 @@ export const vocab: VocabDef = {
     roof: ['thatch', 'icicles', 'icicle'],
     fence: ['rail', 'rails', 'post', 'pen'],
     boulder: ['rock', 'rocks', 'boulders', 'rubble'],
+    scarp: ['escarpment', 'rock wall', 'wall of rock', 'rockface', 'rock face', 'cliff face', 'precipice', 'fell wall'],
+    gap: ['pass', 'hause', 'defile', 'saddle', 'col', 'barricade'],
     crag: ['crags', 'outcrop', 'tor', 'scar', 'ledge', 'den', 'cave', 'lair'],
     cairn: ['waymark', 'waymarker', 'marker', 'rag'],
     shrine: ['altar', 'ring', 'circle', 'hallow', 'stone circle', 'ring of stones', 'offerings', 'offering', 'blessing', 'bead'],

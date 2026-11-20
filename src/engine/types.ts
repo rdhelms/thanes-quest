@@ -238,6 +238,13 @@ export interface RoomDef {
   music?: string;
   /** What to draw for this place on the map: wood, open, mere, water, village, farm, camp, tower, stone, barrow. */
   mark?: string;
+  /** Nothing hunting the player follows them in here. */
+  haven?: boolean;
+  /**
+   * Sides that are held: nobody leaves this way while anything hostile that belongs to the room
+   * is still standing in it. Each is what is said to someone who tries.
+   */
+  holds?: { n?: string; s?: string; e?: string; w?: string };
   /** Extra nouns only this room needs: canonical word to synonyms. */
   vocab?: Record<string, string[]>;
 }
@@ -465,6 +472,24 @@ export interface FrontierDef {
   rareGame?: { kind: string; odds: number; minDepth: number };
   /** What walks after dark walks only while these hold. */
   nightIf?: Cond[];
+  /**
+   * How often a cell of each kind of country has nothing living in it by day, near home. The
+   * odds fall away with distance, to `far` of what they were by `farDepth` cells out.
+   */
+  quiet?: { odds: Record<string, number>; far: number; farDepth: number; music: string };
+  /**
+   * Marches: rings of country, counted out from the middle of the map, along whose outer edge the
+   * land rises in a wall that cannot be climbed. A ring is crossed only at its passes, a few to
+   * each side, and every pass is held by something that has to be beaten before anyone gets by.
+   */
+  marches?: {
+    /** The rings that have a wall along their outer edge, nearest first. */
+    rings: number[];
+    /** Passes on each side of a ring. */
+    passes: number;
+    /** Who may be holding a pass: what stands in it at each march (the last list serves for all beyond), and what is said. */
+    holds: { id: string; life: string[][]; look: string; held: string; open: string; first: string[] }[];
+  };
   /** Trinkets that may be found among the grave-goods in a vault. */
   trinkets?: string[];
   /** Things worth finding, each written by hand and each met once, somewhere out in the country. */
@@ -479,6 +504,19 @@ export interface FrontierDef {
     deadwood: BiomeText;
     shrine: BiomeText;
     steading: BiomeText;
+    /** A pass through a march. */
+    pass?: BiomeText;
+    /** The wall along a march, %s being the sides it closes ("east and north"). */
+    scarp?: string;
+    /** Where the wall is broken by a pass, %s being the side. */
+    scarpGap?: string;
+    /** The wall, looked at; and climbed. */
+    scarpLook?: string;
+    scarpClimb?: string;
+    /** Said the first time something follows the player out of one picture into the next. */
+    followed?: string;
+    /** Said when the player gets into a haven with something still close behind. */
+    shaken?: string;
     /** The vaults under ruined towers. */
     crypt: BiomeText;
     /** The roads between the places of the valley. */

@@ -427,6 +427,46 @@ export const frontier: FrontierDef = {
   sights,
   // Once the King's people have been given their fire, nothing walks at night that ought to be asleep.
   nightIf: [{ not: { flag: 'dead.rested' } }],
+  // Near home, a good deal of the country has nothing in it but snow and quiet; far out, very
+  // little does. A reaver camp is never empty.
+  quiet: {
+    odds: { pines: 0.55, open: 0.6, mere: 0.55, crags: 0.45, ruin: 0.25, camp: 0, deadwood: 0.15, steading: 0.3 },
+    far: 0.35,
+    farDepth: 10,
+    music: 'valley',
+  },
+  // Walls of rock round the valley's country, one beyond another, each crossed only at a pass that
+  // somebody holds. The first stands a long day's walking out: past every place with a name.
+  marches: {
+    rings: [6, 10, 15, 21, 28, 36, 45],
+    passes: 2,
+    holds: [
+      {
+        id: 'reavers',
+        life: [['bandit', 'archer', 'bandit'], ['chief', 'archer', 'bandit'], ['chief', 'archer', 'bandit', 'archer'], ['chief', 'chief', 'archer', 'archer']],
+        first: ['Toll', 'Reaver', 'Ransom', "Robbers'", "Thieves'"],
+        look: 'This is the only way %s through the wall for miles, and reavers hold it: a barricade of piled stones, a fire behind it, and a toll that is whatever you are carrying.',
+        held: 'The reavers are between you and the gap, and they are not moving aside. Nobody goes through while one of them is standing.',
+        open: 'The last of the reavers goes down. The gap is open, and it will stay open: word gets about, and nobody else will want to sit in it.',
+      },
+      {
+        id: 'pack',
+        life: [['wolf', 'wolf', 'wolf'], ['bear', 'wolf', 'wolf'], ['bear', 'bear', 'wolf', 'wolf'], ['bear', 'bear', 'bear', 'wolf']],
+        first: ['Wolf', 'Grey', 'Fang', 'Howling', 'Den'],
+        look: 'The only way %s through the wall is a narrow gap, and something has made its den in the throat of it. The snow is trodden flat and spotted with old blood, and there are bones.',
+        held: 'They will not let you by. Every time you make for the gap, something with teeth is there first.',
+        open: 'Nothing is left alive in the gap. The way through the wall is open now, and the bones in it are all that says what lived here.',
+      },
+      {
+        id: 'dead',
+        life: [['wight', 'wight'], ['rimewalker', 'wight', 'wight'], ['rimewalker', 'rimewalker', 'wight'], ['rimewalker', 'rimewalker', 'wight', 'wight']],
+        first: ['Bone', 'Grave', 'Hollow', 'Old', 'Cold'],
+        look: "There was a gate across the gap %s once, in somebody's kingdom. Two worn posts of stone are all that is left of it, and its guards are still at them. They have been dead a long time, and nobody has told them.",
+        held: 'The dead guards close the way. They were set here to let nobody through, and they are still doing it.',
+        open: 'The last of the guards falls, and lies still at last. Nobody keeps the old gate now. The way through the wall is open.',
+      },
+    ],
+  },
   text: {
     pines: {
       first: ['The Hollow', 'The Crowding', 'The Silent', 'The Leaning', 'The Black', 'The Winter', 'The Listening', 'The Wolf', 'The Hare', 'The Owl', 'The Deep', 'The Fox', 'The Raven', 'The Snow-Bent', 'The Long'],
@@ -509,6 +549,21 @@ export const frontier: FrontierDef = {
         'A steading, small and stubborn, where the path gives out.',
       ],
     },
+    pass: {
+      first: ['Wind', 'High'],
+      second: ['Gap', 'Hause', 'Nick', 'Gate', 'Pass', 'Notch', 'Throat'],
+      look: [
+        'The fell closes in on both hands here, and the snow underfoot has been packed hard by traffic.',
+        'A cold wind comes through here without ever stopping, the way water goes through a sluice.',
+        'Rock on both hands, and the sky a narrow strip between. Your footsteps come back to you off the stone.',
+      ],
+    },
+    scarp: 'To the %s the land goes up in a wall of grey rock, sheer and glazed with ice, higher than the tallest pine.',
+    scarpGap: 'A gap goes through it to the %s.',
+    scarpLook: 'Grey rock, sheer, glazed with ice where meltwater has run down it and frozen. It runs on out of sight both ways. Somewhere along it there will be a way through. There always is, and there is always somebody sitting in it.',
+    scarpClimb: 'You get a hand on the rock, and then a foot, and then the ice decides the matter for you. You sit in the snow at the bottom of it and think kindly of passes.',
+    followed: 'It comes after you. Out here, a thing that has your scent does not give it up because you have gone out of its sight.',
+    shaken: 'Whatever was after you stops short of this place, and after a while it turns away.',
     valley: {
       first: ['The Low', 'The Long', "Drovers'", "Shepherd's", 'The Sledge', 'Alder', 'Rowan', 'Birch', 'The Peat', "Hayward's", 'The Common'],
       second: ['Lane', 'Way', 'Track', 'Bottom', 'Brow', 'Holm', 'Path', 'Road'],

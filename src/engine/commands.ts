@@ -32,7 +32,7 @@ function find(sim: Sim, noun: string, mine = false): Target | null {
       if (def?.nouns.includes(noun)) return { k: 'char', def, actor };
     } else {
       const def = c.enemies[actor.ref];
-      if (def?.nouns.includes(noun) && actor.act !== 'dead') return { k: 'enemy', def, actor };
+      if (def?.nouns.includes(noun) && actor.act !== 'dead' && !((actor.ai.lag ?? 0) > 0)) return { k: 'enemy', def, actor };
     }
   }
   return carriedItem(sim, noun);
