@@ -2,3 +2,6 @@ node_modules
 dist
 .DS_Store
 .wrangler
+
+# Working copies made for helpers during a session; never part of the game.
+.claude/worktrees/
