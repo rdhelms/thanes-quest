@@ -79,12 +79,15 @@ perk at three levels (the `skills` page lists what you have earned). The line un
 line shows what is in your hands, the runewords you know, and any boon still on you (Ward, Might,
 Light).
 
-The nine hand-made outdoor screens are only the middle of the map. Walk off any open edge and
-new country is generated a screen at a time: the same place every time you return, and tougher
-the further you go. It comes in nine kinds (pinewoods, open fells, frozen meres, ruins, reaver
-camps, crags, dead woods, shrines and lone steadings), with their own creatures, people to trade
-with, and things to find. `map` shows everywhere you have been. There is a day and a night, it
-snows, and there is music (Esc opens the menu to switch music or sound effects off).
+The nine hand-made outdoor screens are the valley, laid out three by three with a screen of road
+between each and the next, so the valley is five screens by five. The roads are generated, and
+gentle: a path through, and its description says where it leads; by day perhaps a wolf, by night
+nothing. Walk off the valley's edge and new country is generated a screen at a time: the same
+place every time you return, and tougher the further you go. It comes in nine kinds (pinewoods,
+open fells, frozen meres, ruins, reaver camps, crags, dead woods, shrines and lone steadings), with
+their own creatures, people to trade with, and things to find. `map` shows everywhere you have
+been. There is a day and a night, it snows, and there is music (Esc opens the menu to switch music
+or sound effects off).
 
 Finishing the first saga does not finish the game:
 
@@ -150,7 +153,8 @@ src/game/            the game itself, as data
   data/vocab.ts      every word the parser knows
   data/text.ts       system messages, the help page and the opening words
   data/music.ts      nine original tunes, as data
-  data/frontier.ts   settings and wording for generated country, and the hand-written sights that stand in it
+  data/frontier.ts   where the hand-made places stand, settings and wording for generated country
+                     (the valley's roads among it), and the hand-written sights that stand in it
   behaviours.ts      the few named behaviours data cannot express
 tests/               engine tests and the walkthrough bot
 tools/               QA scripts: screenshots without a browser, and measurements (see below);
@@ -177,6 +181,8 @@ Four rules shape the code, so that a larger, shared, growing world stays possibl
 1. Write a `RoomDef` in `src/game/data/rooms/`. Compose the picture from layer types in
    `layers.ts` and prop types in `props.ts` / `scenery.ts`.
 2. Add it to `roomList` in `src/game/content.ts` and link it with `exits` (both directions) or `doors`.
+   An outdoor place goes on the map instead: a cell in `grid`, and the sides that open onto the
+   country round it in `gates`, both in `src/game/data/frontier.ts`.
 3. Add any new nouns to `src/game/data/vocab.ts`.
 4. Run `npm test`. The validator will say what is unreachable, misspelled or missing.
 
@@ -224,7 +230,8 @@ npm run qa -- room room.json                # the gate a room from anywhere must
 
 ## Tests
 
-`npm test` runs engine tests (parser, rules, combat, magic, saving, validation, the frontier) and
+`npm test` runs engine tests (parser, rules, combat, magic, saving, validation, the frontier),
+`tests/valley.test.ts` (the roads between the valley's places, and where difficulty begins), and
 `tests/walkthrough.test.ts`, in which a pathfinding bot plays the game using only
 keyboard-equivalent intents:
 

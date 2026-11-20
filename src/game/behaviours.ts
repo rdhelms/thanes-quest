@@ -233,8 +233,10 @@ export const behaviours: Record<string, Behaviour> = {
     const n = Number(f['bounty.n'] ?? 0);
     // Each task lies further out than the last, and is somewhere still in need of it.
     const fresh = (x: number, y: number): boolean => !sim.state.rooms[wildId(x, y)]?.dead.length;
-    // Further out each time at first; after that, anywhere in the far country that still wants it.
-    const ring = n < 10 ? 2 + n : 6 + ((n * 5) % 9);
+    // Further out each time at first, starting just beyond the valley; after that, anywhere in the
+    // far country that still wants it.
+    const edge = sim.content.frontier?.valley?.reach ?? 1;
+    const ring = n < 10 ? edge + 1 + n : edge + 5 + ((n * 5) % 9);
     const found = findNear(sim.content, 0, 0, BOUNTY_KINDS, 20, ring, fresh);
     const def = found && roomOf(sim.content, wildId(found.x, found.y));
     if (!found || !def || !(def.spawns ?? []).length) {

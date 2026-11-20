@@ -1,8 +1,13 @@
-// The nine outdoor screens, laid out three by three:
+// The nine outdoor screens of the valley, laid out three by three with a screen of road between
+// each and the next (the roads are generated: see `valley` in data/frontier.ts):
 //
-//   ridge      barrow     tarn
-//   pinewood   village    farm
-//   camp       ford       tower
+//   ridge      ·  barrow     ·  tarn
+//      ·       ·     ·       ·    ·
+//   pinewood   ·  village    ·  farm
+//      ·       ·     ·       ·    ·
+//   camp       ·  ford       ·  tower
+//
+// None has an exit to another; each opens onto the roads round it through its gates.
 
 import type { LayerDef, RoomDef, Rule, ThingDef } from '../../../engine/types';
 
@@ -53,7 +58,6 @@ export const ford: RoomDef = {
       { t: 'pine', x: 296, y: 186, h: 98, seed: 76 },
     ],
   },
-  exits: { n: 'village', w: 'camp', e: 'tower' },
   things: [
     { id: 'river', nouns: ['river', 'water'], x: 160, y: 126, reach: 400, look: 'Fast, black and loud. Plates of ice ride it like cargo.' },
     { id: 'bridge', nouns: ['bridge'], x: 160, y: 126, reach: 400, look: 'Split logs laid over two trunks. Whoever built it did not trust it either: there are handrails.' },
@@ -136,7 +140,6 @@ export const village: RoomDef = {
       },
     ],
   },
-  exits: { n: 'barrow', s: 'ford', e: 'farm', w: 'pinewood' },
   doors: [
     { x0: 61, y0: 117, x1: 77, y1: 119, to: 'hall', x: 60, y: 112, dir: 'down' },
     { x0: 244, y0: 113, x1: 260, y1: 115, to: 'inn', x: 160, y: 112, dir: 'down' },
@@ -268,7 +271,6 @@ export const pinewood: RoomDef = {
       { t: 'pine', x: 312, y: 186, h: 96, seed: 54 },
     ],
   },
-  exits: { e: 'village', n: 'ridge', s: 'camp' },
   npcs: [{ char: 'toke', x: 276, y: 142, wander: [262, 138, 300, 150] }],
   spawns: [
     { id: 'wolf1', kind: 'wolf', x: 40, y: 140, respawn: 2400 },
@@ -345,7 +347,6 @@ export const farm: RoomDef = {
       },
     ],
   },
-  exits: { w: 'village', n: 'tarn', s: 'tower' },
   npcs: [{ char: 'gorm', x: 168, y: 142, wander: [140, 136, 200, 150] }],
   things: [
     {
@@ -403,7 +404,6 @@ export const tower: RoomDef = {
       { if: [{ knows: 'word:iska' }], props: [{ t: 'stone', x: 100, y: 132, h: 48, v: 'b', seed: 3, lit: 1 }] },
     ],
   },
-  exits: { w: 'ford', n: 'farm' },
   spawns: [{ id: 'lookout', kind: 'archer', x: 270, y: 150 }],
   things: [
     { id: 'tower', nouns: ['tower', 'door'], x: 222, y: 124, reach: 50, look: 'It watched this road once. Now the top third lies around its feet and snow has drifted into the doorway.' },
@@ -459,7 +459,6 @@ export const camp: RoomDef = {
       { t: 'pine', x: 310, y: 186, h: 94, seed: 100 },
     ],
   },
-  exits: { n: 'pinewood', e: 'ford' },
   spawns: [
     { id: 'bandit1', kind: 'bandit', x: 90, y: 150 },
     { id: 'bandit2', kind: 'bandit', x: 130, y: 132 },
@@ -516,7 +515,6 @@ export const ridge: RoomDef = {
       { if: [{ knows: 'word:veth' }], props: [{ t: 'stone', x: 152, y: 126, h: 58, v: 'a', seed: 2, lit: 1 }] },
     ],
   },
-  exits: { s: 'pinewood', e: 'barrow' },
   spawns: [{ id: 'wolf3', kind: 'wolf', x: 260, y: 150, respawn: 2400 }],
   things: [
     { id: 'stone', nouns: ['menhir', 'rune'], x: 152, y: 128, reach: 36, try: ['read rune'], look: 'Twice your height and older than the village by more years than the village has had winters. One rune is cut into the face. The wind seems to go around it.' },
@@ -567,7 +565,6 @@ export const barrow: RoomDef = {
       { if: [{ flag: 'dead.rested' }], props: [{ t: 'hall', x: 150, y: 87, w: 20, v: 'smoke' }] },
     ],
   },
-  exits: { s: 'village', w: 'ridge', e: 'tarn' },
   doors: [
     { x0: 110, y0: 119, x1: 126, y1: 121, to: 'tally', x: 48, y: 118, dir: 'right', if: [{ flag: 'barrow.second' }] },
     {
@@ -632,7 +629,6 @@ export const tarn: RoomDef = {
       { t: 'pine', x: 312, y: 186, h: 92, seed: 127 },
     ],
   },
-  exits: { w: 'barrow', s: 'farm' },
   doors: [{ x0: 254, y0: 109, x1: 270, y1: 111, to: 'hut', x: 262, y: 112, dir: 'down' }],
   zones: [{ id: 'thin', x0: 84, y0: 128, x1: 164, y1: 144 }],
   things: [
