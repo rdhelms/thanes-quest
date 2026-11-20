@@ -3,9 +3,9 @@
 // Still no DOM here, so tests can drive it.
 
 import { hostile } from './combat';
-import { inventoryPage } from './commands';
+import { bagRows, itemActions } from './commands';
 import { wrap } from './font';
-import { roomOf } from './frontier';
+import { chart, roomOf } from './frontier';
 import { all } from './rules';
 import { PH, PW } from './scene';
 import { Sim, type Behaviour } from './sim';
@@ -20,10 +20,21 @@ export interface Store {
 export type Modal =
   /** `any`: goes away on any key at all, not only the usual ones. */
   | { k: 'msg'; text: string; more?: boolean; who?: string; any?: boolean }
-  | { k: 'page'; title: string; lines: string[]; more?: boolean }
-  /** The map, with a cursor that can be moved about it: dx, dy are its offset from where the player stands. */
-  | { k: 'map'; dx: number; dy: number }
-  | { k: 'list'; title: string; items: string[]; sel: number; pick: (i: number) => void; cancel: boolean; banner?: string; onCancel?: () => void };
+  /** `heads`: which of these lines head a section. */
+  | { k: 'page'; title: string; lines: string[]; more?: boolean; heads?: number[] }
+  /**
+   * The map, with a cursor that can be moved about it: dx, dy are its offset from where the player
+   * stands. vx, vy are where the middle of the view is, the same way; the picture keeps them.
+   */
+  | { k: 'map'; dx: number; dy: number; vx?: number; vy?: number }
+  /**
+   * A menu. `lead`: the first line of the title is a heading (the name of the thing shown).
+   * `top`: the first row in view, when there are more rows than fit; the picture keeps it.
+   */
+  | { k: 'list'; title: string; items: string[]; sel: number; pick: (i: number) => void; cancel: boolean; banner?: string; onCancel?: () => void; lead?: boolean; top?: number };
+
+/** Somewhere to come back to once every box is closed: the menu, at the row chosen from it, or the bag. */
+type Return = { to: 'menu'; sel: number } | { to: 'bag'; item: string; room: string };
 
 interface SaveFile {
   v: 1;
@@ -95,6 +106,7 @@ export class Shell {
     this.modals = [];
     this.input = '';
     this.talkingTo = null;
+    this.after = [];
     this.sim = sim;
     if (!saved) this.message(this.content.intro);
     this.absorb();
@@ -131,15 +143,28 @@ export class Shell {
     }
   }
 
-  private pageOut(title: string, lines: string[]): void {
-    const body = lines.flatMap((l) => (l ? wrap(l, 34) : ['']));
+  /** A page to read, over as many boxes as it takes. A line that is only "\f" starts a new box. */
+  private pageOut(title: string, lines: string[], heads: number[] = []): void {
     const PAGE = BOX_LINES - 1;
-    for (let i = 0; i < Math.max(1, body.length); i += PAGE) {
-      const lines = body.slice(i, i + PAGE);
+    const boxes: { text: string; head: boolean }[][] = [[]];
+    lines.forEach((l, n) => {
+      if (l === '\f') return void (boxes[boxes.length - 1].length && boxes.push([]));
+      const wrapped = l ? wrap(l, 34) : [''];
+      // A paragraph that would run over into the next box starts in it instead, if it fits there whole.
+      if (boxes[boxes.length - 1].length + wrapped.length > PAGE && wrapped.length <= PAGE) boxes.push([]);
+      for (const text of wrapped) {
+        if (boxes[boxes.length - 1].length >= PAGE) boxes.push([]);
+        boxes[boxes.length - 1].push({ text, head: heads.includes(n) });
+      }
+    });
+    // A box with nothing in it but blank lines is no box at all.
+    const full = boxes.filter((b) => b.some((l) => l.text));
+    (full.length ? full : boxes.slice(0, 1)).forEach((box, i, all) => {
       // A page should not open on a blank line.
-      while (lines.length > 1 && !lines[0]) lines.shift();
-      this.modals.push({ k: 'page', title, lines, more: i + PAGE < body.length });
-    }
+      while (box.length > 1 && !box[0].text) box.shift();
+      const hs = box.flatMap((b, j) => (b.head ? [j] : []));
+      this.modals.push({ k: 'page', title, lines: box.map((b) => b.text), more: i < all.length - 1, ...(hs.length ? { heads: hs } : {}) });
+    });
   }
 
   private list(title: string, items: string[], pick: (i: number) => void, cancel = true): void {
@@ -160,6 +185,9 @@ export class Shell {
 
   tick(): void {
     this.uiTick++;
+    if (this.modal) return;
+    // Something opened from the menu or the bag is done with: back to where it was opened from.
+    this.resume();
     if (this.modal) return;
     // Mid-conversation, with the last reply read: offer what else can be said.
     if (this.talkingTo && !this.queue.length && !this.errand) {
@@ -228,6 +256,8 @@ export class Shell {
   private goFor(e: { x: number; y: number; d: number; line: string }): void {
     const p = this.sim.p;
     this.errand = null;
+    // Something chosen from the bag that means walking somewhere is not followed by the bag again.
+    this.after = this.after.filter((a) => a.to !== 'bag');
     if (this.tries < 2) {
       this.bound = { x: Math.round(e.x), y: Math.round(e.y), paces: [], i: 0, on: null, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y, careful: true };
       this.plan();
@@ -321,7 +351,7 @@ export class Shell {
         // Long enough to read: hints are a sentence, not a word.
         this.noteUntil = this.uiTick + Math.max(70, e.text.length * 4);
       }
-      else if (e.t === 'page') this.pageOut(e.title, e.lines);
+      else if (e.t === 'page') this.pageOut(e.title, e.lines, e.heads);
       else if (e.t === 'map') this.modals.push({ k: 'map', dx: 0, dy: 0 });
       else if (e.t === 'sound') this.settings.sound && this.sounds.push(e.id);
       else if (e.t === 'room') {
@@ -346,6 +376,7 @@ export class Shell {
       else if (e.t === 'died') {
         this.talkingTo = null;
         this.bound = this.errand = null;
+        this.after = [];
         this.message(e.text);
         this.modals.push({
           k: 'list', title: this.sim.text('deathPrompt'), items: ['Restore a saved game', 'Start again'], sel: 0, cancel: false,
@@ -386,10 +417,13 @@ export class Shell {
           m.onCancel?.();
         }
       } else if (m.k === 'map' && key.startsWith('Arrow')) {
-        // Look about the map: the place under the cursor is named below it.
-        m.dx = Math.max(-8, Math.min(8, m.dx + (key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : 0)));
-        m.dy = Math.max(-4, Math.min(4, m.dy + (key === 'ArrowDown' ? 1 : key === 'ArrowUp' ? -1 : 0)));
+        // Look about the map, as far as the country known so far: the place under the cursor is named below it.
+        const [x0, y0, x1, y1] = this.mapBounds();
+        m.dx = Math.max(x0, Math.min(x1, m.dx + (key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : 0)));
+        m.dy = Math.max(y0, Math.min(y1, m.dy + (key === 'ArrowDown' ? 1 : key === 'ArrowUp' ? -1 : 0)));
       } else if (key === 'Enter' || key === 'Escape' || key === ' ' || (m.k === 'msg' && m.any)) this.modals.shift();
+      // The last box closed: back to the menu or the bag it was opened from, if it was, and nothing is still to come.
+      if (!this.modal) this.resume();
       return true;
     }
     if (key.startsWith('Arrow')) {
@@ -413,10 +447,8 @@ export class Shell {
     else if (key === 'Shift') this.queue.push({ t: 'block', on: true });
     // Space on an empty line is a second attack key, for keyboards where Ctrl+arrow is taken.
     else if (key === ' ' && !this.input) this.queue.push({ t: 'attack' });
-    else if (key === 'Tab') {
-      const pg = inventoryPage(this.sim);
-      this.pageOut(pg.title, pg.lines);
-    } else if (key === 'Escape') this.menu();
+    else if (key === 'Tab') this.bag();
+    else if (key === 'Escape') this.menu();
     else if (key === 'Enter') this.submit(this.input || this.last);
     else if (key === 'Backspace') this.input = this.input.slice(0, -1);
     else if (key.length === 1 && this.input.length < MAX_INPUT) this.input += key;
@@ -454,13 +486,17 @@ export class Shell {
     else if (verb === 'restart') this.confirmRestart();
     else if (verb === 'help') this.pageOut('How to play', this.sim.text('help').split('\n'));
     else if (verb === 'quit') this.menu();
-    else {
-      // A new line drops whatever walk the last one was waiting on.
-      this.bound = this.errand ? null : this.bound;
-      this.errand = null;
-      this.tries = 0;
-      this.queue.push({ t: 'say', line, afoot: true });
-    }
+    else if (verb === 'inventory' && r.ok && !r.nouns.length) this.bag();
+    else this.send(line);
+  }
+
+  /** Send a line to the world, as typed. */
+  private send(line: string): void {
+    // A new line drops whatever walk the last one was waiting on.
+    this.bound = this.errand ? null : this.bound;
+    this.errand = null;
+    this.tries = 0;
+    this.queue.push({ t: 'say', line, afoot: true });
   }
 
   /**
@@ -555,20 +591,92 @@ export class Shell {
   // -------------------------------------------------------------------------------------------
   // Menus and saving
 
-  private menu(): void {
+  /** Where closing what is open will lead: back to the menu, or straight back to the game. */
+  get backToMenu(): boolean {
+    return this.after.length > 0;
+  }
+
+  /** Places to come back to once every box is closed, the most recent last. */
+  private after: Return[] = [];
+
+  /**
+   * With every box closed and nothing still to come of what was chosen: go back to the menu or
+   * the bag that it was chosen from. A walk that something chosen sent the player on comes first.
+   */
+  private resume(): void {
+    if (this.modal || this.queue.length || this.errand) return;
+    const back = this.after.pop();
+    if (back?.to === 'menu') this.menu(back.sel);
+    // Not if what was done took the player somewhere else.
+    else if (back?.to === 'bag' && back.room === this.sim.state.room && !this.sim.p.dead) this.bag(back.item);
+  }
+
+  private menu(sel = 0): void {
+    // The menu is the bottom of everything: nothing opened before it is waiting to be gone back to.
+    this.after = [];
     const rows: [string, () => void][] = [
       ['Resume', () => {}],
-      ['Map', () => this.queue.push({ t: 'say', line: 'map' })],
-      ['Journal', () => this.queue.push({ t: 'say', line: 'journal' })],
-      ['Skills', () => this.queue.push({ t: 'say', line: 'skills' })],
-      ['Deeds', () => this.queue.push({ t: 'say', line: 'deeds' })],
+      ['Bag', () => this.bag()],
+      ['Map', () => this.send('map')],
+      ['Journal', () => this.send('journal')],
+      ['Character', () => this.send('skills')],
+      ['Deeds', () => this.send('deeds')],
       ['Save game', () => this.saveMenu()],
       ['Restore game', () => this.restoreMenu(false)],
       ['Settings', () => this.settingsMenu()],
       ['How to play', () => this.pageOut('How to play', this.sim.text('help').split('\n'))],
       ['Start again', () => this.confirmRestart()],
     ];
-    this.list(this.content.title, rows.map((r) => r[0]), (i) => rows[i][1]());
+    this.list(this.content.title, rows.map((r) => r[0]), (i) => {
+      // Whatever a row opens comes back here when it is closed, with the cursor on that row.
+      if (i > 0) this.after.push({ to: 'menu', sel: i });
+      rows[i][1]();
+    });
+    const m = this.modals[0];
+    if (m.k === 'list') m.sel = Math.max(0, Math.min(rows.length - 1, sel));
+  }
+
+  /** What is carried, a row for each kind of thing; choosing one shows it, and what can be done with it. */
+  bag(item?: string): void {
+    const sim = this.sim;
+    const rows = bagRows(sim);
+    const close = this.backToMenu ? 'Back' : 'Close';
+    const title = `Your bag\n${rows.length ? '' : sim.text('emptyHanded') + '\n'}Silver: ${sim.p.gold}`;
+    this.modals.unshift({
+      k: 'list', title, lead: true, items: [...rows.map((r) => r.label), close], cancel: true,
+      sel: Math.max(0, rows.findIndex((r) => r.id === item)),
+      pick: (i) => rows[i] && this.itemMenu(rows[i].id),
+    });
+  }
+
+  /** One thing from the bag: what it is, and the things that can be done with it. */
+  private itemMenu(id: string): void {
+    const sim = this.sim;
+    const cap = (s: string): string => s[0].toUpperCase() + s.slice(1);
+    const it = this.content.items[id];
+    const acts = itemActions(sim, id);
+    const n = sim.p.inv[id] ?? 0;
+    this.modals.unshift({
+      k: 'list', title: `${cap(it?.name ?? id)}${n > 1 ? ` x${n}` : ''}\n${it ? sim.lookOf(it) : ''}`, lead: true,
+      items: [...acts.map((a) => a.label), 'Back'], sel: 0, cancel: true,
+      onCancel: () => this.bag(id),
+      pick: (i) => {
+        const a = acts[i];
+        if (!a) return this.bag(id);
+        // Something that is not used up by this comes back to the bag afterwards.
+        if (!it?.consumed) this.after.push({ to: 'bag', item: id, room: sim.state.room });
+        this.send(a.line);
+      },
+    });
+  }
+
+  /** How far the map's cursor may go, as offsets from where the player stands: the country known so far, and a step beyond. */
+  private mapBounds(): [number, number, number, number] {
+    const cells = chart(this.content, this.sim.state.flags, this.sim.state.room);
+    const here = cells.find((c) => c.here) ?? { x: 0, y: 0 };
+    const xs = cells.map((c) => c.x - here.x);
+    const ys = cells.map((c) => c.y - here.y);
+    return [Math.min(-1, ...xs) - 1, Math.min(-1, ...ys) - 1, Math.max(1, ...xs) + 1, Math.max(1, ...ys) + 1];
   }
 
   private settingsMenu(sel = 0): void {
@@ -594,14 +702,12 @@ export class Shell {
           this.settingsMenu(i);
         },
       ],
-      ['Back', () => this.menu()],
+      // Back to the menu these were opened from: closing them is enough.
+      ['Back', () => {}],
     ];
     this.list('Settings', rows.map((r) => r[0]), (i) => rows[i][1](i));
     const m = this.modals[0];
-    if (m.k === 'list') {
-      m.sel = sel;
-      m.onCancel = () => this.menu();
-    }
+    if (m.k === 'list') m.sel = sel;
   }
 
   private read(slot: string): SaveFile | null {
@@ -639,7 +745,7 @@ export class Shell {
 
   private saveMenu(): void {
     const { ids, labels } = this.slotLabels(false);
-    this.list('Save to which slot?', labels, (i) => this.save(ids[i]));
+    this.list('Save to which slot?', [...labels, 'Back'], (i) => i < ids.length && this.save(ids[i]));
   }
 
   private restoreMenu(afterDeath: boolean): void {
@@ -652,12 +758,12 @@ export class Shell {
         pick: (i) => (i === 0 ? this.restoreMenu(true) : this.restart()),
       });
     };
-    this.list('Restore which game?', [...labels, 'Never mind'], (i) => {
+    this.list('Restore which game?', [...labels, 'Back'], (i) => {
       if (i >= ids.length || !this.restore(ids[i])) {
         if (i < ids.length) this.message(this.sim.text('emptySlot'));
         back();
       }
-    }, false);
+    }, !afterDeath);
   }
 
   private confirmRestart(): void {

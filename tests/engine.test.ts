@@ -1086,7 +1086,7 @@ describe('housekeeping', () => {
     sim.drain();
     sim.step([{ t: 'say', line: 'skills' }]);
     const page = sim.drain().find((e) => e.t === 'page');
-    expect(page && page.t === 'page' && page.lines.join(' ')).toContain('Foes felled: 1');
+    expect(page && page.t === 'page' && page.lines.join(' ')).toMatch(/Foes felled +1\b/);
   });
 });
 
@@ -1164,7 +1164,7 @@ describe('the menu', () => {
     const menu = shell.modal;
     if (menu?.k !== 'list') throw new Error('expected the menu');
     expect(menu.items).toContain('Map');
-    expect(menu.items.length).toBeLessThanOrEqual(10);
+    expect(menu.items.length).toBeLessThanOrEqual(11);
     menu.sel = menu.items.indexOf('Settings');
     shell.keyDown('Enter');
     const settings = shell.modal;
@@ -1708,8 +1708,9 @@ describe('finding the way', () => {
     shell.keyDown('ArrowUp');
     shell.keyDown('ArrowRight');
     expect([m.dx, m.dy]).toEqual([1, -1]);
+    // No further than a step beyond the country known so far: from the ford, one place each way.
     for (let i = 0; i < 20; i++) shell.keyDown('ArrowLeft');
-    expect(m.dx).toBe(-8);
+    expect(m.dx).toBe(-2);
     shell.keyDown('Escape');
     expect(shell.modal).toBeUndefined();
   });

@@ -52,19 +52,62 @@ function nearestChar(sim: Sim): { def: CharDef; actor: ActorState } | null {
   return best;
 }
 
-export function inventoryPage(sim: Sim): { title: string; lines: string[] } {
+/** What is carried, one row per kind of thing: its name, how many, and whether it is in hand or worn. */
+export function bagRows(sim: Sim): { id: string; label: string }[] {
   const p = sim.p;
   const c = sim.content;
-  const lines = Object.entries(p.inv).map(([id, n]) => {
-    const it = c.items[id];
-    const worn = p.weapon === id || p.shield === id ? ' (in hand)' : p.armor === id || p.trinket === id ? ' (worn)' : '';
-    // A smith's work shows as a number after the name.
-    const temper = p.weapon === id ? p.temper?.weapon : p.armor === id ? p.temper?.armor : 0;
-    return `${it?.name ?? id}${temper ? ` +${temper}` : ''}${n > 1 ? ` x${n}` : ''}${worn}`;
-  });
+  return Object.entries(p.inv)
+    .filter(([, n]) => n > 0)
+    .map(([id, n]) => {
+      const it = c.items[id];
+      const worn = p.weapon === id || p.shield === id ? ' (in hand)' : p.armor === id || p.trinket === id ? ' (worn)' : '';
+      // A smith's work shows as a number after the name.
+      const temper = p.weapon === id ? p.temper?.weapon : p.armor === id ? p.temper?.armor : 0;
+      return { id, label: `${it?.name ?? id}${temper ? ` +${temper}` : ''}${n > 1 ? ` x${n}` : ''}${worn}` };
+    });
+}
+
+export function inventoryPage(sim: Sim): { title: string; lines: string[] } {
+  const lines = bagRows(sim).map((r) => r.label);
   if (!lines.length) lines.push(sim.text('emptyHanded'));
-  lines.push('', `Gold: ${p.gold}`);
+  lines.push('', `Silver: ${sim.p.gold}`);
   return { title: 'You are carrying:', lines };
+}
+
+/** A word that, typed after a verb, means this carried thing and not something else in sight or in the pack. */
+export function itemNoun(sim: Sim, id: string): string {
+  const nouns = sim.content.items[id]?.nouns ?? [id];
+  const means = (word: string): boolean => {
+    const r = sim.parser.parse(`look ${word}`);
+    const t = r.ok && r.nouns.length === 1 ? find(sim, r.nouns[0]) : null;
+    return t?.k === 'item' && t.def.id === id;
+  };
+  return nouns.find(means) ?? nouns[0];
+}
+
+/**
+ * What can be done with something carried, each as the line a player could type for it: drink a
+ * draught, eat food, read a book, use what has a use, ready or put on what is for holding or wearing.
+ */
+export function itemActions(sim: Sim, id: string): { label: string; line: string }[] {
+  const p = sim.p;
+  const it = sim.content.items[id];
+  if (!it || !(p.inv[id] > 0)) return [];
+  const noun = itemNoun(sim, id);
+  const out: { label: string; line: string }[] = [];
+  const can = (verb: string): boolean => !!it.use && USE_VERBS[verb].includes(it.kind);
+  if (it.kind === 'potion' && can('drink')) out.push({ label: 'Drink', line: `drink ${noun}` });
+  else if (it.kind === 'food' && can('eat')) out.push({ label: 'Eat', line: `eat ${noun}` });
+  else if (it.kind === 'tome' && can('read')) out.push({ label: 'Read', line: `read ${noun}` });
+  else if (can('use')) out.push({ label: 'Use', line: `use ${noun}` });
+  if (it.kind === 'weapon' || it.kind === 'bow' || it.kind === 'shield') {
+    const held = p.weapon === id || p.shield === id;
+    out.push(held ? { label: 'Put away', line: `unequip ${noun}` } : { label: 'Ready', line: `equip ${noun}` });
+  } else if (it.kind === 'armor' || it.kind === 'trinket') {
+    const worn = p.armor === id || p.trinket === id;
+    out.push(worn ? { label: 'Take off', line: `unequip ${noun}` } : { label: 'Wear', line: `equip ${noun}` });
+  }
+  return out;
 }
 
 export function journalPage(sim: Sim): { title: string; lines: string[] } {
@@ -79,27 +122,51 @@ export function journalPage(sim: Sim): { title: string; lines: string[] } {
   return { title: 'Journal', lines };
 }
 
-export function skillsPage(sim: Sim): { title: string; lines: string[] } {
+/** A line of the character sheet that heads a section, and a break to a new box. */
+export const PAGE_BREAK = '\f';
+
+/**
+ * The character sheet: who you are now (level, health, mana, stamina, the day), what you can do
+ * (skills, and the perk each is working towards), and what you have to show for it. `heads` are
+ * the lines that head a section.
+ */
+export function skillsPage(sim: Sim): { title: string; lines: string[]; heads: number[] } {
   const p = sim.p;
   const cap = (s: string): string => s[0].toUpperCase() + s.slice(1);
-  const lines = [
-    `Level ${p.level}    Score ${sim.state.score}    Day ${Math.floor(sim.state.tick / DAY_LENGTH) + 1}`,
-    `Health ${Math.ceil(p.hp)}/${p.maxHp}  Mana ${Math.ceil(p.mp)}/${p.maxMp}`,
-    `Stamina ${Math.ceil(p.sp)}/${p.maxSp}`,
+  // Two columns in a box 34 wide: a label and value on the left, another on the right.
+  const pair = (a: string, av: string, b: string, bv: string): string => `${a.padEnd(8)} ${av.padEnd(8)}${b.padEnd(8)} ${bv}`;
+  const of = (v: number, max: number): string => `${Math.ceil(v)}/${max}`;
+  const lines: string[] = [];
+  const heads: number[] = [];
+  const head = (text: string): void => void (heads.push(lines.length), lines.push(text));
+  lines.push(
+    pair('Level', String(p.level), 'Day', String(Math.floor(sim.state.tick / DAY_LENGTH) + 1)),
+    pair('Health', of(p.hp, p.maxHp), 'Mana', of(p.mp, p.maxMp)),
+    pair('Stamina', of(p.sp, p.maxSp), 'Score', String(sim.state.score)),
     '',
-    ...Object.entries(p.skills).map(([id, s]) => {
-      // What practice will earn next, so there is something to aim at.
-      const next = sim.content.perks.filter((k) => k.skill === id && k.lv > s.lv).sort((a, b) => a.lv - b.lv)[0];
-      return `${cap(id).padEnd(9)}${String(s.lv).padStart(3)}${next ? `  ${next.name} at ${next.lv}` : ''}`;
-    }),
-  ];
+  );
+  head(`${'Skill'.padEnd(12)}  Next perk`);
+  for (const [id, s] of Object.entries(p.skills)) {
+    // What practice will earn next, so there is something to aim at.
+    const next = sim.content.perks.filter((k) => k.skill === id && k.lv > s.lv).sort((a, b) => a.lv - b.lv)[0];
+    lines.push(`${cap(id).padEnd(9)}${String(s.lv).padStart(3)}  ${next ? `${next.name} at ${next.lv}` : '-'}`);
+  }
+  lines.push(PAGE_BREAK);
   const perks = sim.content.perks.filter((k) => (p.skills[k.skill]?.lv ?? 0) >= k.lv);
-  if (perks.length) lines.push('', 'Perks: ' + perks.map((k) => k.name).join(', '));
+  head('Perks');
+  lines.push(perks.length ? '  ' + perks.map((k) => k.name).join(', ') : '  None yet: practice earns them.', '');
+  if (p.spells.length) {
+    head('Spells');
+    lines.push('  ' + p.spells.map((id) => sim.content.spells[id]?.name ?? id).join(', '), '');
+  }
+  if (p.words.length) {
+    head('Runewords');
+    lines.push('  ' + p.words.map((w) => w.replace('word:', '').toUpperCase()).join(', '), '');
+  }
+  head('Travels');
   const places = Object.keys(sim.state.flags).filter((k) => k.startsWith('seen.')).length;
-  lines.push('', `Places found: ${places}   Foes felled: ${Number(sim.state.flags.kills ?? 0)}`);
-  if (p.spells.length) lines.push('', 'Spells: ' + p.spells.join(', '));
-  if (p.words.length) lines.push('Runewords: ' + p.words.map((w) => w.replace('word:', '').toUpperCase()).join(', '));
-  return { title: 'Skills', lines };
+  lines.push(`  Places found ${String(places).padStart(6)}`, `  Foes felled  ${String(Number(sim.state.flags.kills ?? 0)).padStart(6)}`);
+  return { title: 'Character', lines, heads };
 }
 
 const DIRS: Record<string, 'n' | 's' | 'e' | 'w'> = { north: 'n', south: 's', east: 'e', west: 'w' };
@@ -211,7 +278,7 @@ function builtin(sim: Sim, verb: string, nouns: string[], afoot: string | null):
     }
     case 'skills': {
       const pg = skillsPage(sim);
-      sim.page(pg.title, pg.lines);
+      sim.page(pg.title, pg.lines, pg.heads);
       return true;
     }
     case 'use':

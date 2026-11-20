@@ -162,8 +162,9 @@ export class Sim {
   sound(id: string): void {
     this.out.push({ t: 'sound', id });
   }
-  page(title: string, lines: string[]): void {
-    this.out.push({ t: 'page', title, lines });
+  /** A page to read. `heads` are the lines that head a section; a line that is only "\f" starts a new box. */
+  page(title: string, lines: string[], heads?: number[]): void {
+    this.out.push(heads?.length ? { t: 'page', title, lines, heads } : { t: 'page', title, lines });
   }
   showMap(): void {
     this.out.push({ t: 'map' });

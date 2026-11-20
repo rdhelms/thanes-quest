@@ -5,10 +5,14 @@
 //   npm run shot -- out.png room camp 200 150 --cmd "look" --ticks 40
 //
 // Options: --night, --ticks N (run the game N ticks first), --cmd "line" (type a line; repeatable),
-// --flag name=value, --give item, --scale N, --keep (leave message boxes open).
+// --flag name=value, --give item, --scale N, --keep (leave message boxes open), --score N,
+// --silver N, --touch (rows spaced for fingers, as on a phone), --seen R (every screen within R of the valley counts as walked, for a picture of the
+// map). A --cmd of "key:..." presses a key instead of typing: "key:Escape" opens the menu, "key:Tab"
+// the bag.
 
 import { writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
+import { roomOf, wildId } from '../src/engine/frontier';
 import { GLOWING, PALETTE } from '../src/engine/palette';
 import { Renderer, SH, SW } from '../src/engine/render';
 import { Shell } from '../src/engine/shell';
@@ -72,14 +76,19 @@ function memory(): { get(k: string): string | null; set(k: string, v: string): v
   return { get: (k) => m.get(k) ?? null, set: (k, v) => void m.set(k, v) };
 }
 
-interface Opts { live: boolean; hurt: number; tick: number; night: boolean; ticks: number; cmds: string[]; flags: [string, string][]; gives: string[]; spawns: string[]; scale: number; keep: boolean }
+interface Opts { touch: boolean; score: number; silver: number; seen: number; live: boolean; hurt: number; tick: number; night: boolean; ticks: number; cmds: string[]; flags: [string, string][]; gives: string[]; spawns: string[]; scale: number; keep: boolean }
 
 export function setup(room: string, x: number | undefined, y: number | undefined, o: Opts): Shell {
   const shell = new Shell(content, memory(), true, behaviours);
   shell.modals = [];
+  shell.roomy = o.touch;
   const sim = shell.sim;
   for (const [k, v] of o.flags) sim.state.flags[k] = v === 'true' ? true : isNaN(Number(v)) ? v : Number(v);
   for (const g of o.gives) sim.give(g);
+  if (o.score) sim.state.score = o.score;
+  if (o.silver) sim.p.gold = o.silver;
+  for (let y = -o.seen; y <= o.seen; y++) for (let x = -o.seen; x <= o.seen; x++) if (roomOf(content, wildId(x, y))) sim.state.flags[`seen.${wildId(x, y)}`] = true;
+  for (const id of o.seen ? Object.keys(content.frontier?.grid ?? {}) : []) sim.state.flags[`seen.${id}`] = true;
   if (o.night) sim.state.tick = Math.round(DAY_LENGTH * 0.7);
   if (o.tick) sim.state.tick = o.tick;
   sim.enterRoom(room, x ?? 160, y ?? Math.round((sim.scene(room).walkTop + 168) / 2));
@@ -113,12 +122,16 @@ export function setup(room: string, x: number | undefined, y: number | undefined
 
 function main(): void {
   const args = process.argv.slice(2);
-  const o: Opts = { live: false, hurt: 0, tick: 0, night: false, ticks: 0, cmds: [], flags: [], gives: [], spawns: [], scale: 2, keep: false };
+  const o: Opts = { touch: false, score: 0, silver: 0, seen: 0, live: false, hurt: 0, tick: 0, night: false, ticks: 0, cmds: [], flags: [], gives: [], spawns: [], scale: 2, keep: false };
   const rest: string[] = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--night') o.night = true;
     else if (a === '--live') o.live = true;
+    else if (a === '--seen') o.seen = Number(args[++i]);
+    else if (a === '--score') o.score = Number(args[++i]);
+    else if (a === '--touch') o.touch = true;
+    else if (a === '--silver') o.silver = Number(args[++i]);
     else if (a === '--hurt') o.hurt = Number(args[++i]);
     else if (a === '--keep') o.keep = true;
     else if (a === '--ticks') o.ticks = Number(args[++i]);

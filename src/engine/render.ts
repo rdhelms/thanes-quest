@@ -39,6 +39,39 @@ const MARKS: Record<string, { rows: string[]; ramp: number; tone: number }> = {
   barrow: { rows: ['.......', '..XXX..', '.XXXXX.', 'XXXXXXX', 'XXX.XXX', 'XXX.XXX', '.......'], ramp: R.glow, tone: 1 },
 };
 
+/** The map's tiles: their size, and how many are in view. */
+const MAP = { cw: 26, ch: 16, cols: 11, rows: 7 };
+
+/** The ground each kind of place is coloured on the map, as a material and a brightness. */
+const GROUND: Record<string, [number, number]> = {
+  open: [R.snow, 0.82],
+  village: [R.snow, 0.82],
+  farm: [R.snow, 0.82],
+  camp: [R.snow, 0.78],
+  steading: [R.snow, 0.82],
+  tower: [R.snow, 0.74],
+  barrow: [R.snow, 0.74],
+  shrine: [R.snow, 0.86],
+  gate: [R.ice, 0.85],
+  wood: [R.pine, 0.86],
+  dead: [R.earth, 0.86],
+  mere: [R.ice, 0.62],
+  water: [R.water, 0.82],
+  crag: [R.rock, 0.74],
+  stone: [R.rock, 0.8],
+};
+
+/** Marks whose own colour would vanish into their ground are inked darker on the map. */
+const INK: Record<string, [number, number]> = {
+  wood: [R.pine, 0],
+  mere: [R.water, 1],
+  water: [R.ice, 3],
+  crag: [R.rock, 0],
+  stone: [R.rock, 0],
+  dead: [R.wood, 0],
+  gate: [R.water, 1],
+};
+
 export class Renderer {
   readonly fb = new Uint8Array(SW * SH);
   private pics = new Map<string, Uint8Array>();
@@ -48,16 +81,16 @@ export class Renderer {
   /** The message box on screen, if any: it is not dimmed by night. */
   overlay: { x: number; y: number; w: number; h: number } | null = null;
   /** Where the rows of the list on screen are, so a tap can pick one. */
-  private listRows: { x: number; y: number; w: number; n: number; pitch: number } | null = null;
+  private listRows: { x: number; y: number; w: number; n: number; pitch: number; first: number } | null = null;
 
   /** Where the map's grid is on screen, so a tap can pick a cell. */
-  private mapAt: { x: number; y: number; cw: number; ch: number; cols: number; rows: number } | null = null;
+  private mapAt: { x: number; y: number; cw: number; ch: number; cols: number; rows: number; x0: number; y0: number } | null = null;
 
   /** Which cell of the open map a framebuffer point is in, as an offset from the middle; or null. */
   hitMap(x: number, y: number): [number, number] | null {
     const m = this.mapAt;
     if (!m || x < m.x || y < m.y || x >= m.x + m.cols * m.cw || y >= m.y + m.rows * m.ch) return null;
-    return [Math.floor((x - m.x) / m.cw) - (m.cols >> 1), Math.floor((y - m.y) / m.ch) - (m.rows >> 1)];
+    return [Math.floor((x - m.x) / m.cw) + m.x0, Math.floor((y - m.y) / m.ch) + m.y0];
   }
 
   /** Which row of the open list contains a framebuffer point, or -1. */
@@ -65,7 +98,7 @@ export class Renderer {
     const r = this.listRows;
     if (!r || x < r.x || x >= r.x + r.w || y < r.y - 6 || y >= r.y + r.n * r.pitch + 6) return -1;
     // A finger is not a pointer: take the nearest row.
-    return Math.max(0, Math.min(r.n - 1, Math.floor((y - r.y) / r.pitch)));
+    return r.first + Math.max(0, Math.min(r.n - 1, Math.floor((y - r.y) / r.pitch)));
   }
 
   private pic(id: string, sc: Scene): Uint8Array {
@@ -180,9 +213,44 @@ export class Renderer {
 
   private bar(x: number, label: string, v: number, max: number, colour: number): void {
     drawText(this.fb, SW, x, 0, label, UI.black);
-    this.fill(x + 9, 1, 28, 6, UI.black);
-    this.fill(x + 10, 2, 26, 4, UI.grey);
-    this.fill(x + 10, 2, Math.round((26 * Math.max(0, Math.min(max, v))) / max), 4, colour);
+    this.fill(x + 9, 1, 26, 6, UI.black);
+    this.fill(x + 10, 2, 24, 4, UI.grey);
+    this.fill(x + 10, 2, Math.round((24 * Math.max(0, Math.min(max, v))) / max), 4, colour);
+  }
+
+  /**
+   * The line across the top. From the left: a sun or a moon for the hour, the score, the silver
+   * in the purse (a silver coin, the amount and the word), then health, mana and stamina. Each has
+   * a place of its own, wide enough for four figures, so nothing runs into anything else.
+   */
+  private statusLine(shell: Shell): void {
+    const { fb } = this;
+    const sim = shell.sim;
+    const p = sim.p;
+    this.fill(0, 0, SW, 8, UI.white);
+    // A small sun or moon, so the hour can be told at a glance: night matters out in the wild.
+    const moon = sim.daylight() < 0.5;
+    for (let dy = -3; dy <= 3; dy++)
+      for (let dx = -3; dx <= 3; dx++) {
+        const d = dx * dx + dy * dy;
+        if (d > 10 || (moon && (dx + 2) * (dx + 2) + (dy + 1) * (dy + 1) < 8)) continue;
+        fb[(4 + dy) * SW + 5 + dx] = moon ? spriteColour(R.blue, 1) : d > 5 ? UI.gold : spriteColour(R.fire, 3);
+      }
+    // No ceiling is shown: the world is meant to keep growing, and the score with it.
+    drawText(fb, SW, 14, 0, `Score: ${sim.state.score}`, UI.black);
+    // Silver in the purse: a silver coin with a dark rim, then how many.
+    const cx = 109;
+    for (let dy = -3; dy <= 3; dy++)
+      for (let dx = -3; dx <= 3; dx++) {
+        const d = dx * dx + dy * dy;
+        if (d > 10) continue;
+        fb[(4 + dy) * SW + cx + dx] = d > 5 ? spriteColour(R.metal, 1) : (dx + dy < -1 ? spriteColour(R.metal, 3) : spriteColour(R.metal, 2));
+      }
+    drawText(fb, SW, cx + 6, 0, `${p.gold} silver`, UI.black);
+    // Badly hurt, the health bar flashes: it is easy to miss in the middle of a fight.
+    this.bar(206, 'H', p.hp, p.maxHp, p.hp < p.maxHp * 0.3 && !p.dead && (shell.uiTick >> 2) & 1 ? UI.white : UI.health);
+    this.bar(244, 'M', p.mp, p.maxMp, UI.mana);
+    this.bar(282, 'S', p.sp, p.maxSp, UI.stamina);
   }
 
   private box(cols: number, rows: number): { x: number; y: number } {
@@ -221,13 +289,16 @@ export class Renderer {
       // A long message continues in the next box.
       if (m.more) drawText(fb, SW, o.x + (cols - 6) * 8, o.y + lines.length * 9, '(more)', UI.red);
     } else if (m.k === 'map') {
-      this.drawMap(shell, m.dx, m.dy);
+      this.drawMap(shell, m);
     } else if (m.k === 'page') {
-      const body = m.lines.flatMap((l) => (l ? wrap(l, 34) : ['']));
-      const lines = [m.title, '', ...body].slice(0, 15);
-      const o = this.box(34, lines.length + (m.more ? 1 : 0));
-      lines.forEach((l, i) => drawText(fb, SW, o.x, o.y + i * 9, l, i === 0 ? UI.red : UI.black));
-      if (m.more) drawText(fb, SW, o.x + 28 * 8, o.y + lines.length * 9, '(more)', UI.red);
+      const body = m.lines.flatMap((l, n) => (l ? wrap(l, 34) : ['']).map((text) => ({ text, head: !!m.heads?.includes(n) })));
+      const lines = [{ text: m.title, head: true }, { text: '', head: false }, ...body].slice(0, 15);
+      // A last row: "(more)" if the page goes on, or else how to leave it.
+      const o = this.box(34, lines.length + 1);
+      lines.forEach((l, i) => drawText(fb, SW, o.x, o.y + i * 9, l.text, l.head ? UI.red : UI.black));
+      const foot = lines.length * 9;
+      if (m.more) drawText(fb, SW, o.x + 28 * 8, o.y + foot, '(more)', UI.red);
+      else this.hint(o.x + 34 * 8, o.y + foot, this.leave(shell));
     } else {
       if (m.banner) {
         // The game's name, large, with a drop shadow.
@@ -237,82 +308,187 @@ export class Renderer {
       }
       const title = wrap(m.title, 32);
       const cols = Math.min(37, Math.max(...title.map((l) => l.length), ...m.items.map((l) => l.length + 2)));
+      // As many rows as the box can hold; a longer list scrolls with the cursor.
+      const room = 16 - title.length - 1;
       // On touch screens the rows are spaced out, as far as the box allows.
-      const pitch = shell.roomy ? Math.max(9, Math.min(14, Math.floor((150 - (title.length + 1) * 9) / m.items.length))) : 9;
-      const o = this.box(cols, title.length + 1 + Math.ceil((m.items.length * pitch) / 9));
-      title.forEach((l, i) => drawText(fb, SW, o.x, o.y + i * 9, l, UI.black));
+      const pitch = shell.roomy ? Math.max(9, Math.min(14, Math.floor((150 - (title.length + 1) * 9) / Math.min(m.items.length, room)))) : 9;
+      const n = Math.min(m.items.length, Math.max(1, Math.floor((room * 9) / pitch)));
+      let first = Math.max(0, Math.min(m.items.length - n, m.top ?? 0));
+      if (m.sel < first) first = m.sel;
+      if (m.sel >= first + n) first = m.sel - n + 1;
+      if (n < m.items.length || m.top !== undefined) m.top = first;
+      const o = this.box(cols, title.length + 1 + Math.ceil((n * pitch) / 9));
+      title.forEach((l, i) => drawText(fb, SW, o.x, o.y + i * 9, l, m.lead && i === 0 ? UI.red : UI.black));
+      if (m.lead) this.fill(o.x, o.y + 8, title[0].length * 8, 1, UI.red);
       const top = o.y + (title.length + 1) * 9 + ((pitch - 9) >> 1);
-      this.listRows = { x: o.x - 2, y: top - 1 - ((pitch - 9) >> 1), w: cols * 8 + 4, n: m.items.length, pitch };
-      m.items.forEach((it, i) => {
-        const y = top + i * pitch;
+      this.listRows = { x: o.x - 2, y: top - 1 - ((pitch - 9) >> 1), w: cols * 8 + 4, n, pitch, first };
+      m.items.slice(first, first + n).forEach((it, k) => {
+        const i = first + k;
+        const y = top + k * pitch;
         const on = i === m.sel;
         if (on) this.fill(o.x - 2, y - 1 - ((pitch - 9) >> 1), cols * 8 + 4, pitch, UI.black);
         drawText(fb, SW, o.x, y, (on ? '> ' : '  ') + it.slice(0, 35), on ? UI.white : UI.black);
       });
+      // Small arrows at the right-hand edge say there are more rows above or below.
+      const ax = o.x + cols * 8 + 1;
+      const arrow = (y: number, down: boolean): void => {
+        for (let r = 0; r < 3; r++) this.fill(ax - r, y + (down ? r : 2 - r), 1 + 2 * r, 1, UI.red);
+      };
+      if (first > 0) arrow(top, false);
+      if (first + n < m.items.length) arrow(top + (n - 1) * pitch + 4, true);
     }
   }
 
-  /** The map: every place walked so far, with the country it is known to lead to marked "?". */
-  private drawMap(shell: Shell, curX: number, curY: number): void {
+  /** How to leave what is open, in a word or two: back to the menu, or out to the game. */
+  private leave(shell: Shell): string {
+    if (shell.roomy) return shell.backToMenu ? 'Tap: back' : 'Tap: close';
+    return shell.backToMenu ? 'Esc: back' : 'Esc: close';
+  }
+
+  /** A quiet note, right-aligned to end at x. */
+  private hint(x: number, y: number, text: string): void {
+    drawText(this.fb, SW, x - text.length * 8, y, text, UI.dim);
+  }
+
+  /** A rectangle's outline, `t` pixels thick. */
+  private frame(x: number, y: number, w: number, h: number, c: number, t = 1): void {
+    this.fill(x, y, w, t, c);
+    this.fill(x, y + h - t, w, t, c);
+    this.fill(x, y, t, h, c);
+    this.fill(x + w - t, y, t, h, c);
+  }
+
+  /** The country under the map's marks, kept between frames: it only changes with what is known, or with scrolling. */
+  private mapSheet: { key: string; px: Uint8Array } | null = null;
+
+  /**
+   * The map: one sheet of country, a tile for every place walked so far, each tile coloured for
+   * its ground and carrying its mark. Neighbouring ground runs together with a ragged edge, and
+   * what is known of but not yet walked shows as a haze at the edge of the known. The view follows
+   * the cursor when there is more country than fits.
+   */
+  private drawMap(shell: Shell, m: Extract<NonNullable<Shell['modal']>, { k: 'map' }>): void {
     const { fb } = this;
     const sim = shell.sim;
     const cells = chart(sim.content, sim.state.flags, sim.state.room);
     const here = cells.find((c) => c.here);
-    const CW = 16;
-    const CH = 12;
-    const COLS = 17;
-    const ROWS = 9;
-    const o = this.box(34, 15);
-    drawText(fb, SW, o.x, o.y, 'The country so far', UI.red);
-    const top = o.y + 13;
-    this.fill(o.x, top, COLS * CW, ROWS * CH, spriteColour(R.stone, 1));
+    const { cw: CW, ch: CH, cols: COLS, rows: ROWS } = MAP;
+    const hx = COLS >> 1;
+    const hy = ROWS >> 1;
     const cx = here?.x ?? 0;
     const cy = here?.y ?? 0;
+    // Where the view is: the whole of the known country when it fits, else following the cursor.
+    const xs = cells.map((c) => c.x - cx);
+    const ys = cells.map((c) => c.y - cy);
+    const follow = (v: number | undefined, cur: number, lo: number, hi: number, half: number): number => {
+      if (v === undefined) v = hi - lo <= 2 * half ? Math.round((lo + hi) / 2) : Math.max(lo + half, Math.min(hi - half, 0));
+      if (cur < v - half + 1) v = cur + half - 1;
+      if (cur > v + half - 1) v = cur - half + 1;
+      return v;
+    };
+    m.vx = follow(m.vx, m.dx, Math.min(0, ...xs), Math.max(0, ...xs), hx);
+    m.vy = follow(m.vy, m.dy, Math.min(0, ...ys), Math.max(0, ...ys), hy);
+    // The first cell in view, on the map's own grid.
+    const x0 = cx + m.vx - hx;
+    const y0 = cy + m.vy - hy;
+
+    const o = this.box(36, 16);
+    drawText(fb, SW, o.x, o.y, 'The country so far', UI.red);
+    drawText(fb, SW, o.x + 36 * 8 - 8, o.y, 'N', UI.black);
+    const left = o.x + 1;
+    const top = o.y + 11;
+    const W = COLS * CW;
+    const H = ROWS * CH;
+    this.frame(left - 1, top - 1, W + 2, H + 2, UI.black);
+    const at = new Map(cells.map((c) => [`${c.x},${c.y}`, c]));
+
+    // The ground, drawn once for what is known and where the view is.
+    const key = `${x0},${y0}|${cells.map((c) => `${c.x},${c.y},${c.mark}`).join(';')}`;
+    if (this.mapSheet?.key !== key) {
+      const px = new Uint8Array(W * H);
+      const dark = spriteColour(R.stone, 1);
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < W; x++) {
+          // A point on the map's own grid, so the texture and the edges stay put as the view moves.
+          const gx = x0 * CW + x;
+          const gy = y0 * CH + y;
+          // Borders between one kind of ground and the next wander a little, as country does.
+          const wx = (gx + (vnoise(gx * 0.11, gy * 0.11, 31) - 0.5) * CW * 0.55) / CW;
+          const wy = (gy + (vnoise(gx * 0.11, gy * 0.11, 37) - 0.5) * CH * 0.7) / CH;
+          const c = at.get(`${Math.floor(wx)},${Math.floor(wy)}`);
+          let colour = dark;
+          if (c && !c.mark) {
+            // Known of, not walked: a haze, thinning away from the known.
+            if (vnoise(gx * 0.3, gy * 0.3, 41) * 0.4 + 0.08 > bayer4(gx, gy)) colour = spriteColour(R.stone, 2);
+          } else if (c) {
+            const [ramp, shade] = GROUND[c.mark] ?? GROUND.open;
+            colour = sceneColour(ramp, shade + (vnoise(gx * 0.2, gy * 0.2, 43) - 0.5) * 0.18, gx, gy);
+          }
+          px[y * W + x] = colour;
+        }
+      this.mapSheet = { key, px };
+    }
+    const sheet = this.mapSheet.px;
+    for (let y = 0; y < H; y++) fb.set(sheet.subarray(y * W, (y + 1) * W), (top + y) * SW + left);
+
+    // The marks, and what stands out: places with names, where you have been sent, where you are.
     for (const c of cells) {
-      const col = c.x - cx + (COLS >> 1);
-      const row = c.y - cy + (ROWS >> 1);
+      const col = c.x - x0;
+      const row = c.y - y0;
       if (col < 0 || col >= COLS || row < 0 || row >= ROWS) continue;
-      const x = o.x + col * CW;
+      const x = left + col * CW;
       const y = top + row * CH;
-      // Somewhere you have been sent: a gold frame, whether or not you have found it yet.
-      if (c.goal) this.fill(x, y, CW, CH, UI.gold);
-      if (!c.mark) {
-        this.fill(x + 1, y + 1, CW - 2, CH - 2, spriteColour(R.stone, 2));
-        drawText(fb, SW, x + 5, y + 2, c.goal ? '!' : '?', c.goal ? UI.gold : spriteColour(R.rock, 2));
-        continue;
+      if (c.mark) {
+        const g = MARKS[c.mark] ?? MARKS.open;
+        const [ramp, tone] = INK[c.mark] ?? [g.ramp, g.tone];
+        // A place with a name of its own is drawn twice the size, with a dark edge, so it stands out from the country round it.
+        const s = c.named ? 2 : 1;
+        const mx = x + ((CW - 7 * s) >> 1);
+        const my = y + ((CH - 7 * s) >> 1);
+        const on = (i: number, j: number): boolean => i >= 0 && i < 7 && j >= 0 && j < 7 && g.rows[j][i] === 'X';
+        if (c.named)
+          for (let j = -1; j <= 7; j++)
+            for (let i = -1; i <= 7; i++)
+              if (!on(i, j) && (on(i - 1, j) || on(i + 1, j) || on(i, j - 1) || on(i, j + 1))) this.fill(mx + i * s, my + j * s, s, s, spriteColour(R.ink, 0));
+        for (let j = 0; j < 7; j++) for (let i = 0; i < 7; i++) if (on(i, j)) this.fill(mx + i * s, my + j * s, s, s, spriteColour(ramp, tone));
       }
-      this.fill(x + 1, y + 1, CW - 2, CH - 2, spriteColour(R.snow, c.mark === 'mere' || c.mark === 'water' ? 2 : 3));
-      const g = MARKS[c.mark] ?? MARKS.open;
-      const ink = spriteColour(g.ramp, g.tone);
-      g.rows.forEach((line, j) => {
-        for (let i = 0; i < 7; i++) if (line[i] === 'X') fb[(y + 3 + j) * SW + x + 5 + i] = ink;
-      });
-      // Where you are: a frame that blinks.
-      if (c.here && (shell.uiTick >> 3) & 1) {
-        this.fill(x, y, CW, 1, UI.red);
-        this.fill(x, y + CH - 1, CW, 1, UI.red);
-        this.fill(x, y, 1, CH, UI.red);
-        this.fill(x + CW - 1, y, 1, CH, UI.red);
+      if (c.goal) {
+        // Somewhere you have been sent: a gold pennant on a pole, at the tile's corner.
+        const fx = x + CW - 8;
+        this.fill(fx - 1, y + 1, 3, 13, UI.black);
+        this.fill(fx, y + 2, 1, 11, spriteColour(R.wood, 3));
+        for (let r = 0; r < 5; r++) {
+          const len = 6 - Math.abs(r - 2) * 2;
+          this.fill(fx + 1, y + 2 + r, len + 1, 1, UI.black);
+          this.fill(fx + 1, y + 2 + r, len, 1, UI.gold);
+        }
       }
-    }
-    drawText(fb, SW, o.x + COLS * CW - 8, top - 10, 'N', UI.black);
-    // The cursor, and what lies under it.
-    const kx = o.x + (curX + (COLS >> 1)) * CW;
-    const ky = top + (curY + (ROWS >> 1)) * CH;
-    if (curX || curY) {
-      // White outside and black inside, so it shows against any tile.
-      for (const [inset, colour] of [[0, UI.white], [1, UI.black]] as const) {
-        this.fill(kx + inset, ky + inset, CW - 2 * inset, 1, colour);
-        this.fill(kx + inset, ky + CH - 1 - inset, CW - 2 * inset, 1, colour);
-        this.fill(kx + inset, ky + inset, 1, CH - 2 * inset, colour);
-        this.fill(kx + CW - 1 - inset, ky + inset, 1, CH - 2 * inset, colour);
+      // Where you are: a red frame, its inside lit and dark by turns.
+      if (c.here) {
+        this.frame(x - 2, y - 2, CW + 4, CH + 4, (shell.uiTick >> 3) & 1 ? UI.white : UI.red);
+        this.frame(x - 1, y - 1, CW + 2, CH + 2, UI.red, 2);
       }
     }
-    this.mapAt = { x: o.x, y: top, cw: CW, ch: CH, cols: COLS, rows: ROWS };
-    const under = cells.find((c) => c.x === cx + curX && c.y === cy + curY);
-    const away = [curY < 0 ? `${-curY} north` : curY > 0 ? `${curY} south` : '', curX < 0 ? `${-curX} west` : curX > 0 ? `${curX} east` : ''].filter(Boolean).join(', ');
-    const name = !(curX || curY) ? (here ? here.name : sim.room.name) : under?.mark ? under.name : under ? (under.goal ? 'Where you have been sent' : 'Not yet walked') : 'Unknown country';
-    drawText(fb, SW, o.x, top + ROWS * CH + 5, (away ? `${name} (${away})` : name).slice(0, 34), UI.black);
+    // The cursor: white outside and black inside, so it shows against any ground.
+    if (m.dx || m.dy) {
+      const kx = left + (m.dx + cx - x0) * CW;
+      const ky = top + (m.dy + cy - y0) * CH;
+      this.frame(kx - 1, ky - 1, CW + 2, CH + 2, UI.white);
+      this.frame(kx, ky, CW, CH, UI.black);
+    }
+    // The frame is drawn again over anything that strayed onto it.
+    this.frame(left - 1, top - 1, W + 2, H + 2, UI.black);
+    this.mapAt = { x: left, y: top, cw: CW, ch: CH, cols: COLS, rows: ROWS, x0: x0 - cx, y0: y0 - cy };
+
+    const under = at.get(`${cx + m.dx},${cy + m.dy}`);
+    const away = [m.dy < 0 ? `${-m.dy} north` : m.dy > 0 ? `${m.dy} south` : '', m.dx < 0 ? `${-m.dx} west` : m.dx > 0 ? `${m.dx} east` : ''].filter(Boolean).join(', ');
+    const name = !(m.dx || m.dy) ? (here ? here.name : sim.room.name) : under?.mark ? under.name : under ? (under.goal ? 'Where you have been sent' : 'Not yet walked') : 'Unknown country';
+    // Too long to say in full, the way there is shortened to compass letters.
+    const brief = [m.dy ? `${Math.abs(m.dy)}${m.dy < 0 ? 'N' : 'S'}` : '', m.dx ? `${Math.abs(m.dx)}${m.dx < 0 ? 'W' : 'E'}` : ''].filter(Boolean).join(' ');
+    const said = !away ? name : `${name} (${away})`.length <= 36 ? `${name} (${away})` : `${name.slice(0, 36 - brief.length - 3)} (${brief})`;
+    drawText(fb, SW, o.x, top + H + 4, said.slice(0, 36), UI.black);
+    const how = shell.roomy ? `Tap a place to name it. ${this.leave(shell)}` : `Arrows look about. ${this.leave(shell)}`;
+    this.hint(o.x + 36 * 8, top + H + 13, how);
   }
 
   /** On some nights the sky itself is lit: slow green curtains, high up. */
@@ -465,30 +641,7 @@ export class Renderer {
       }
     }
 
-    // Status line
-    this.fill(0, 0, SW, 8, UI.white);
-    // No ceiling is shown: the world is meant to keep growing, and the score with it.
-    drawText(fb, SW, 8, 0, `Score: ${st.score}`, UI.black);
-    // Silver in the purse: a coin, and how many.
-    const purse = String(p.gold);
-    const px0 = 164 - purse.length * 8 - 9;
-    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (dx * dx + dy * dy <= 5) fb[(4 + dy) * SW + px0 + 3 + dx] = dx * dx + dy * dy <= 1 ? spriteColour(R.gold, 3) : spriteColour(R.gold, 1);
-    drawText(fb, SW, px0 + 8, 0, purse, UI.black);
-    // A small sun or moon, so the hour can be told at a glance: night matters out in the wild.
-    const light = sim.daylight();
-    const sx = 172;
-    for (let dy = -3; dy <= 3; dy++)
-      for (let dx = -3; dx <= 3; dx++) {
-        const d = dx * dx + dy * dy;
-        if (d > 10) continue;
-        const moon = light < 0.5;
-        if (moon && (dx + 2) * (dx + 2) + (dy + 1) * (dy + 1) < 8) continue;
-        fb[(4 + dy) * SW + sx + dx] = moon ? spriteColour(R.blue, 1) : d > 5 ? UI.gold : spriteColour(R.fire, 3);
-      }
-    // Badly hurt, the health bar flashes: it is easy to miss in the middle of a fight.
-    this.bar(196, 'H', p.hp, p.maxHp, p.hp < p.maxHp * 0.3 && !p.dead && (shell.uiTick >> 2) & 1 ? UI.white : UI.health);
-    this.bar(238, 'M', p.mp, p.maxMp, UI.mana);
-    this.bar(280, 'S', p.sp, p.maxSp, UI.stamina);
+    this.statusLine(shell);
 
     // Typing line
     this.fill(0, PIC_Y + PH, SW, SH - PIC_Y - PH, UI.black);

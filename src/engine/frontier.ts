@@ -97,6 +97,8 @@ export interface MapCell {
   here: boolean;
   /** Somewhere the player has been asked to go. */
   goal?: boolean;
+  /** A place with a name of its own: made by hand, or where one of the hand-written sights stands. */
+  named?: boolean;
 }
 
 /** The map as the player knows it: everywhere visited, and the unvisited places those lead to. */
@@ -113,6 +115,7 @@ export function chart(c: Content, flags: Record<string, unknown>, here: string):
     const def = roomOf(c, id)!;
     const [x, y] = (c.frontier?.grid[id] ?? parseWild(id))!;
     cells.set(key(x, y), { x, y, mark: def.mark ?? 'open', name: def.name, here: false });
+    if (c.frontier?.grid[id] || sights(c).has(id)) cells.get(key(x, y))!.named = true;
   }
   for (const id of outdoors) {
     const [x, y] = (c.frontier?.grid[id] ?? parseWild(id))!;
