@@ -360,13 +360,13 @@ describe("the King's cup", () => {
     for (const f of flags) sim.state.flags[f] = true;
     return sim;
   };
-  const SAGAS = [[], ['hearth.lit', 'king.dead'], ['hearth.lit', 'king.dead', 'crown.unmade'], ['hearth.lit', 'king.dead', 'crown.unmade', 'dead.rested']];
+  const SAGAS = [[], ['hearth.lit', 'king.dead'], ['hearth.lit', 'king.dead', 'crown.unmade'], ['hearth.lit', 'king.dead', 'crown.unmade', 'fenn.told', 'dead.rested', 'marta.rest', 'fenn.rest']];
 
   it('is a thing on the table, and what it means changes as the sagas are told', () => {
     const looks = SAGAS.map((f) => type(hall(...f), 'look at the cup')[0]);
-    expect(looks[0]).toContain('Nobody in Hollowmere knows who it is for');
+    expect(looks[0]).toContain('nobody in Hollowmere can tell you why');
     expect(looks[2]).toContain('what the King asked for');
-    expect(looks[3]).toContain('only a kindness');
+    expect(looks[3]).toContain('filled fresh');
     expect(new Set(looks).size).toBe(3);
     // Nobody drinks from it, and what Marta says about that is the last thing to change.
     expect(type(hall(), 'drink from the cup')[0]).toContain('not for anybody');
@@ -383,8 +383,11 @@ describe("the King's cup", () => {
     [end.p.x, end.p.y] = [206, 120];
     expect(type(end, 'ask elder about the king')[0]).toContain('The cup stays');
     end.state.flags['rhyme.heard'] = true;
-    expect(type(end, 'sing the rhyme')[0]).toContain('a bill that has been paid');
+    expect(type(end, 'sing the rhyme')[0]).toContain('says the last line with you');
     expect(type(game('ford'), 'sing the rhyme')[0]).toContain('do not know the rhymes');
+    // Nobody speaks of what they have not yet been told: the third saga is over before Marta hears of it.
+    const unheard = hall('hearth.lit', 'king.dead', 'crown.unmade', 'dead.rested');
+    expect(type(unheard, 'drink the cup')[0]).toContain('Not even you');
   });
 
   it('can be asked about, and so can the rhyme, of everybody in Hollowmere', () => {
