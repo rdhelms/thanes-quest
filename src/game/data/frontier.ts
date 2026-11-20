@@ -1,7 +1,178 @@
 // The country beyond the map. These are the settings and the wording the engine's generator
 // draws on; the screens themselves are made as the player walks into them.
 
-import type { FrontierDef } from '../../engine/types';
+import type { FrontierDef, SightDef } from '../../engine/types';
+
+// Things written by hand that stand, once each, somewhere out in the generated country. None is
+// needed for anything. Each has something to read, something to try, and something that only
+// ORUN shows. (No score is given for any of them: they are found, not earned.)
+const near = (id: string) => ({ near: id });
+const sights: SightDef[] = [
+  {
+    id: 'kettle', name: 'The Cold Camp', biomes: ['pines', 'deadwood', 'mere'], minDepth: 1,
+    seen: 'Somebody camped here once: a ring of stones, long cold, with an iron kettle still hanging over it.',
+    prop: { t: 'campfire', v: 'cold' },
+    when: [{ if: [{ flag: 'sight.kettle' }], prop: { t: 'campfire', v: 'kettle' } }],
+    thing: {
+      nouns: ['hearth', 'inn'], try: ['light fire'],
+      look: 'A ring of blackened stones under a tripod of green sticks, and an iron kettle hanging from it with its lid frozen on. Whatever was in it is in it still. Whoever lit this fire meant to be back before it boiled.',
+      lookWhen: [{ if: [{ flag: 'sight.kettle' }], look: 'The fire is burning down and the kettle is empty. You leave both as near as you can to how you found them, in case.' }],
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The snow gives up its footprints. One pair of boots, round and round the fire, as a person walks who is keeping warm and waiting. Then, once, straight off into the trees, at a run. They do not come back the same way. They do not come back.' }] },
+      { on: ['light hearth', 'light inn', 'use hearth', 'light', 'cast flame'], if: [{ flag: 'sight.kettle' }], do: [{ say: 'It is burning. Let it burn down by itself. Somebody may yet see the smoke.' }] },
+      {
+        on: ['light hearth', 'light inn', 'use hearth', 'light', 'cast flame'], if: [near('kettle')],
+        do: [{ set: 'sight.kettle' }, { heal: 20 }, { sound: 'take' }, { say: 'The sticks catch at the first spark. Out here, flames behave. You sit on your heels and wait, and after a while the kettle begins to tick, and then to sing. It is tea: black, stewed, and some winters old. You drink all of it. For as long as that takes, somebody is expected back at this fire, and it is you.' }],
+      },
+      { on: ['drink inn', 'open inn', 'drink'], if: [{ flag: 'sight.kettle' }], do: [{ say: 'Empty. You saw to that.' }] },
+      { on: ['drink inn', 'open inn', 'drink'], do: [{ say: 'The lid is frozen on, and what is under it is a brown block of ice. It wants a fire.' }] },
+      { on: ['take inn', 'take hearth'], do: [{ say: 'It belongs to whoever is coming back for it.' }] },
+    ],
+  },
+  {
+    id: 'fingerpost', name: 'The Fingerpost', biomes: ['open', 'pines'], minDepth: 1,
+    seen: 'A signpost stands here, at a place where, to judge by the snow, no roads meet.',
+    prop: { t: 'signpost' },
+    thing: { nouns: ['sign'], try: ['read sign'], look: 'An oak post with three arms, each cut to a point and carved deep. The names are worn, but they can still be read.' },
+    rules: [
+      { on: 'orun', do: [{ say: "ORUN. Under the snow at the foot of the post lies a fourth arm, snapped off short. It says THE KING'S ROAD. Under that, in the hand that carved all the rest: KEEP OFF IT." }] },
+      {
+        on: ['read sign', 'pet sign'], if: [near('fingerpost'), { not: { flag: 'sight.fingerpost' } }],
+        do: [{ set: 'sight.fingerpost' }, { run: 'study', arg: 12 }, { say: 'One arm says HOLLOWMERE, and points more or less the right way. One says THE FERRY, and points toward the sunrise, where there is no river. The third says ELDMARK, THREE DAYS. Under that somebody has cut, later and smaller: NOT ANY MORE.' }],
+      },
+      { on: ['read sign', 'pet sign'], if: [near('fingerpost')], do: [{ say: 'HOLLOWMERE. THE FERRY. ELDMARK, THREE DAYS; and under it, NOT ANY MORE.' }] },
+      { on: ['read sign'], do: [{ say: 'You cannot make it out from here.' }] },
+      { on: ['take sign', 'push sign', 'pull sign', 'attack sign'], do: [{ say: 'It has pointed the same three ways for longer than Hollowmere has had roofs. You leave it to its work.' }] },
+    ],
+  },
+  {
+    id: 'kingsroad', name: 'The Road Stone', biomes: ['open', 'pines'], minDepth: 2, side: 'w',
+    seen: 'A squared stone stands in the snow here, too regular to be a boulder.',
+    prop: { t: 'stone', h: 22 },
+    thing: { nouns: ['menhir'], try: ['read stone'], look: 'A waist-high stone, squared on four sides, with a single line cut down the face of it, like a road seen from a height. No number. No name.' },
+    rules: [
+      {
+        on: 'orun', if: [{ flag: 'fenn.told' }],
+        do: [{ say: 'ORUN. The snow goes to glass, and under it is a road: flagged, straight as a rule, running out of the barrow country and into the west. It is exactly as wide as one man walking, and the flags are worn in a single line down the middle. You know now who walked it, and what he went to ask for.' }],
+      },
+      { on: 'orun', do: [{ say: 'ORUN. The snow goes to glass, and under it is a road: flagged, straight as a rule, running out of the barrow country and into the west. It was never built for carts. It is exactly as wide as one man walking, and the flags are worn in a single line down the middle, as if he had walked it more than once.' }] },
+      {
+        on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('kingsroad'), { not: { flag: 'sight.kingsroad' } }],
+        do: [{ set: 'sight.kingsroad' }, { run: 'study', arg: 12 }, { say: 'You put your palm to the cut line. It is no rune, and it teaches you nothing. It only points along itself: east, the way you came, and west, the way the wind comes from.' }],
+      },
+      { on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('kingsroad')], do: [{ say: 'A line, cut deep, pointing east and west. That is all it has to say.' }] },
+      { on: ['read menhir', 'pet menhir', 'read inscription'], do: [{ say: 'You are not close enough.' }] },
+    ],
+  },
+  {
+    id: 'sledge', name: 'The Sledge', biomes: ['open', 'mere'], minDepth: 2,
+    seen: 'A loaded sledge stands frozen into a drift, with nobody near it.',
+    prop: { t: 'sledge' },
+    thing: {
+      nouns: ['sledge'], try: ['open sledge'],
+      look: 'A sledge loaded for a long journey and then left: bedding, a churn, and a cradle lashed on top of all. The traces have been cut, not broken. Whatever pulled it was let go.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The drift clears like breath off glass. The sledge came out of the east, a long way, from somewhere that is not there any more. From here three pairs of feet go on without it, toward the valley: two large, and one small, walking very close between them. They were still walking when the tracks give out.' }] },
+      { on: ['look sledge', 'open sledge', 'take sledge', 'use sledge'], if: [{ flag: 'sight.sledge' }, near('sledge')], do: [{ say: 'You have been through it once. Once was enough.' }] },
+      {
+        on: ['look sledge', 'open sledge', 'take sledge', 'use sledge'], if: [near('sledge')],
+        do: [{ set: 'sight.sledge' }, { gold: 8 }, { give: 'toyhorse' }, { sound: 'take' }, { say: 'You go through it, feeling like a thief. Blankets, frozen stiff. A churn with the butter still in it. In the cradle, under the quilt, a purse of eight silver, and a horse the length of your hand, carved from pine by somebody patient. One ear has been chewed. You take the silver, because nobody is coming back for it. You take the horse because it seems wrong to leave it out here by itself.' }],
+      },
+      { on: ['push sledge', 'pull sledge'], do: [{ say: 'It is frozen in to the runners. It is not going any further than this.' }] },
+    ],
+  },
+  {
+    id: 'watcher', name: 'The Watcher', biomes: ['open', 'crags'], minDepth: 3,
+    seen: 'A figure stands alone on the snow here, facing the valley. It does not move.',
+    prop: { t: 'snowman', ramp: 'grey' },
+    thing: {
+      nouns: ['snowman'], try: ['look snowman'],
+      look: 'A man of snow, built with care and built to last: packed hard, glazed with water, and mended more than once. He wears a strip of grey blanket at his neck, and he is facing the valley. Nobody builds a thing like this for fun, this far out.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. At his feet, under the snow, five flat stones are laid in a row, each with a name scratched on it and none with a date. The ground here is frozen a yard deep and was never going to take a spade. Somebody did what they could instead, and then stood him over them, facing home.' }] },
+      { on: ['talk snowman', 'thank snowman'], do: [{ say: 'You say good day to him. It seems the least you can do. He goes on watching the valley.' }] },
+      { on: ['attack snowman', 'push snowman', 'take snowman', 'pull snowman'], do: [{ say: 'You find you would as soon knock down a gravestone, without quite knowing why.' }] },
+      { on: ['pet snowman', 'use snowman'], if: [near('watcher')], do: [{ say: 'There is a soft place at the shoulder where the last storm got at him. You pack it hard again, and wet it, and let it freeze. He will stand another winter. It will be a shorter one.' }] },
+    ],
+  },
+  {
+    id: 'fishhole', name: 'The Fishing Hole', biomes: ['mere'], minDepth: 1,
+    seen: 'Somebody has cut a hole in the ice at the edge of the mere, and left a rod standing in it.',
+    prop: { t: 'icehole' },
+    thing: {
+      nouns: ['hole'], try: ['pull rod'],
+      look: 'A hole the width of a bucket, cut through ice as thick as your arm is long, with a hazel rod wedged upright beside it and the line still down. It has skinned over. The rod bends a little, now and then, by itself.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The ice goes clear. The pike is there, a yard down, exactly as long as the boot, looking up at you. Behind it on the mud lies the other boot of the pair. A smaller pike is looking out of that one.' }] },
+      { on: ['pull hole', 'take hole', 'use hole', 'fish', 'fish hole', 'pull'], if: [{ flag: 'sight.fishhole' }], do: [{ say: 'The line is down again and the hole is skinning over. The pike can have the rest of the winter.' }] },
+      {
+        on: ['pull hole', 'take hole', 'use hole', 'fish', 'fish hole', 'pull'], if: [near('fishhole')],
+        do: [{ set: 'sight.fishhole' }, { gold: 4 }, { sound: 'take' }, { say: 'You break the skin of ice and haul. It comes up slowly, hand over hand, fighting like a wet blanket, and it is a boot. A good boot. There is a pike in it, which has plainly been living there, and which regards you with the outrage of a householder. You tip it back, and it takes the bait with it as it goes. In the toe of the boot, tied in a rag, are four silver. You feel you have been paid to go away.' }],
+      },
+      { on: ['swim', 'swim hole', 'enter hole', 'jump hole'], do: [{ say: 'It is the width of a bucket. You are not.' }] },
+    ],
+  },
+  {
+    id: 'stray', name: 'The Stray', biomes: ['open', 'crags', 'pines'], minDepth: 2,
+    seen: 'There are sheep tracks in the snow here, a long way from any fold.',
+    when: [{ if: [{ not: { flag: 'sight.stray' } }], prop: { t: 'sheep', seed: 3 } }],
+    thing: {
+      nouns: ['sheep'], try: ['pet sheep'],
+      look: 'A ewe, thin, rimed with frost to the knees, and alive, against all sense. There is a mark burned into her fleece: a G in a ring. She is looking at you as if you were late.',
+      lookWhen: [{ if: [{ flag: 'sight.stray' }], look: 'A trodden place in the snow where a sheep stood for longer than a sheep should have to.' }],
+    },
+    rules: [
+      { on: 'orun', if: [{ not: { flag: 'sight.stray' } }], do: [{ say: 'ORUN. Her tracks unwind behind her across the snow: days of them, in a slow, stubborn spiral, and at the end of every turn she has stopped and stood facing the same way. Toward the valley. Toward home.' }] },
+      { on: ['attack sheep', 'shoot sheep'], if: [{ not: { flag: 'sight.stray' } }], do: [{ say: 'She has walked through a week of wolves to get this far. You are not going to be the thing that stops her.' }] },
+      {
+        on: ['pet sheep', 'take sheep', 'use sheep', 'talk sheep', 'push sheep', 'pull sheep'], if: [{ not: { flag: 'sight.stray' } }, near('stray')],
+        do: [{ set: 'sight.stray' }, { give: 'ewe' }, { sound: 'take' }, { say: 'You hold out a hand. She considers it, and you, and the alternative, which is more of this. Then she walks over and leans on your leg with her whole weight. It appears that you now have a sheep.' }],
+      },
+    ],
+  },
+  {
+    id: 'sleeper', name: "The Sleeper's Hollow", biomes: ['crags', 'pines'], minDepth: 3,
+    seen: 'There is a long hump under the snow here that the wind has not drifted the way it has drifted everything else.',
+    when: [{ if: [{ not: { flag: 'sight.sleeper' } }], prop: { t: 'hump' } }],
+    thing: {
+      nouns: ['hump'], try: ['listen to the hump'], reach: 40,
+      look: 'A long, low hump of snow in the lee of the rocks. In the top of it is a hole the size of a fist, with frost furred all round the rim. As you watch, a little steam comes out. Then, after a long while, a little more.',
+      lookWhen: [{ if: [{ flag: 'sight.sleeper' }], look: 'A trampled hollow, where something very large was asleep until you came along.' }],
+    },
+    rules: [
+      { on: 'orun', if: [{ not: { flag: 'sight.sleeper' } }], do: [{ say: 'ORUN. The snow goes clear as water. It is a bear, as you had begun to think: white, enormous, nose under one paw. What you had not thought of is the two smaller humps tucked in against her, each about the size of a dog, each with its nose under one paw as well. You let the word go, very quietly.' }] },
+      { on: ['listen', 'listen hump', 'smell hump'], if: [{ not: { flag: 'sight.sleeper' } }], do: [{ say: 'You bring your ear near the hole. Something very large is breathing in there, slowly, about four times a minute. It sounds contented. You would like to keep it that way.' }] },
+      { on: ['pet hump'], if: [{ not: { flag: 'sight.sleeper' } }, near('sleeper')], do: [{ say: 'You pat the snow, gently. Nothing happens. You have patted a sleeping bear and lived, and nobody is ever going to believe you.' }] },
+      {
+        on: ['attack hump', 'push hump', 'dig hump', 'open hump', 'use hump', 'shout', 'shout hump', 'sing', 'jump hump', 'climb hump', 'enter hump'], if: [{ not: { flag: 'sight.sleeper' } }, near('sleeper')],
+        do: [{ set: 'sight.sleeper' }, { spawn: 'bear', x: 22, y: -8 }, { sound: 'hurt' }, { say: 'This turns out to be a mistake that can be made exactly once. The hump stands up. It goes on standing up for some time. It is white, it is the size of a hay-wain, and until a moment ago it had no quarrel with anybody.' }],
+      },
+      { on: ['listen', 'listen hump', 'pet hump', 'attack hump', 'dig hump'], do: [{ say: 'There is nobody home, and you know why.' }] },
+    ],
+  },
+  {
+    id: 'boundary', name: 'The Open Hand', biomes: ['open', 'crags'], minDepth: 4,
+    seen: 'A tall stone leans here, with a hand carved on it, palm outward.',
+    prop: { t: 'stone', h: 46 },
+    thing: {
+      nouns: ['menhir'], try: ['read stone'],
+      look: 'A stone twice your height, with an open hand cut into the side that faces the valley: palm out, fingers up, the sign in any country for THIS FAR. It is as old as the barrow. Something has been at the foot of it with a chisel, a good deal later.',
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. All round you under the snow are the stumps of other stones like this one, broken off short: a ring of them, miles round, a great fence of open hands. Every one of them faces inward. They were not set up to keep anything out.' }] },
+      {
+        on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('boundary'), { not: { flag: 'sight.boundary' } }],
+        do: [{ set: 'sight.boundary' }, { run: 'study', arg: 20 }, { sound: 'word' }, { say: "You lay your hand in the carved one. It is bigger than yours, and it wears a ring on every finger. The old tongue comes up through your palm: no word of power, only a sentence. THE KING'S FIRE REACHES HERE. Under it, cut small and badly by somebody in a hurry: AND HIS COLD, FURTHER." }],
+      },
+      { on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('boundary')], do: [{ say: "THE KING'S FIRE REACHES HERE. And under it: AND HIS COLD, FURTHER." }] },
+      { on: ['read menhir', 'pet menhir', 'read inscription'], do: [{ say: 'You are not close enough.' }] },
+    ],
+  },
+];
 
 export const frontier: FrontierDef = {
   seed: 4127,
@@ -42,6 +213,7 @@ export const frontier: FrontierDef = {
   game: { pines: 'deer', open: 'deer', mere: 'deer' },
   rareGame: { kind: 'whitehart', odds: 0.12, minDepth: 3 },
   trinkets: ['token', 'torc', 'hearthstone', 'brooch', 'harefoot'],
+  sights,
   text: {
     pines: {
       first: ['The Hollow', 'The Crowding', 'The Silent', 'The Leaning', 'The Black', 'The Winter', 'The Listening', 'The Wolf', 'The Hare', 'The Owl', 'The Deep', 'The Fox', 'The Raven', 'The Snow-Bent', 'The Long'],

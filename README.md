@@ -95,6 +95,10 @@ Finishing the first saga does not finish the game:
   trades, tells what lies nearby, and has something they want and something worth having.
 - **Vaults.** Ruined towers have dark vaults under them: take a light. Some hold trinkets, which
   are worn one at a time.
+- **Things to find.** Nine small scenes written by hand stand once each somewhere in the generated
+  country: a cold camp with a kettle, a signpost where no roads meet, a sledge, a sleeping bear.
+  Each can be looked at and tried, and each shows something more to the word ORUN. Two of them send
+  the finder back to the village with something for somebody.
 - **Hunting.** By day there are deer in the woods and by the meres. They bolt if you come close;
   a bow does not have to.
 - **Night.** It comes round every few minutes, and more walks in the wild after dark. `time`
@@ -145,7 +149,7 @@ src/game/            the game itself, as data
   data/vocab.ts      every word the parser knows
   data/text.ts       system messages, the help page and the opening words
   data/music.ts      nine original tunes, as data
-  data/frontier.ts   settings and wording for generated country
+  data/frontier.ts   settings and wording for generated country, and the hand-written sights that stand in it
   behaviours.ts      the few named behaviours data cannot express
 tests/               engine tests and the walkthrough bot
 tools/               QA scripts: screenshots without a browser, and measurements (see below);

@@ -5,7 +5,7 @@
 
 import { buildScene } from './build';
 import { mix, stream } from './noise';
-import type { Content, DoorDef, Effect, LayerDef, NpcDef, PropDef, RoomDef, Rule, SpawnDef, ThingDef } from './types';
+import type { Content, DoorDef, Effect, LayerDef, NpcDef, PropDef, RoomDef, Rule, SightDef, SpawnDef, ThingDef } from './types';
 import { blockedEdges, canReach, reachable } from './walk';
 
 type Biome = 'pines' | 'open' | 'mere' | 'ruin' | 'camp' | 'crags' | 'deadwood' | 'shrine' | 'steading';
@@ -166,6 +166,43 @@ export function homes(c: Content): Record<string, [number, number]> {
     for (let dy = -r; dy <= r && n < folk.length; dy++)
       for (let dx = -r; dx <= r && n < folk.length; dx++)
         if (Math.max(Math.abs(dx), Math.abs(dy)) === r && kindAt(c, dx, dy) === 'steading') found[folk[n++]] = [dx, dy];
+  return found;
+}
+
+const sightCache = new WeakMap<Content, Map<string, SightDef>>();
+
+/**
+ * Which sight stands in which cell of the frontier. Each stands once: in the nearest ring of
+ * country far enough out that has a free cell of a kind that suits it, starting round the ring
+ * from a different place for each, so that they do not all lie the same way from home.
+ */
+export function sights(c: Content): Map<string, SightDef> {
+  let found = sightCache.get(c);
+  if (found) return found;
+  sightCache.set(c, (found = new Map()));
+  const f = c.frontier;
+  if (!f?.sights?.length) return found;
+  const taken = new Set(Object.values(homes(c)).map(([x, y]) => wildId(x, y)));
+  for (const h of f.haunts ?? []) {
+    const at = lair(c, h.kind);
+    if (at) taken.add(wildId(at[0], at[1]));
+  }
+  const lies = (side: Side, x: number, y: number): boolean => (side === 'w' ? x < 0 && -x >= Math.abs(y) : side === 'e' ? x > 0 && x >= Math.abs(y) : side === 'n' ? y < 0 && -y >= Math.abs(x) : y > 0 && y >= Math.abs(x));
+  f.sights.forEach((s, n) => {
+    for (let r = (s.minDepth ?? 1) + 1; r <= 24; r++) {
+      const ring: [number, number][] = [];
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === r) ring.push([dx, dy]);
+      const start = Math.floor(stream(mix(n, r, f.seed, 91))() * ring.length);
+      for (let k = 0; k < ring.length; k++) {
+        const [x, y] = ring[(start + k) % ring.length];
+        const id = wildId(x, y);
+        if (taken.has(id) || !s.biomes.includes(kindAt(c, x, y) ?? '') || (s.side && !lies(s.side, x, y))) continue;
+        taken.add(id);
+        found!.set(id, s);
+        return;
+      }
+    }
+  });
   return found;
 }
 
@@ -406,6 +443,18 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
     else if (f.gates[hand]?.includes(BACK[way])) exits[way] = hand;
   }
 
+  // Something written by hand, if this is where one of them stands.
+  const sight = bare ? undefined : sights(c).get(id);
+  const when: NonNullable<RoomDef['scene']['when']> = [];
+  if (sight) {
+    const at = spot() ?? [side < 0 ? 70 : 250, 158];
+    if (sight.prop) props.push({ ...sight.prop, x: at[0], y: at[1] });
+    for (const w of sight.when ?? []) when.push({ if: w.if, props: [{ ...w.prop, x: at[0], y: at[1] }] });
+    things.push({ reach: 34, ...sight.thing, id: sight.id, x: at[0], y: at[1] + 2 });
+    for (const r of sight.rules ?? [])
+      rules.push({ ...r, do: r.do.map((e) => ('spawn' in e ? { ...e, x: at[0] + e.x, y: at[1] + e.y, level: e.level ?? level + 1 } : e)) });
+  }
+
   // Small things to find.
   if (!bare) {
     // A waymark: a cairn that points the way home.
@@ -460,12 +509,13 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
   const far = level >= 3 ? ' ' + f.text.deep : '';
   return {
     id,
-    name: placeName(pick(text.first), text.second, pick),
+    // The name is always drawn, so that the same numbers follow whether or not a sight took the place.
+    name: [placeName(pick(text.first), text.second, pick), sight?.name][sight ? 1 : 0]!,
     music: peaceful ? f.calm : f.music,
     mark,
-    look: `${pick(text.look)}${far} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`,
+    look: `${pick(text.look)}${sight ? ' ' + sight.seen : ''}${far} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`,
     ...(biome === 'camp' && !bare ? { lookWhen: [{ if: [{ quiet: true }], look: f.text.campQuiet }] } : {}),
-    scene: { kind: 'outdoor', horizon: hz, walkTop, layers, props },
+    scene: { kind: 'outdoor', horizon: hz, walkTop, layers, props, ...(when.length ? { when } : {}) },
     exits,
     doors,
     things,

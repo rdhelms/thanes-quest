@@ -190,6 +190,53 @@ Fenn brews them.
 **The Elder's Work.** Marta always has more work for a Thane: reavers camped too near, the dead
 walking, beasts taking sheep, and something living in old stones.
 
+**The stray.** One of Gorm's lost ewes, Bryn, went through the fence the night the grain was
+taken. She is still alive, out in the wild, and has been trying to walk home in circles. A hero
+who finds her and holds out a hand finds they have a sheep. Gorm goes down on one knee in the snow
+to her, and can count to four again.
+
+**The sledge.** A loaded sledge stands frozen into a drift, with a cradle lashed on top and its
+traces cut. Under the quilt is a horse carved from pine, with one ear chewed. ORUN shows that the
+family who left it came out of the east, from somewhere that is no longer there, and walked on
+toward the valley: two large pairs of feet, and one small pair between them, still walking where
+the tracks give out. After the winter breaks, the horse can be given to the boy in the square,
+who names it Ear.
+
+## Found in the wild
+
+Each of these stands once, somewhere in the country beyond the valley. None is needed for
+anything.
+
+**The cold camp.** A ring of stones with a kettle still hanging over it. Whoever lit the fire
+meant to be back before it boiled. A hero who lights it again drinks tea some winters old, and for
+as long as that takes, somebody is expected back at that fire. ORUN shows one pair of boots going
+round and round the fire, then once into the trees at a run, and not coming back.
+
+**The fingerpost.** A signpost where no roads meet. One arm says HOLLOWMERE. One says THE FERRY,
+and points east, toward the Sunken Bell. One says ELDMARK, THREE DAYS, and under it, cut later:
+NOT ANY MORE. ORUN shows a fourth arm, broken off and buried: THE KING'S ROAD. KEEP OFF IT.
+
+**The road stone.** West of the valley stands a squared stone with a line cut down it. ORUN shows
+the road under the snow: flagged, straight, running from the barrow country to the west, exactly
+as wide as one man walking, and worn in a single line down the middle. It is the road the
+Barrow-King walked to the Frost Gate, to ask for his crown.
+
+**The open hand.** Far out stands a stone with an open hand cut in the side facing the valley, a
+hand with a ring on every finger. It reads: THE KING'S FIRE REACHES HERE. Under it somebody has
+cut, later and in a hurry: AND HIS COLD, FURTHER. ORUN shows the stumps of a ring of such stones,
+miles round, every one facing inward. They were not set up to keep anything out.
+
+**The watcher.** A man of snow, built to last and mended more than once, stands facing the valley.
+ORUN shows five flat stones at his feet, each with a name and none with a date. The ground was
+frozen too deep for a spade. Somebody did what they could, and stood him over them, facing home.
+
+**The fishing hole.** A hole in the ice with a rod still standing in it. What comes up is a boot,
+with a pike living in it, and four silver in the toe. ORUN shows the other boot on the mud below.
+A smaller pike lives in that one.
+
+**The sleeper.** A hump of snow with a breathing-hole in it. It is a white bear, asleep, and can
+be left that way. ORUN shows the two cubs asleep against her.
+
 ## Far places
 
 **The Sunken Bell**, far to the east. A great bronze bell stands frozen into a mere. Something

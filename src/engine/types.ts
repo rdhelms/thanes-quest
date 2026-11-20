@@ -365,6 +365,35 @@ export interface BiomeText {
   look: string[];
 }
 
+/** What a prop is, without where: the country decides the where. */
+export type PropKind = Omit<PropDef, 'x' | 'y'>;
+
+/**
+ * Something written by hand that stands once in the generated country: in the nearest cell to
+ * home of a kind that suits it, far enough out, that nothing else has taken. Its rules are a
+ * room's rules; the thing it is about is named by the sight's own id.
+ */
+export interface SightDef {
+  id: string;
+  /** The name the place goes by, on the map and under the picture. */
+  name: string;
+  /** Kinds of country it may stand in. */
+  biomes: string[];
+  /** At least this far beyond the hand-made map: 1 is the first ring of country. */
+  minDepth?: number;
+  /** Only in country lying mostly this way from home. */
+  side?: 'n' | 's' | 'e' | 'w';
+  /** A sentence for the place's description, so that it is noticed. */
+  seen: string;
+  /** What is drawn there; and other things drawn only while their conditions hold. */
+  prop?: PropKind;
+  when?: { if: Cond[]; prop: PropKind }[];
+  /** The thing itself: what it is called, how it looks, what might be tried with it. */
+  thing: Omit<ThingDef, 'id' | 'x' | 'y'>;
+  /** Rules for this one place. A spawn's x and y are counted from where the thing stands. */
+  rules?: Rule[];
+}
+
 export interface FrontierDef {
   seed: number;
   /** Where each hand-made room sits on the map: x counts east, y counts south. */
@@ -395,6 +424,8 @@ export interface FrontierDef {
   rareGame?: { kind: string; odds: number; minDepth: number };
   /** Trinkets that may be found among the grave-goods in a vault. */
   trinkets?: string[];
+  /** Things worth finding, each written by hand and each met once, somewhere out in the country. */
+  sights?: SightDef[];
   text: {
     pines: BiomeText;
     open: BiomeText;

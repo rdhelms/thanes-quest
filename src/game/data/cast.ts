@@ -88,6 +88,7 @@ export const chars: Record<string, CharDef> = {
     look: 'A boy of six or so, in a tunic he has not grown into, holding two stones and waiting to be told where the eyes go.',
     talk: [
       { if: [{ not: { flag: 'boy.met' } }], brief: true, say: 'The boy looks at your sword, and then all the way up at you. "Are you the Thane? Sigga says you made the fires go. Did it hurt?"', do: [{ set: 'boy.met' }] },
+      { if: [{ flag: 'boy.horse' }], brief: true, say: '"He is called Ear," says the boy, patting the front of his tunic. "Because of his ear."' },
       { brief: true, say: '"I am doing the eyes," says the boy. It is clearly the most important job, and he has clearly been told so.' },
     ],
     topics: {
@@ -612,6 +613,11 @@ export const chars: Record<string, CharDef> = {
       // The night the hearth is lit, in the Elder's hall with everybody else.
       { if: [{ flag: 'hall.feast' }], brief: true, say: 'Gorm has walked in from the east farm with snow to his knees. He stands looking at the fire the way he looks at a field in a good year. "That will do," he says, to nobody in particular. "That will do."' },
       {
+        if: [{ has: 'ewe' }],
+        say: 'Gorm sees her before he sees you. He does not say anything. He goes down on one knee in the snow and takes her face in both hands, and she lets him, which you would not have bet on. "Bryn," he says. "That is Bryn. She went through the fence the night they took the grain." He stands, and counts along the pen with his lips moving, and gets to four. "Four," says Gorm, to the sheep, the farm, and you. "I can count to four again." He gives you everything he has in his pockets, which is nine silver and the end of a cheese.',
+        do: [{ lose: 'ewe' }, { set: 'farm.stray' }, { gold: 9 }, { give: 'cheese' }, { sound: 'quest' }],
+      },
+      {
         if: [{ quest: 'stores', is: 0 }],
         say: '"They came at night, a week gone. Took the seed grain. All of it." Gorm kicks the empty barrel. "A farm can lose a winter. It cannot lose a spring. They are camped somewhere south-west, past the ford; I saw their smoke. I am no fighter. Bring back my grain and I will pay you everything I have, which is twenty-five silver."',
         do: [{ quest: 'stores', stage: 1 }, { score: 2, id: 'stores.start' }],
@@ -626,7 +632,10 @@ export const chars: Record<string, CharDef> = {
       { say: '"There will be a spring now, thanks to you. Have you met the sheep? They like you. As much as they like anything."' },
     ],
     topics: {
-      sheep: '"Three left. I had eleven. Wolves, cold, and one that simply gave up."',
+      sheep: [
+        { if: [{ flag: 'farm.stray' }], say: '"Four. I had eleven, and then three, and now four. I count them every night. It does not take long, but I enjoy it more than I did."' },
+        { say: '"Three left. I had eleven. Wolves, cold, one that simply gave up, and one that went through the fence the night they came for the grain. She will be bones by now."' },
+      ],
       grain: '"Seed for the whole east field, in a sack with my mark on it: a G in a ring."',
       bandit: '"Three of them, I think. One with a bow. They laughed, that is what I remember."',
       camp: '"South-west, past the ford, in the trees. I saw smoke."',

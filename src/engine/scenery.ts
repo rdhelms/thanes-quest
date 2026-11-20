@@ -109,7 +109,75 @@ function campfire(sc: Scene, p: P): void {
   line(sc, x - 6, y - 1, x + 6, y - 4, R.wood, 0.25, y, 2);
   line(sc, x + 6, y - 1, x - 6, y - 4, R.wood, 0.35, y, 2);
   sc.blockEllipse(x, y - 1, 11, 3.5);
-  sc.flames.push({ x, y, up: 2, size: 0.85 });
+  // 'cold' is a fire that has been out a long time: the ring and the sticks, and a kettle on a tripod over them.
+  if (p.v !== 'cold' && p.v !== 'kettle') sc.flames.push({ x, y, up: 2, size: 0.85 });
+  if (p.v === 'cold' || p.v === 'kettle') {
+    line(sc, x - 7, y, x, y - 15, R.wood, 0.34, y, 1.2);
+    line(sc, x + 7, y, x, y - 15, R.wood, 0.46, y, 1.2);
+    for (let dy = 0; dy < 5; dy++) for (let dx = -3; dx <= 3; dx++) if (Math.abs(dx) < 3 || (dy > 0 && dy < 4)) sc.put(x + dx, y - 10 + dy, R.metal, dx < 0 ? 0.3 : 0.16, y);
+    sc.put(x, y - 11, R.metal, 0.4, y);
+    sc.put(x, y - 12, R.metal, 0.3, y);
+    if (p.v === 'kettle') sc.flames.push({ x, y, up: 2, size: 0.7 });
+    else for (let dx = -2; dx <= 2; dx++) sc.put(x + dx, y - 11, R.snow, 0.95, y);
+  }
+}
+
+/** A loaded sledge, left where it stopped: runners, a lashed load with a cradle on top, and snow on all of it. */
+function sledge(sc: Scene, p: P): void {
+  const { x, y } = p;
+  for (let dx = -13; dx <= 13; dx++) {
+    sc.put(x + dx, y, R.wood, 0.3, y);
+    sc.put(x + dx, y - 1, R.wood, dx > 11 ? 0.3 : 0.5, y);
+  }
+  // The runner curls up at the front.
+  for (let k = 0; k < 4; k++) sc.put(x + 13 + Math.min(k, 2), y - 1 - k, R.wood, 0.4, y);
+  for (let dy = 2; dy <= 9; dy++)
+    for (let dx = -11; dx <= 9; dx++) {
+      const top = 9 - (Math.abs(dx + 1) > 7 ? 3 : 0);
+      if (dy > top) continue;
+      const rope = dx === -6 || dx === 4;
+      sc.put(x + dx, y - dy, rope ? R.thatch : dy > 5 ? R.cream : R.leather, rope ? 0.6 : 0.3 + 0.3 * hash2(dx >> 1, dy >> 1, 61) + (dx < -8 ? -0.1 : 0), y);
+    }
+  // The cradle, lashed on top, hood to the back.
+  for (let dy = 10; dy <= 13; dy++) for (let dx = -6; dx <= 3; dx++) if (dy < 13 || dx < -2) sc.put(x + dx, y - dy, R.wood, dx < -2 ? 0.62 : 0.5 - 0.06 * (dy - 10), y);
+  for (let dx = -12; dx <= 10; dx++) if (hash2(dx, 3, 62) > 0.25) sc.put(x + dx, y - (dx < -6 ? 14 : dx > 3 ? 10 : 12) + (dx < -6 && dx > -9 ? -0 : 0), R.snow, 0.96, y);
+  for (let dx = -9; dx <= -3; dx++) sc.put(x + dx, y - 14, R.snow, 0.98, y);
+  sc.blockRect(x - 13, y - 3, x + 14, y + 1);
+}
+
+/** A hole cut in ice for fishing, skinned over, with the rod still standing in it. */
+function icehole(sc: Scene, p: P): void {
+  const { x, y } = p;
+  for (let dy = -4; dy <= 4; dy++)
+    for (let dx = -15; dx <= 15; dx++) {
+      const d = Math.hypot(dx / 15, dy / 4);
+      if (d >= 1 + (hash2(x + dx, y + dy, 65) - 0.5) * 0.3) continue;
+      if (Math.hypot(dx / 6.5, dy / 2.4) < 1) sc.put(x + dx, y + dy, R.water, 0.02 + 0.14 * hash2(dx, dy, 66));
+      else if (Math.hypot(dx / 8.5, dy / 3.3) < 1) sc.put(x + dx, y + dy, R.snow, 0.98);
+      else sc.put(x + dx, y + dy, R.ice, 0.45 + 0.3 * hash2((x + dx) >> 1, y + dy, 67) - 0.2 * d);
+    }
+  // The rod, wedged upright with a stone, and the line going down.
+  line(sc, x + 9, y + 2, x + 3, y - 22, R.wood, 0.4, y + 3, 1.4);
+  for (let k = 0; k < 21; k++) sc.put(x + 2, y - 21 + k, R.cream, 0.8, y + 3);
+  for (let dy = 0; dy < 3; dy++) for (let dx = 0; dx < 4; dx++) sc.put(x + 8 + dx, y + 1 + dy, R.rock, 0.5 - 0.1 * dx, y + 3);
+}
+
+/** A long hump of drifted snow with something asleep under it: a breathing-hole on top, and a little steam. */
+function hump(sc: Scene, p: P): void {
+  const { x, y } = p;
+  for (let dy = -11; dy <= 0; dy++)
+    for (let dx = -20; dx <= 20; dx++) {
+      const top = -10 * Math.sqrt(Math.max(0, 1 - (dx / 20) ** 2)) * (0.86 + 0.14 * Math.cos(dx * 0.3));
+      if (dy < top) continue;
+      const edge = dy - top < 1.2;
+      sc.put(x + dx, y + dy, R.snow, edge ? 1 : 0.9 - 0.34 * clamp((dx + 6) / 26) - 0.02 * dy + 0.05 * hash2(x + dx, y + dy, 71), y);
+    }
+  // The hole, rimmed with frost, and what comes out of it.
+  for (let dx = -1; dx <= 1; dx++) sc.put(x - 3 + dx, y - 9, R.rock, 0.05, y);
+  sc.put(x - 5, y - 9, R.ice, 1, y);
+  sc.put(x - 1, y - 9, R.ice, 1, y);
+  for (let k = 0; k < 7; k++) if (k % 2 === 0) sc.put(x - 3 + (k > 3 ? 1 : 0), y - 11 - k, R.rock, 0.86, y);
+  sc.blockEllipse(x, y - 1, 19, 4);
 }
 
 function tower(sc: Scene, p: P): void {
@@ -702,6 +770,9 @@ Object.assign(PROPS, {
   bell: shaded(bell, 8, 22, 3.5),
   dolmen: shaded(dolmen, 10, 40, 5),
   cairn: shaded(cairn, 5, 12, 2.5),
+  sledge: shaded(sledge, 6, 18, 3),
+  hump: shaded(hump, 8, 26, 4),
+  icehole: draw(icehole),
   crag: { draw: crag, shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + (p.w ?? 60) * 0.22, p.y + 1, (p.w ?? 60) * 0.62, 5)) },
   wall: { draw: wall, shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + 8, p.y + 1, (p.w ?? 60) * 0.56, 3.5)) },
 });

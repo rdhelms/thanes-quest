@@ -198,6 +198,11 @@ export const village: RoomDef = {
     { on: 'sol', do: [{ say: 'SOL. For the space of a breath it is noon in Hollowmere: hard shadows, bright roofs, a child laughing out loud at it. Then it is winter again. But people stand a little straighter for a while afterwards.' }] },
     { on: 'orun', do: [{ say: 'ORUN. The word shows you the village as it is, which is mostly as it looks. But tucked up under the gable-beam of the hall there is a bundle of rowan twigs bound with red thread, to keep ill luck off; and another over the inn door; and one, very small and very new, tied to the well-rope. Somebody here still believes. You find you are glad of it.' }] },
     { enter: true, if: [{ flag: 'crown.unmade' }], do: [{ show: 'snowman' }] },
+    // A horse found on a sledge a long way out, for somebody the right size for it.
+    {
+      on: ['give horse boy', 'give boy horse', 'give horse', 'give horse girl', 'give girl horse'], if: [{ has: 'toyhorse' }, { near: 'boy', d: 60 }],
+      do: [{ lose: 'toyhorse' }, { set: 'boy.horse' }, { sound: 'take' }, { say: 'The boy takes the horse in both hands and examines the chewed ear with professional interest. "Somebody loved this," he says. He puts it inside his tunic, where it will be warm, and goes back to the eyes with one hand.' }],
+    },
     { on: ['attack snowman', 'push snowman'], do: [{ say: 'You are Thane of Hollowmere. You find, slightly to your surprise, that this means you cannot.' }] },
     { on: ['use snowman', 'pet snowman', 'take snowman', 'take snow'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'You roll a head for it. The girl inspects the head and pronounces it too small for the Elder, but about right for you. It goes on a second, shorter figure, which gets a stick for a sword.' }] },
     { on: ['wish', 'wish well'], if: [{ near: 'well' }], do: [{ say: 'You lean over the well and wish. Your wish goes a long way down and does not come back. Promising.' }] },
@@ -325,6 +330,8 @@ export const farm: RoomDef = {
     ],
     when: [
       { if: [{ flag: 'hearth.lit' }], props: [{ t: 'hall', x: 196, y: 112, w: 78, v: 'smoke' }] },
+      // A fourth ewe, if somebody has brought her home out of the wild.
+      { if: [{ flag: 'farm.stray' }], props: [{ t: 'sheep', x: 96, y: 146, seed: 7 }] },
       // The thaw: the south field going soft, as Gorm says.
       {
         if: [{ flag: 'crown.unmade' }],
@@ -341,7 +348,10 @@ export const farm: RoomDef = {
   exits: { w: 'village', n: 'tarn', s: 'tower' },
   npcs: [{ char: 'gorm', x: 168, y: 142, wander: [140, 136, 200, 150] }],
   things: [
-    { id: 'sheep', nouns: ['sheep'], x: 100, y: 142, reach: 60, look: 'Three ewes, huddled together and chewing at nothing. They regard you without hope.' },
+    {
+      id: 'sheep', nouns: ['sheep'], x: 100, y: 142, reach: 60, look: 'Three ewes, huddled together and chewing at nothing. They regard you without hope.',
+      lookWhen: [{ if: [{ flag: 'farm.stray' }], look: 'Four ewes. Three of them are huddled together. The fourth stands a little apart, as one who has seen the world.' }],
+    },
     { id: 'fence', nouns: ['fence'], x: 100, y: 142, reach: 60, look: 'A sheep pen, mended many times with whatever was to hand.' },
     { id: 'hay', nouns: ['haystack'], x: 124, y: 118, reach: 40, look: 'Two haystacks under caps of snow. The smaller one has been pulled at; winter is eating into the stores.' },
     { id: 'house', nouns: ['hall', 'door', 'roof'], x: 236, y: 116, reach: 60, look: "Gorm's farmhouse. The door is shut and the chimney is cold. He is out here with the sheep, where at least there is company.", lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: "Gorm's farmhouse, with smoke at the roof again. He still spends his days out here with the sheep. A man gets used to company." }] },
@@ -353,6 +363,7 @@ export const farm: RoomDef = {
     firstVisit('farm'),
     { on: ['pet sheep', 'kiss sheep', 'take sheep'], do: [{ say: 'The nearest ewe leans on you with her whole weight, sighs, and goes back to staring at the snow.' }] },
     { on: ['attack sheep'], do: [{ say: 'Gorm has little enough left. You leave his sheep alone.' }] },
+    { on: ['give sheep', 'give sheep gorm', 'give gorm sheep', 'use sheep gorm'], if: [{ has: 'ewe' }, { near: 'gorm' }], do: [{ cmd: 'talk to gorm' }] },
     // Handing the sack over is the same as coming up and saying so.
     { on: ['give grain', 'give grain gorm', 'give gorm grain', 'use grain', 'use grain gorm', 'drop grain'], if: [{ has: 'grain' }, { near: 'gorm' }], do: [{ cmd: 'talk to gorm' }] },
     { on: ['give grain', 'give grain gorm', 'give gorm grain', 'use grain', 'use grain gorm'], if: [{ has: 'grain' }], do: [{ say: 'You are not close enough.' }] },

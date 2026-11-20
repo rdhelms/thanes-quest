@@ -48,6 +48,15 @@ const items: Record<string, ItemDef> = {
     use: [{ run: 'tonic' }, { say: 'It tastes like the bottom of a well. For a moment you can feel every one of your bones. Then they feel stronger than they did.' }],
   },
   bearskin: { id: 'bearskin', name: 'white bearskin', nouns: ['bearskin'], kind: 'misc', look: 'The pelt of a snow bear, white as the drifts and heavy as a door. Worth real silver to anyone who has to sleep cold.' },
+  toyhorse: {
+    id: 'toyhorse', name: 'carved horse', nouns: ['horse'], kind: 'misc',
+    look: 'A horse the length of your hand, carved from pine by somebody patient. One ear has been chewed, by somebody small.',
+    don: [{ say: 'It is a horse. It is not a hat.' }],
+  },
+  ewe: {
+    id: 'ewe', name: 'stray ewe', nouns: ['sheep'], kind: 'misc',
+    look: "She is not so much carried as accompanying. She has Gorm's mark on her fleece, and opinions about your pace.",
+  },
   cheese: {
     id: 'cheese', name: "Gorm's cheese", nouns: ['cheese'], kind: 'food', consumed: true,
     look: 'A small hard cheese in a cloth, the colour of old candles. It smells strongly of sheep, and of somebody having very little and giving it anyway.',
@@ -370,6 +379,8 @@ const deeds: Content['deeds'] = [
   { if: [{ flag: 'barrow.open' }], text: 'Spoke VETH at the barrow door, and it opened.' },
   { if: [{ flag: 'king.dead' }], text: 'Ended the Barrow-King in his own hall.' },
   { if: [{ flag: 'hearth.lit' }], text: "Lit the Elder's hearth, and was named Thane of Hollowmere." },
+  { if: [{ flag: 'farm.stray' }], text: "Brought Gorm's fourth ewe home out of the wild." },
+  { if: [{ flag: 'boy.horse' }], text: 'Carried a carved horse in from a sledge in the snow, and found it somebody to belong to.' },
   { if: [{ flag: 'bounty.n', min: 1 }], text: "Did the Elder's work in the wild. Jobs done so far: {bounty.n}." },
   { if: [{ quest: 'message', is: 3 }], text: 'Carried a glove forty years late from Marta Coldhand to Ivar One-Glove.' },
   { if: [{ quest: 'greyback', min: 2 }], text: 'Killed the Greyback, who had robbed traps for six winters.' },

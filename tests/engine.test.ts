@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as combat from '../src/engine/combat';
 import { gainSkill, hurtPlayer, levelNeed } from '../src/engine/combat';
-import { homes, roomOf, wildId, withArticle } from '../src/engine/frontier';
+import { homes, kindAt, roomOf, sights, wildId, withArticle } from '../src/engine/frontier';
 import { Parser, matches } from '../src/engine/parser';
 import { all } from '../src/engine/rules';
 import { Shell } from '../src/engine/shell';
@@ -2901,5 +2901,115 @@ describe('the thaw, where it can be seen', () => {
     expect(all(sim, content.calm)).toBe(false);
     sim.state.flags['crown.unmade'] = true;
     expect(all(sim, content.calm)).toBe(true);
+  });
+});
+
+describe('things written by hand, out in the generated country', () => {
+  const placed = [...sights(content)];
+  /** A game standing beside a sight, in daylight, with nothing about that bites, and every word known. */
+  const beside = (id: string): { sim: Sim; room: string } => {
+    const [room] = placed.find(([, s]) => s.id === id)!;
+    const sim = game();
+    sim.enterRoom(room, 160, 150);
+    const thing = sim.things().find((t) => t.id === id)!;
+    sim.p.x = thing.x + (thing.x > 160 ? -16 : 16);
+    sim.p.y = Math.min(165, thing.y + 2);
+    sim.rs.actors = [];
+    sim.teach('word:orun');
+    sim.drain();
+    return { sim, room };
+  };
+
+  it('each stands once, in country of a kind that suits it, far enough out', () => {
+    const all9 = content.frontier!.sights!;
+    expect(placed.map(([, s]) => s.id).sort()).toEqual(all9.map((s) => s.id).sort());
+    expect(new Set(placed.map(([cell]) => cell)).size).toBe(all9.length);
+    const lived = Object.values(homes(content)).map(([x, y]) => wildId(x, y));
+    for (const [cell, s] of placed) {
+      const [x, y] = cell.split('_').slice(1).map(Number);
+      expect(s.biomes, s.id).toContain(kindAt(content, x, y));
+      expect(Math.max(Math.abs(x), Math.abs(y)) - 1, s.id).toBeGreaterThanOrEqual(s.minDepth ?? 1);
+      expect(lived, s.id).not.toContain(cell);
+      // And the place is known by its name, and says in its description that something is there.
+      const room = roomOf(content, cell)!;
+      expect(room.name).toBe(s.name);
+      expect(room.look).toContain(s.seen);
+    }
+    // The road the King walked runs west, toward the Frost Gate.
+    expect(Number(placed.find(([, s]) => s.id === 'kingsroad')![0].split('_')[1])).toBeLessThan(0);
+  });
+
+  it('each answers what it offers, and shows something more to ORUN', () => {
+    for (const s of content.frontier!.sights!) {
+      const { sim } = beside(s.id);
+      expect(type(sim, `look at ${s.thing.nouns[0] === 'inn' ? 'kettle' : s.thing.nouns[0]}`)[0], s.id).toBeTruthy();
+      for (const line of s.thing.try ?? []) {
+        const said = type(sim, line);
+        expect(said.length, `${s.id}: ${line}`).toBeGreaterThan(0);
+        expect(content.fallbacks, `${s.id}: ${line}`).not.toContain(said[0]);
+      }
+      sim.p.cd = {};
+      expect(type(beside(s.id).sim, 'orun')[0], s.id).toMatch(/^ORUN\./);
+    }
+  });
+
+  it('can each be come upon and tried by somebody who only types, from across the picture', () => {
+    for (const [room, s] of placed) {
+      const shell = playing(room, 160, 140);
+      shell.sim.rs.actors = [];
+      const said = typed(shell, s.thing.try![0]);
+      expect(said.length, s.id).toBeGreaterThan(0);
+      expect(said, s.id).not.toContain(content.text.notClose);
+      expect(shell.sim.p.dead, s.id).toBe(false);
+    }
+  });
+
+  it('boils a kettle for whoever lights the fire under it', () => {
+    const { sim, room } = beside('kettle');
+    sim.p.hp = 10;
+    expect(type(sim, 'drink from the kettle')[0]).toContain('It wants a fire');
+    expect(type(sim, 'light the fire')[0]).toContain('begins to tick, and then to sing');
+    expect(sim.p.hp).toBeCloseTo(30, 0);
+    expect(type(sim, 'light the fire')[0]).toContain('Let it burn down');
+    const sc = roomOf(content, room)!.scene;
+    expect((sc.when ?? []).filter((w) => all(sim, w.if)).flatMap((w) => w.props ?? []).map((p) => p.v)).toEqual(['kettle']);
+  });
+
+  it('lets a sleeping bear lie, or does not', () => {
+    const { sim } = beside('sleeper');
+    expect(type(sim, 'pet the hump')[0]).toContain('patted a sleeping bear and lived');
+    expect(sim.rs.actors.length).toBe(0);
+    expect(type(sim, 'dig into the hump')[0]).toContain('goes on standing up');
+    expect(sim.rs.actors.map((a) => a.ref)).toEqual(['bear']);
+    expect(type(sim, 'look at the hump')[0]).toContain('trampled hollow');
+  });
+
+  it('sends a stray ewe home to Gorm, and a carved horse to somebody the right size for it', () => {
+    const { sim } = beside('stray');
+    expect(type(sim, 'look at the sheep')[0]).toContain('a G in a ring');
+    expect(type(sim, 'pet the sheep')[0]).toContain('you now have a sheep');
+    expect(sim.p.inv.ewe).toBe(1);
+    Object.assign(sim.state.flags, { 'gorm.met': true });
+    sim.enterRoom('farm', 160, 140);
+    const gorm = sim.rs.actors.find((a) => a.ref === 'gorm')!;
+    sim.p.x = gorm.x - 12;
+    sim.p.y = gorm.y;
+    const gold = sim.p.gold;
+    expect(type(sim, 'give the ewe to gorm')[0]).toContain('I can count to four again');
+    expect(sim.p.inv.ewe).toBeUndefined();
+    expect(sim.p.gold).toBe(gold + 9);
+    expect(type(sim, 'look at the sheep')[0]).toContain('Four ewes');
+    const farm = content.rooms.farm.scene;
+    expect((farm.when ?? []).filter((w) => all(sim, w.if)).flatMap((w) => w.props ?? []).filter((p) => p.t === 'sheep').length).toBe(1);
+
+    const sled = beside('sledge').sim;
+    expect(type(sled, 'open the sledge')[0]).toContain('a horse the length of your hand');
+    expect(sled.p.inv.toyhorse).toBe(1);
+    sled.state.flags['crown.unmade'] = true;
+    sled.enterRoom('village', 260, 160);
+    expect(type(sled, 'give the horse to the boy')[0]).toContain('Somebody loved this');
+    expect(sled.p.inv.toyhorse).toBeUndefined();
+    type(sled, 'talk to the boy');
+    expect(type(sled, 'talk to the boy').join(' ')).toContain('He is called Ear');
   });
 });
