@@ -136,7 +136,7 @@ src/engine/          the engine; nothing in here knows about this particular gam
   parser.ts rules.ts the parser, and the condition/effect language rooms are written in
   shell.ts           the player's side: typing line, message boxes, menus, saving
   render.ts          draws a frame from simulation + shell state
-  build.ts layers.ts props.ts scenery.ts scene.ts   pictures composed from data
+  build.ts layers.ts props.ts scenery.ts indoors.ts scene.ts   pictures composed from data
   doll.ts icons.ts font.ts palette.ts               characters, item icons, text, colour
   frontier.ts walk.ts generates country beyond the hand-made map, on demand; what can be walked
   tune.ts            the notation tunes are written in
@@ -175,7 +175,8 @@ Four rules shape the code, so that a larger, shared, growing world stays possibl
 ### Adding a room
 
 1. Write a `RoomDef` in `src/game/data/rooms/`. Compose the picture from layer types in
-   `layers.ts` and prop types in `props.ts` / `scenery.ts`.
+   `layers.ts` and prop types in `props.ts` / `scenery.ts`; `indoors.ts` has roofs, hearths and
+   furnishings for rooms with a roof on.
 2. Add it to `roomList` in `src/game/content.ts` and link it with `exits` (both directions) or `doors`.
 3. Add any new nouns to `src/game/data/vocab.ts`.
 4. Run `npm test`. The validator will say what is unreachable, misspelled or missing.
