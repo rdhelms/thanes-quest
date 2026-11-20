@@ -205,6 +205,7 @@ export const village: RoomDef = {
     },
     { on: ['attack snowman', 'push snowman'], do: [{ say: 'You are Thane of Hollowmere. You find, slightly to your surprise, that this means you cannot.' }] },
     { on: ['use snowman', 'pet snowman', 'take snowman', 'take snow'], if: [{ flag: 'crown.unmade' }], do: [{ say: 'You roll a head for it. The girl inspects the head and pronounces it too small for the Elder, but about right for you. It goes on a second, shorter figure, which gets a stick for a sword.' }] },
+    { on: ['read sign', 'read inn'], do: [{ say: 'There are no letters on it, only a picture gone grey with weather: a kettle, or possibly a helmet. Whoever painted it was better at warm than at drawing. The Kettle and Helm, people call it, to be on the safe side.' }] },
     { on: ['wish', 'wish well'], if: [{ near: 'well' }], do: [{ say: 'You lean over the well and wish. Your wish goes a long way down and does not come back. Promising.' }] },
     { on: ['climb well', 'enter well', 'jump well'], do: [{ die: 'You climb into the well to see how deep it is. It is deeper than you are tall, colder than you are brave, and nobody is coming with a rope.' }] },
     { on: ['buy sword', 'buy'], if: [{ near: 'odd' }, { has: 'sword' }], do: [{ say: '"You have a sword. Use that one until it breaks," says Odd. "Then come back."' }] },

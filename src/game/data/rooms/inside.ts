@@ -56,7 +56,7 @@ export const hall: RoomDef = {
       id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle and one mug. Feasts were held here. The table remembers; you can tell by the stains.',
       lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the far end lies the seven-pointed crown, where you put it down in front of Marta. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
     },
-    { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: nine books, three of them about sheep." },
+    { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: three shelves of it, and a good third about sheep." },
     { id: 'door', nouns: ['door'], x: 60, y: 106, reach: 400, look: 'The way out, back to the square.' },
     { id: 'bench', nouns: ['bed'], x: 262, y: 162, reach: 44, hidden: true, try: ['sleep'], look: 'A bench made up as a bed, with a bearskin over it, where the heat of the hearth reaches. Nobody has said whose it is. Nobody has needed to.' },
   ],
@@ -420,7 +420,7 @@ export const winterhall: RoomDef = {
   id: 'winterhall',
   music: 'barrow',
   name: 'The Winter Hall',
-  look: "A king's hall, buried whole: long tables, a high seat, and at the far end a hearth of river-stone bigger than the Elder's, laid with logs and never lit. The benches are full. They sit in their rows with the frost on them, every face turned to the cold hearth, as people sit who have been told to wait.",
+  look: "A king's hall, buried whole: long tables, a high seat, and at the far end a hearth of river-stone bigger than the Elder's, laid with logs and stone cold. The benches are full. They sit in their rows with the frost on them, every face turned to the hearth, as people sit who are waiting for a fire to take.",
   lookWhen: [
     { if: [RESTED], look: 'A long hall under the hill, warm from end to end. The fire in the great hearth has burned down to a steady red, and somebody has stacked fresh logs beside it. The benches are empty. The tables are only tables.' },
     { if: [LIT], look: "The hall is lit from end to end by its own hearth, for the first time. Along the tables the frost is running off them like sweat, and every face is turned to the fire. Nobody gets up. They are warm, and they are still here. Something more than fire is owed them, and they do not know its name either." },
@@ -451,17 +451,17 @@ export const winterhall: RoomDef = {
   ],
   things: [
     {
-      id: 'hearth', nouns: ['hearth'], x: 160, y: 108, reach: 44, try: ['light hearth'], look: 'A hearth a whole village could stand in front of. The logs are laid as they were laid four thousand years ago, and there is no ash under them. It has never once been lit.',
+      id: 'hearth', nouns: ['hearth'], x: 160, y: 108, reach: 44, try: ['light hearth'], look: 'A hearth a whole village could stand in front of. The logs are laid as they were laid four thousand years ago, on a bed of older ash. The last fire here went out in the middle of a feast, and none has held since.',
       lookWhen: [
         { if: [RESTED], look: 'A good fire, burning low and steady, with wood stacked ready beside it. Somebody from Hollowmere has been down.' },
         { if: [LIT], look: 'It is burning as if it had only been waiting to be asked. The coal from the Elder\'s hearth is somewhere in the heart of it.' },
       ],
     },
     {
-      id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, set for a feast: horn cups, wooden platters, knives laid straight. Nothing was ever put on the platters. They sat down to wait for the fire, and it went upstairs.',
+      id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, set for a feast: horn cups, wooden platters, knives laid straight. Nothing was ever put on the platters. The fire went out before the meat was done, and they sat on, waiting for it to take again.',
       lookWhen: [{ if: [RESTED], look: 'Long tables, and empty benches, and horn cups set out in rows for a feast that was four thousand years late.' }],
     },
-    { id: 'highseat', nouns: ['throne'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth. It is the only empty place in the room. Its owner had another made, upstairs, nearer the fire.' },
+    { id: 'highseat', nouns: ['throne'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth. It is the only empty place in the room. Its owner got up from it one night with a new crown on his head, and went up the stair, and did not come down.' },
     { id: 'arch', nouns: ['arch'], x: 44, y: 108, reach: 400, look: "The foot of the servants' stair. It is the only way out, and it goes up." },
   ],
   rules: [
@@ -482,11 +482,11 @@ export const winterhall: RoomDef = {
       on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'drop ember', 'light'], if: [{ has: 'ember' }, { near: 'hearth', d: 60 }],
       do: [
         { lose: 'ember' }, { set: 'rest.lit' }, { sound: 'quest' }, { score: 10, id: 'rest.lit' }, { quest: 'rest', stage: 5 },
-        { say: "You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Their own fire was the one thing he took from them. It will not be struck here. It would have to be brought.\n\nSo you open the horn box. The coal from Marta's hearth glows in its bed of ash, as it has every day since she gave it to you: fire from a hall where anybody may come in out of the snow. You tip it onto the old logs.\n\nIt does not gutter. It catches, and keeps catching, as the Elder's hearth did, and the light walks down the hall from table to table, and every face at every table lifts toward it. Nobody gets up. They have waited a long time to be warm. They are not going to hurry it now." },
+        { say: "You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. The cold has been in these logs four thousand years, and a spark is no argument against it. Fire will not be struck here. It would have to be brought.\n\nSo you open the horn box. The coal from Marta's hearth glows in its bed of ash, as it has every day since she gave it to you: fire from a hall where anybody may come in out of the snow. You tip it onto the old logs.\n\nIt does not gutter. It catches, and keeps catching, as the Elder's hearth did, and the light walks down the hall from table to table, and every face at every table lifts toward it. Nobody gets up. They have waited a long time to be warm. They are not going to hurry it now." },
       ],
     },
     { on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'light'], if: [{ has: 'ember' }], do: [{ say: 'You are not close enough to the hearth.' }] },
-    { on: ['light hearth', 'light', 'cast flame', 'use torch', 'light torch', 'use ember'], do: [{ say: 'You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Along the tables nobody moves; but you have the feeling of a great many people not letting themselves hope. Their own fire was the one thing he took from them. It will not be struck here. It would have to be brought, from a hearth that is shared.' }] },
+    { on: ['light hearth', 'light', 'cast flame', 'use torch', 'light torch', 'use ember'], do: [{ say: 'You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Along the tables nobody moves; but you have the feeling of a great many people not letting themselves hope. The cold has been in these logs four thousand years, and a spark is no argument against it. Fire will not be struck here. It would have to be brought in alive, from a hearth where one is burning.' }] },
     { on: ['sit', 'sit table', 'sit throne'], if: [RESTED], do: [{ say: 'You sit a while at the long table, alone, in front of a good fire. It seems a thing somebody should do.' }] },
     { on: ['sit throne'], do: [{ say: 'Nine thousand people are looking at the hearth. If you sat there, they would look at you instead. You stay on your feet.' }] },
     { on: ['sit', 'sit table'], do: [{ say: 'There is one place left at the nearest bench, and you take it. Nobody objects. It is the coldest seat you have ever sat in, and the company is very quiet. After a while you get up again, because you can.' }] },

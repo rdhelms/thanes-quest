@@ -271,7 +271,7 @@ const quests: Record<string, QuestDef> = {
       1: 'The winter has broken, but the dead still come down at night and stand at the edge of the fields, looking at the smoke. Fenn the hermit may know what they are waiting for.',
       2: "The dead who walk are the Barrow-King's own people, who froze. Fenn says a king's mound is raised over his own hall, and that a hall has more than one door. A word for hidden things would show it, at the barrow.",
       3: "The barrow's second door stands open. A servants' stair goes down behind it, into the dark.",
-      4: "The King's people sit at their tables under the barrow, waiting, with their faces to a hearth that was never lit. Fire struck there will not hold.",
+      4: "The King's people sit at their tables under the barrow, waiting, with their faces to a hearth gone cold. Fire struck there will not hold; it would have to be carried in alive.",
       5: "The hearth under the barrow is lit, and the dead sit warm at their tables, and still do not leave. Fenn spoke once of a fourth word: the sun's own name.",
       6: 'A fire burns under the barrow, and the dead have stopped walking.',
     },

@@ -172,8 +172,8 @@ export const chars: Record<string, CharDef> = {
         { say: '"A hunter. He went north forty years ago, and a bear had him, or so the trappers said." Her face gives nothing away, which from Marta is a kind of answer.' },
       ],
       barrow: [
-        { if: [{ flag: 'hearth.lit' }], say: '"It was old when the first of us came over the mountains. I took the king in it for a story to make children generous. I shall tell it differently now."' },
-        { say: '"It was old when the first of us came over the mountains. A king is buried there, they say, who would not share his fire in life. I always took that for a story to make children generous."' },
+        { if: [{ flag: 'hearth.lit' }], say: '"It was old when the first of us came over the mountains. I took the king in it for a tale to keep children from crowding the hearth. I shall tell it differently now."' },
+        { say: '"It was old when the first of us came over the mountains. There is a king in it, the story goes, who could never get warm. That is the whole of the story. I always took it for something to tell children who crowd the hearth."' },
       ],
       hearth: [
         { if: [{ flag: 'hearth.lit' }], say: '"It burns. I sit by it of an evening and do nothing at all, which I have not done in forty years. I find I am rather good at it."' },
@@ -194,7 +194,7 @@ export const chars: Record<string, CharDef> = {
       king: [
         { if: [{ flag: 'hearth.lit' }], say: '"He is ended, and the fires stay lit. That is as much thought as I mean to give him."' },
         { if: [{ flag: 'king.dead' }], say: '"Ended, you tell me. I shall believe it when my hearth holds a flame."' },
-        { say: '"If the stories are true, he let his own people freeze rather than share his fire. I would not expect him to have mellowed."' },
+        { say: '"We have a saying here, for anybody who takes the seat nearest the fire: sitting like the King. Nobody remembers his name, or anything he did. Only that he was cold, and that it did not do to be near him." She looks at her dead hearth. "I find I believe the second part."' },
       ],
       thane: [
         { if: [{ flag: 'hearth.lit' }], say: '"It means the village feeds you, and you bleed for the village. It is not a good bargain. It is the only one I have to offer, and you took it."' },
@@ -296,8 +296,8 @@ export const chars: Record<string, CharDef> = {
       torch: '"Pitch on a stick. Three silver. They burn fine anywhere but in this village."',
       bed: '"Four silver. You will sleep like the dead, which round here I hope is only a figure of speech again."',
       barrow: [
-        { if: [{ flag: 'hearth.lit' }], say: '"My grandmother said a king lies there who hoarded his fire while his people froze. I used to think she made it up to get the wood chopped."' },
-        { say: '"My grandmother said a king lies there who hoarded his fire while his people froze. Now ours go out. Make of that what you like."' },
+        { if: [{ flag: 'hearth.lit' }], say: '"My grandmother never let anybody sit nearest the fire two nights running. Sitting like the King, she called it, and she would move you with her foot. I used to think she made him up to keep the peace."' },
+        { say: '"My grandmother never let anybody sit nearest the fire two nights running. Sitting like the King, she called it. A king lies in that mound who could not get warm, she said, however near he sat. Now our fires go out. Make of that what you like."' },
       ],
       elder: '"Marta has not smiled since the hearths died. Mind you, she did not smile much before."',
       work: [
@@ -347,12 +347,12 @@ export const chars: Record<string, CharDef> = {
       },
       {
         if: [{ quest: 'rest', is: 1 }],
-        say: '"Standing at the edge of the fields, looking at smoke." Fenn puts his pen down. "Then I have had it backward all winter, along with everything else. I said the dead came for what was shut up in that crown. So they did. But think whose dead they are. Not ours. Ours lie in the Hall of Sleepers, forty generations of them, and most have had the manners to stay there. These are older. These are his: the ones he let freeze." He looks at his own fire as if it had spoken. "They never wanted a crown. They wanted to be warm. They still do. A king\'s mound is raised over his own hall, Thane, and nobody carries that many dead up a stair to bury them. They will be where they sat down. A hall has more than one door, and you have a word for things that are hidden. Take a light. And if you ever find the word I told you of, the sun\'s name, take that."',
+        say: '"Standing at the edge of the fields, looking at smoke." Fenn puts his pen down. "Then I have had it backward all winter, along with everything else. I said the dead came for what was shut up in that crown. So they did. But think whose dead they are. Not ours. Ours lie in the Hall of Sleepers, forty generations of them, and most have had the manners to stay there. These are older. These are his: the ones who sat nearest him, the night he put that thing on. What do you suppose it drank first?" He looks at his own fire as if it had spoken. "They never wanted a crown. They wanted to be warm. They still do. A king\'s mound is raised over his own hall, Thane, and nobody carries that many dead up a stair to bury them. They will be where they sat down. A hall has more than one door, and you have a word for things that are hidden. Take a light. And if you ever find the word I told you of, the sun\'s name, take that."',
         do: [{ quest: 'rest', stage: 2 }, { run: 'study', arg: 20 }],
       },
       {
         if: [{ flag: 'dead.rested' }, { not: { flag: 'fenn.rest' } }],
-        say: '"Nine thousand and eleven." Fenn writes the number down, looks at it, and underlines it. "And a man with a chisel who kept the count until he could not. And the word the dead cannot bear turns out to be the one they were waiting for." He is silent for some time. "I have that wrong in three books. I shall have to write a fourth." He does not sound sorry. "Fire from Marta\'s hearth. Of course it was. It was never a question of fire. It was a question of whose."',
+        say: '"Nine thousand and eleven." Fenn writes the number down, looks at it, and underlines it. "And a man with a chisel who kept the count until he could not. And the word the dead cannot bear turns out to be the one they were waiting for." He is silent for some time. "I have that wrong in three books. I shall have to write a fourth." He does not sound sorry. "A coal from Marta\'s hearth. Of course. You cannot strike a fire in a place like that, any more than in a drowned man. It has to be handed on, from one that is burning. I suppose that is all a hearth ever was."',
         do: [{ set: 'fenn.rest' }, { run: 'study', arg: 40 }],
       },
       { if: [{ quest: 'errand', is: 1 }, { has: 'amulet' }], say: '"Is that..." He has gone very still. "You have it. You actually have it." He holds out a hand that is not quite steady.' },
@@ -364,7 +364,7 @@ export const chars: Record<string, CharDef> = {
         { if: [{ flag: 'king.dead' }], say: '"Quiet, by your account. Good. A grave ought to be."' },
         {
           if: [{ quest: 'hearth', min: 1 }],
-          say: '"A king is in that mound who loved warmth so much he took it with him. Every winter of my life has been harder than the one before, and I think this one was at last cold enough to wake him. Now he is taking yours." Fenn turns a page. "The door answers to a word: VETH. I cannot give it to you. Words like that are not told, they are taken, from the stones that hold them. There is one on the west ridge, above the pinewood. Lay your hand on the rune and read it, if it lets you."',
+          say: '"A king is in that mound, and the old tales agree on one thing about him, and one thing only: he was cold. Not cruel. Not mad. Cold. Every winter of my life has been harder than the one before, and I think this one was at last cold enough to wake him. Now he is taking yours." Fenn turns a page. "The door answers to a word: VETH. I cannot give it to you. Words like that are not told, they are taken, from the stones that hold them. There is one on the west ridge, above the pinewood. Lay your hand on the rune and read it, if it lets you."',
         },
         { say: '"A grave. A big one. Leave it alone unless someone is paying you."' },
       ],

@@ -414,7 +414,7 @@ describe('a Thane', () => {
     bot.say('cast light');
     expect(bot.say('read the tally')).toContain('nine thousand and eleven');
     bot.door('winterhall');
-    expect(bot.say('look')).toContain('never lit');
+    expect(bot.say('look')).toContain('stone cold');
     expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(5);
     bot.walkTo(160, 116, 10);
     expect(bot.say('cast flame')).toContain('It would have to be brought');

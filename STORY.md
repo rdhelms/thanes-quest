@@ -7,8 +7,9 @@ the game.
 
 Hollowmere is a village of eleven roofs in a frozen valley in the north. Elder Marta Coldhand has
 kept it for forty winters. North of the village stands a barrow, a burial mound four thousand
-years old. The village's stories say a king lies in it who hoarded his fire and let his own people
-freeze. His name is forgotten.
+years old. The village's stories say only that a king lies in it who could never get warm. In
+Hollowmere, anybody who takes the seat nearest the fire is said to be sitting like the King. His
+name is forgotten, and so is anything he did.
 
 Beyond the valley is the wild. It belongs to nobody, and it holds trappers, reavers, beasts, and
 the walking dead. Ruined towers stand out there, with vaults under them that somebody took pains
@@ -160,7 +161,8 @@ wanted to be walking, and she sends the Thane to ask Fenn what they are waiting 
 
 Fenn sees that he has had it backward. The dead who walk are not Hollowmere's: those lie in the
 Hall of Sleepers, forty generations of them. These are older. They are the Barrow-King's own
-people, the ones he let freeze. They never wanted the crown. They wanted to be warm, and they
+people: the ones who sat nearest him the night he put the crown on, and so the first thing it
+drank. They never wanted the crown. They wanted to be warm, and they
 still do. A king's mound is raised over his own hall, and nobody carries that many dead up a
 stair, so they will be where they sat down. A hall has more than one door.
 
@@ -173,13 +175,15 @@ ORUN shows one more thing cut there, low down: an open hand, the sign for THIS F
 
 At the foot of the stair is the Winter Hall, a king's hall buried whole. The benches are full.
 The King's people sit in their rows with the frost on them, every face turned to a great hearth
-that is laid with logs and has never been lit. The high seat is the only empty place: its owner
-had another made upstairs, nearer the fire. ORUN shows the paths worn in the floor: thousands
+that is laid with logs and stone cold. The last fire there went out in the middle of a feast, and
+they sat on, waiting for it to take again. The high seat is the only empty place: its owner got up
+from it one night with a new crown on his head, went up the stair, and did not come down. ORUN shows the paths worn in the floor: thousands
 from the benches to the hearth and back, and one from the high seat, to the stair and up, that
 does not come back. They do not lift a hand to the Thane.
 
-Fire struck in that hearth will not hold. Their own fire was the one thing he took from them, and
-it cannot be struck there; it has to be brought, from a hearth that is shared. The word SOL,
+Fire struck in that hearth will not hold. The cold has been in those logs four thousand years,
+and a spark is no argument against it; fire has to be brought there alive, from a hearth where one
+is burning. The word SOL,
 spoken to them cold, is only a blow: they turn from it. The Thane tips the coal from Marta's
 hearth onto the old logs, and it takes as the Elder's hearth took, and every face lifts to it.
 They are warm, and they still do not leave. Then the Thane says SOL quietly, as one tells somebody
@@ -192,7 +196,8 @@ trap-lines by moonlight for the first time in her life. Smoke rises from the cro
 Marta, told where her coal went, lifts another out of her hearth into the horn box: it is only a
 coal, she has a hearthful, and that was rather the point. She will see that wood is taken up to
 the barrow, since she never yet let a fire go out that she could keep in. Fenn finds he has had
-the fourth word wrong in three books: it was never a question of fire, but of whose.
+the fourth word wrong in three books. A fire cannot be struck in a place like that, he says, only
+handed on from one that is burning, and he supposes that is all a hearth ever was.
 
 A Thane who goes back to the stair can take up the chisel and finish the half-cut bar. Nine
 thousand and eleven, and done.
