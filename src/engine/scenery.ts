@@ -180,6 +180,73 @@ function hump(sc: Scene, p: P): void {
   sc.blockEllipse(x, y - 1, 19, 4);
 }
 
+/**
+ * A post driven into the snow, with something hung on it. v: 'skates' is a pair of bone skates on
+ * their thongs; v: 'horn' is a tarred ferry-post with an iron mooring ring and a horn on a cord.
+ */
+function post(sc: Scene, p: P): void {
+  const { x, y } = p;
+  const tall = p.v === 'horn' ? 30 : 24;
+  const tar = p.v === 'horn';
+  const half = tar ? 2 : 1;
+  for (let py = y - tall; py < y; py++)
+    for (let dx = -half; dx <= half; dx++) sc.put(x + dx, py, R.wood, (tar ? 0.08 : 0.3) + (dx < 0 ? 0.18 : 0) + 0.06 * hash2(dx, py, 63), y);
+  for (let dx = -half; dx <= half; dx++) sc.put(x + dx, y - tall - 1, R.snow, 0.97, y);
+  if (p.v === 'skates') {
+    // Two skates hanging blade-down on their thongs from one nail, one either side of the stake.
+    sc.put(x, y - 20, R.metal, 0.7, y);
+    for (const side of [-1, 1]) {
+      const x0 = x + side * 2;
+      const x1 = x + side * 9;
+      line(sc, x, y - 20, x0 + side, y - 13, R.leather, 0.3, y, 1);
+      line(sc, x, y - 20, x1, y - 13, R.leather, 0.3, y, 1);
+      for (let k = 0; k <= 7; k++) {
+        const px = x0 + side * k;
+        sc.put(px, y - 12, R.cream, 0.8 - 0.04 * k, y);
+        sc.put(px, y - 11, R.cream, 0.42, y);
+      }
+      // The toe turns up.
+      sc.put(x1 + side, y - 13, R.cream, 0.7, y);
+    }
+  } else if (tar) {
+    // The mooring ring, low down, and the horn hung on a cord near the top.
+    for (let a = 0; a < 10; a++) sc.put(Math.round(x + 4 + Math.cos((a / 10) * Math.PI * 2) * 2.2), Math.round(y - 9 + Math.sin((a / 10) * Math.PI * 2) * 2.2), R.metal, 0.4, y);
+    line(sc, x + 2, y - 26, x + 5, y - 19, R.thatch, 0.6, y, 1);
+    // The horn: wide at the mouth, curling up to a dark tip.
+    for (let k = 0; k < 11; k++) {
+      const hx = x + 3 + k;
+      const hy = y - 18 - Math.round(Math.sin((k / 10) * Math.PI * 0.75) * 4);
+      const thick = k < 4 ? 3 : k < 8 ? 2 : 1;
+      for (let j = 0; j < thick; j++) sc.put(hx, hy + j - (k < 4 ? 1 : 0), k > 8 ? R.wood : R.cream, k > 8 ? 0.15 : j === 0 ? 0.62 : 0.36, y);
+    }
+  }
+  sc.blockEllipse(x, y - 1, 3, 2);
+}
+
+/** A domed bread oven of fired clay, its mouth to the front. With v: 'lit', there is fire in it. */
+function oven(sc: Scene, p: P): void {
+  const { x, y } = p;
+  const lit = p.v === 'lit';
+  for (let dy = -17; dy <= 0; dy++)
+    for (let dx = -15; dx <= 15; dx++) {
+      const top = -17 * Math.sqrt(Math.max(0, 1 - (dx / 15) ** 2));
+      if (dy < top) continue;
+      const nx = dx / 15;
+      // The mouth: a low arch on the front, a little to the left.
+      const m = Math.hypot((dx + 3) / 6, (dy + 2) / 8);
+      if (dy > -8 && m < 1) {
+        if (lit && dy > -4) sc.put(x + dx, y + dy, R.fire, 0.35 + 0.4 * hash2(dx, dy, 68), y);
+        else sc.put(x + dx, y + dy, R.ink, 0, y);
+        continue;
+      }
+      if (m < 1.25 && dy > -10) sc.put(x + dx, y + dy, R.stone, 0.62 - 0.2 * nx, y);
+      else if (dy - top < 2.2 && nx < 0.6) sc.put(x + dx, y + dy, R.snow, nx < 0.1 ? 0.97 : 0.75, y);
+      else sc.put(x + dx, y + dy, R.earth, 0.66 - 0.36 * nx + 0.1 * (vnoise((x + dx) * 0.4, (y + dy) * 0.4, 69) - 0.5) - (dy > -2 ? 0.12 : 0), y);
+    }
+  if (lit) sc.flames.push({ x: x - 3, y: y - 1, up: 1, size: 0.45 });
+  sc.blockEllipse(x, y - 1, 14, 3.5);
+}
+
 function tower(sc: Scene, p: P): void {
   const { x, y } = p;
   const w = p.w ?? 50;
@@ -586,6 +653,21 @@ function deadtree(sc: Scene, p: P): void {
       for (let a = 0; a < 8; a++) sc.put(Math.round(mx + Math.cos((a / 8) * Math.PI * 2) * 2), Math.round(my + drop + 3 + Math.sin((a / 8) * Math.PI * 2) * 3), R.cream, 0.5, y);
     }
   }
+  // With v: 'lantern', a horn lantern hangs from a limb of its own, high up; 'lamplit' is the same, burning.
+  if (p.v === 'lantern' || p.v === 'lamplit') {
+    const bx = at(0.66);
+    const by = Math.round(y - h * 0.66);
+    const ex = Math.round(bx + 12);
+    line(sc, bx, by, ex, by - 3, R.wood, 0.34, y, 1.6);
+    line(sc, bx + 1, by - 1.6, ex, by - 4.6, R.snow, 0.95, y, 1);
+    for (let k = 1; k <= 3; k++) sc.put(ex, by - 3 + k, R.metal, 0.3, y);
+    const lit = p.v === 'lamplit';
+    for (let dy = 0; dy < 6; dy++)
+      for (let dx = -2; dx <= 2; dx++) {
+        const frame = dy === 0 || dy === 5 || Math.abs(dx) === 2;
+        sc.put(ex + dx, by + 1 + dy, frame ? R.metal : lit ? R.fire : R.cream, frame ? 0.35 : lit ? 0.75 + 0.2 * (dy === 3 ? 1 : 0) : 0.3, y);
+      }
+  }
   sc.blockEllipse(x, y - 1, Math.max(3, h * 0.05), 2.5);
 }
 
@@ -644,6 +726,8 @@ function crag(sc: Scene, p: P): void {
   const h = p.h ?? 50;
   const seed = p.seed ?? 1;
   const hw = w / 2;
+  const pegAt = Math.floor(x - hw) + Math.round(hw * 0.88);
+  let pegTop = y;
   for (let px = Math.floor(x - hw); px <= x + hw; px++) {
     const nx = (px - x) / hw;
     const prof = (1 - Math.abs(nx) ** 1.7) * (0.5 + 0.5 * vnoise(px * 0.09, 2, seed)) + 0.1 * vnoise(px * 0.4, 5, seed);
@@ -658,7 +742,17 @@ function crag(sc: Scene, p: P): void {
       else if (d > 6 && vnoise(px * 0.16, py * 0.55, seed + 5) > 0.8) sc.put(px, py, R.snow, nx < 0.25 ? 0.9 : 0.62, y);
       else sc.put(px, py, R.rock, s, y);
     }
+    if (px === pegAt) pegTop = top;
   }
+  // With v: 'pegs', iron pegs are driven into the face a stride apart, like the rungs of a ladder.
+  if (p.v === 'pegs')
+    for (let py = y - 5, k = 0; py > pegTop + 5; py -= 5, k++) {
+      const px = pegAt + (k & 1 ? 4 : 0);
+      for (let j = 0; j < 3; j++) {
+        sc.put(px + j, py, R.metal, 1 - 0.2 * j, y + 1);
+        sc.put(px + j, py + 1, R.ink, 0, y + 1);
+      }
+    }
   sc.blockEllipse(x, y - 2, hw * 0.92, Math.max(3, h * 0.07));
 }
 
@@ -773,6 +867,8 @@ Object.assign(PROPS, {
   sledge: shaded(sledge, 6, 18, 3),
   hump: shaded(hump, 8, 26, 4),
   icehole: draw(icehole),
+  post: draw(post),
+  oven: shaded(oven, 6, 16, 3.5),
   crag: { draw: crag, shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + (p.w ?? 60) * 0.22, p.y + 1, (p.w ?? 60) * 0.62, 5)) },
   wall: { draw: wall, shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + 8, p.y + 1, (p.w ?? 60) * 0.56, 3.5)) },
 });

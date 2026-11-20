@@ -98,8 +98,9 @@ Finishing the first saga does not finish the game:
   trades, tells what lies nearby, and has something they want and something worth having.
 - **Vaults.** Ruined towers have dark vaults under them: take a light. Some hold trinkets, which
   are worn one at a time.
-- **Things to find.** Nine small scenes written by hand stand once each somewhere in the generated
-  country: a cold camp with a kettle, a signpost where no roads meet, a sledge, a sleeping bear.
+- **Things to find.** Seventeen small scenes written by hand stand once each somewhere in the
+  generated country: a cold camp with a kettle, a signpost where no roads meet, a sledge, a sleeping
+  bear, a ferry-horn by a frozen mere, a bread oven in a ruin, a door with no house round it.
   Each can be looked at and tried, and each shows something more to the word ORUN. Two of them send
   the finder back to the village with something for somebody.
 - **Hunting.** By day there are deer in the woods and by the meres. They bolt if you come close;
