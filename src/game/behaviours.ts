@@ -172,6 +172,46 @@ export const behaviours: Record<string, Behaviour> = {
     sim.say(`Odd weighs the ${sim.content.items[spare].name} in his palm, bites it, and shrugs. "Twelve silver. I can melt it or sell it on; either way it is worth twelve."`);
   },
 
+  /** Odd buys back something he made. `arg` is "item=price". What is in hand comes out of it first. */
+  buyBack: (sim, arg) => {
+    const [id, price] = String(arg).split('=');
+    const p = sim.p;
+    const it = sim.content.items[id];
+    if (!it || !(p.inv[id] > 0)) return;
+    if (p.inv[id] === 1) {
+      if (p.weapon === id) p.weapon = null;
+      if (p.shield === id) p.shield = null;
+      if (p.armor === id) p.armor = null;
+    }
+    sim.lose(id);
+    p.gold += Number(price);
+    sim.sound('take');
+    sim.say(`Odd takes the ${it.name}, turns it over once, and grunts. "${price} silver. It will be somebody else's soon enough. Most things are."`, 'Odd the smith');
+  },
+
+  /** Fenn takes back the books that have been read: they go back on his shelf, and teach a little on the way. */
+  shelve: (sim) => {
+    const p = sim.p;
+    const read = Object.keys(p.inv).filter((id) => {
+      const it = sim.content.items[id];
+      const teach = it?.use?.find((e) => 'teach' in e);
+      return it?.kind === 'tome' && teach && 'teach' in teach && (p.spells.includes(teach.teach) || p.words.includes(teach.teach));
+    });
+    if (!read.length) {
+      sim.say('"Read it first," says Fenn, without looking up. "Then bring it back. That is the whole of the arrangement."', 'Old Fenn');
+      return;
+    }
+    for (const id of read) sim.lose(id);
+    sim.sound('take');
+    gainSkill(sim, 'lore', 5 * read.length);
+    sim.say(
+      read.length > 1
+        ? 'Fenn takes the books one at a time, looks at each spine, and finds each a gap on the shelf without seeming to look for one. "A book in a pack is only a weight," he says. "A book on a shelf is a book. Come and read them again whenever you like. You will not need to. That is rather the point."'
+        : 'Fenn takes the book, looks at the spine, and slides it into a gap on the shelf that you would have sworn was not there a moment ago. "A book in a pack is only a weight," he says. "A book on a shelf is a book."',
+      'Old Fenn',
+    );
+  },
+
   /** Sigga's mittens: a little more breath, for good. */
   mittens: (sim) => {
     sim.p.maxSp += 8;

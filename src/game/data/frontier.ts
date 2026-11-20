@@ -340,6 +340,29 @@ const sights: SightDef[] = [
       { on: ['take door', 'attack door', 'close door'], do: [{ say: 'It is somebody\'s door, even now. You leave it shut, the way they did.' }] },
     ],
   },
+  {
+    id: 'pedlar', name: "The Pedlar's Cairn", biomes: ['open', 'pines', 'crags'], minDepth: 3,
+    seen: 'A carrying-frame of bent ash leans against a cairn here, as if somebody had set it down to get their breath.',
+    prop: { t: 'cairn', seed: 23 },
+    thing: {
+      nouns: ['frame'], try: ['read the frame', 'take the frame'],
+      look: "A pedlar's frame: two uprights of ash, bent and pegged, with a shelf at the foot and straps of plaited hide worn dark by somebody's shoulders. It leans against a cairn of flat stones, waist high. There are words burned into the crossbar.",
+      lookWhen: [{ if: [{ flag: 'sight.pedlar' }], look: 'A cairn of flat stones, waist high, with a pale stripe down one side where a frame leaned against it for a long time.' }],
+    },
+    rules: [
+      { on: 'orun', do: [{ say: 'ORUN. The cairn goes clear as ice, and every flat stone in it has a word or two scratched on it, all in the same hand, the oldest at the bottom. BELLS. RED CLOTH. NEEDLES, THREE HUNDRED. THE GOOD KETTLE. A long way up, smaller: HER CHAIR. And on the top stone, last of all, the scratches hardly deeper than the frost: THE FRAME. I GO ON LIGHTER.' }] },
+      {
+        on: ['read frame', 'read inscription'], if: [near('pedlar')],
+        do: [{ say: 'Burned into the crossbar, in careful capitals: ELDMARK TO THE COAST AND BACK, FORTY WINTERS. Under it, cut later and less carefully with a knife: TAKE IT, IF YOU HAVE FURTHER TO GO THAN I DO.' }],
+      },
+      { on: ['read frame', 'read inscription'], do: [{ say: 'You cannot make it out from here.' }] },
+      { on: ['take frame', 'use frame', 'equip frame', 'pull frame'], if: [{ flag: 'sight.pedlar' }], do: [{ say: 'It is on your back already, where it was asked to go.' }] },
+      {
+        on: ['take frame', 'use frame', 'equip frame', 'pull frame'], if: [near('pedlar')],
+        do: [{ set: 'sight.pedlar' }, { give: 'frame' }, { sound: 'take' }, { say: 'You lift it. It is lighter than it looks, the way good work is. You shrug the straps on, and the frame settles across your back as if it remembered the shape of one, and your pack rides up onto its shelf with room to spare. Somebody walked forty winters under this. You have some way to go yet.' }],
+      },
+    ],
+  },
 ];
 
 export const frontier: FrontierDef = {

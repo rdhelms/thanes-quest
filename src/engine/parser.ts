@@ -38,6 +38,14 @@ export class Parser {
     return [...this.nouns.values()].includes(id);
   }
 
+  /** Is this one word the plural of a thing: "pelts", "swords", "draughts"? */
+  plural(word: string): boolean {
+    const w = word.toLowerCase();
+    if (!/s$/.test(w) || this.verbs.has(w) || this.ignore.has(w)) return false;
+    const one = [w.replace(/es$/, ''), w.replace(/s$/, '')].filter((s) => s !== w).map((s) => this.nouns.get(s)).find(Boolean);
+    return !!one && (this.nouns.get(w) ?? one) === one && w !== one;
+  }
+
   parse(line: string): Parsed {
     const words = line
       .toLowerCase()

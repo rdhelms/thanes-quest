@@ -105,7 +105,13 @@ export function hitEnemy(sim: Sim, a: ActorState, dmg: number, skill: string, kx
   }
   // Whatever it was carrying. If nothing else remarks on it, the silver at least is counted aloud.
   const [silver, said] = [sim.p.gold, sim.notes];
-  if (def.death) run(sim, def.death);
+  // What will not fit in the pack stays where it fell.
+  sim.dropAt = { x: a.x, y: a.y };
+  try {
+    if (def.death) run(sim, def.death);
+  } finally {
+    sim.dropAt = null;
+  }
   if (sim.p.gold > silver && sim.notes === said) sim.note(sim.text('foundSilver', String(sim.p.gold - silver)));
   // The last one down: the room, and the game, may have something to say about that.
   if (def.ai !== 'prey' && !sim.rs.actors.some((k) => hostile(sim, k))) for (const r of [...(sim.room.rules ?? []), ...sim.content.rules]) if (r.cleared && all(sim, r.if) && !sim.p.dead) run(sim, r.do);

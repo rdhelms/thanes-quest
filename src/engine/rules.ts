@@ -45,7 +45,7 @@ export function run(sim: Sim, effects: Effect[]): void {
     else if ('note' in e) sim.note(e.note);
     else if ('set' in e) s.flags[e.set] = e.to ?? true;
     else if ('add' in e) s.flags[e.add] = Number(s.flags[e.add] ?? 0) + e.n;
-    else if ('give' in e) sim.give(e.give, e.n ?? 1);
+    else if ('give' in e) sim.give(e.give, e.n ?? 1, e.took);
     else if ('lose' in e) sim.lose(e.lose, e.n ?? 1);
     else if ('gold' in e) p.gold = Math.max(0, p.gold + e.gold);
     else if ('score' in e) sim.award(e.id, e.score);
@@ -75,8 +75,33 @@ function answering(rules: Rule[] | undefined, verb: string, nouns: string[]): Ru
 /** Run the first rule whose pattern matches the command and whose conditions hold. */
 export function fire(sim: Sim, rules: Rule[] | undefined, verb: string, nouns: string[]): boolean {
   const r = answering(rules, verb, nouns).find((r) => all(sim, r.if));
-  if (r) run(sim, r.do);
+  if (r && !(unpackable(sim, r.do) && refuse(sim, r.do))) run(sim, r.do);
   return !!r;
+}
+
+/**
+ * Does this pay silver for something that will not fit in the pack? Nobody sells a thing to be
+ * left on their floor: the sale is refused, and nothing changes hands.
+ */
+function unpackable(sim: Sim, effects: Effect[]): boolean {
+  if (!effects.some((e) => 'gold' in e && e.gold < 0)) return false;
+  const buying = effects.flatMap((e) => ('give' in e ? [e] : []));
+  const extra = buying.reduce((sum, e) => sum + sim.weight(e.give) * (e.n ?? 1), 0);
+  if (!buying.length || extra === 0) return false;
+  // Something that goes straight into the hand only puts what was in it into the pack.
+  return !buying.every((e) => sim.fits(e.give, e.n ?? 1)) || (buying.length > 1 && sim.load() + extra > sim.limit());
+}
+
+/** Say why a sale cannot be made, in the seller's own words if they have some. */
+function refuse(sim: Sim, effects: Effect[]): true {
+  const what = effects.find((e): e is Extract<Effect, { give: string }> => 'give' in e)!;
+  const seller = sim.rs.actors
+    .filter((a) => a.kind === 'npc' && sim.content.chars[a.ref]?.full && sim.within(a.x, a.y, 60))
+    .map((a) => sim.content.chars[a.ref])[0];
+  const name = sim.named(what.give, what.n ?? 1, true);
+  if (seller) sim.say(seller.full!.replace('%s', name), seller.name);
+  else sim.say(sim.text('fullBuy', name));
+  return true;
 }
 
 /**

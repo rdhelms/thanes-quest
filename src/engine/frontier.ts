@@ -565,7 +565,7 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
           { on: ['open chest', 'take chest'], if: [{ flag: `loot.${id}` }], do: [{ say: f.text.chestEmpty }] },
           {
             on: ['open chest', 'take chest'], if: [{ near: 'cache' }],
-            do: [{ set: `loot.${id}` }, { gold: silver }, { sound: 'take' }, { score: 3, id: `loot.${id}` }, { say: f.text.chestOpen.replace('%s', String(silver)) }, { chance: 0.35, do: [{ give: 'potion' }, { note: 'And a red draught, still sealed.' }] }],
+            do: [{ set: `loot.${id}` }, { gold: silver }, { sound: 'take' }, { score: 3, id: `loot.${id}` }, { say: f.text.chestOpen.replace('%s', String(silver)) }, { chance: 0.35, do: [{ give: 'potion', took: 'And a red draught, still sealed.' }] }],
           },
           { on: ['open chest', 'take chest'], do: [{ say: 'You are not close enough.' }] },
         );
@@ -584,7 +584,7 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
           { on: ['look bones', 'take bones', 'open bones', 'pet bones'], if: [{ flag: `bones.${id}` }], do: [{ say: f.text.bonesEmpty }] },
           {
             on: ['look bones', 'take bones', 'open bones', 'pet bones'], if: [{ near: 'bones' }],
-            do: [{ set: `bones.${id}` }, { gold: silver }, { sound: 'take' }, { score: 2, id: `bones.${id}` }, { say: f.text.bonesSearch.replace('%s', String(silver)) }, { chance: 0.25, do: [{ give: 'potion' }, { note: 'And a red draught, frozen but whole.' }] }],
+            do: [{ set: `bones.${id}` }, { gold: silver }, { sound: 'take' }, { score: 2, id: `bones.${id}` }, { say: f.text.bonesSearch.replace('%s', String(silver)) }, { chance: 0.25, do: [{ give: 'potion', took: 'And a red draught, frozen but whole.' }] }],
           },
         );
       }
@@ -681,7 +681,7 @@ function crypt(c: Content, X: number, Y: number): RoomDef | undefined {
           { set: `loot.${id}` }, { gold: silver }, { sound: 'take' }, { score: 4, id: `loot.${id}` }, { say: f.text.cryptTake.replace('%s', String(silver)) },
           ...(trinket ? [{ give: trinket }, { say: f.text.cryptTrinket.replace('%s', withArticle(c.items[trinket]?.name ?? trinket)) }] : []),
           ...waking,
-          { chance: 0.5, do: [{ give: 'potion' }, { note: 'And a red draught, left as an offering.' }] },
+          { chance: 0.5, do: [{ give: 'potion', took: 'And a red draught, left as an offering.' }] },
         ],
       },
       { on: ['take treasure', 'open treasure'], do: [{ say: 'You are not close enough.' }] },

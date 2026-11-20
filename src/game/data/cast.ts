@@ -253,6 +253,7 @@ export const chars: Record<string, CharDef> = {
       name: '"Odd." He lets that sit. "It is a name."',
     },
     shrug: '"I talk about iron," says Odd, "and I have just about finished doing that."',
+    full: '"And carry it where?" Odd looks from %s to your pack and back. "Lighten that first. I sell iron. I do not sell mules."',
     menu: [
       { label: 'Buy the iron sword (25 silver)', say: 'buy sword', if: [{ not: { has: 'sword' } }] },
       { label: 'Buy the round shield (15 silver)', say: 'buy shield', if: [{ not: { has: 'shield' } }] },
@@ -261,6 +262,8 @@ export const chars: Record<string, CharDef> = {
       { label: 'Sell a wolf pelt (3 silver)', say: 'sell pelt', if: [{ has: 'pelt' }] },
       { label: 'Sell a bearskin (8 silver)', say: 'sell bearskin', if: [{ has: 'bearskin' }] },
       { label: 'Sell a spare trinket (12 silver)', say: 'sell trinket', if: [{ any: [{ has: 'token' }, { has: 'torc' }, { has: 'hearthstone' }, { has: 'brooch' }, { has: 'harefoot' }, { has: 'antlers' }] }] },
+      { label: 'Sell back the sword (10 silver)', say: 'sell sword', if: [{ has: 'sword' }, { has: 'longsword' }] },
+      { label: 'Sell back the mail (18 silver)', say: 'sell mail', if: [{ has: 'mail' }, { has: 'bearcloak' }] },
       { label: 'Temper my blade ({temper.weaponCost} silver)', say: 'temper sword', if: [{ flag: 'hearth.lit' }] },
       { label: 'Temper my armour ({temper.armorCost} silver)', say: 'temper mail', if: [{ flag: 'hearth.lit' }, { any: [{ has: 'mail' }, { has: 'bearcloak' }] }] },
       { label: 'The dead forge', say: 'ask odd about hearth', if: [{ not: { flag: 'hearth.lit' } }] },
@@ -314,9 +317,11 @@ export const chars: Record<string, CharDef> = {
         { say: '"Marta in the hall has the big trouble. Gorm at the east farm was robbed a week back. Toke in the west wood got himself bitten. All three would pay to see the back of it."' },
       ],
       name: '"Halla. Everyone here will tell you I water the ale. I do. It needs it."',
+      chest: '"For lodgers. Put in it what you like and take it out when you like. Nobody in this village steals, and anybody who started would have to carry it out past me."',
       fenn: '"The old hermit. He trades me draughts for bread. Lives by the tarn, north-east. Do not walk on his ice."',
     },
     shrug: '"That is past what I know," says Halla. "I know ale, and who drinks too much of it."',
+    full: '"You will rattle," says Halla, looking at your pack. "Put something down first. There is a chest by the bed for lodgers, and the floor is free."',
     menu: [
       { label: 'A horn of ale (1 silver)', say: 'buy ale' },
       { label: 'A bowl of stew (1 silver)', say: 'buy food' },
@@ -433,8 +438,10 @@ export const chars: Record<string, CharDef> = {
       ],
     },
     shrug: '"That is either beneath my notice or above yours," says Fenn, and turns a page.',
+    full: '"Your pack is fuller than my shelves, and my shelves are full," says Fenn. "Put something down. Not in here."',
     menu: [
       { label: 'Give him the amulet', say: 'give amulet', if: [{ has: 'amulet' }] },
+      { label: 'Give back the books you have read', say: 'give tome to fenn', if: [{ any: [{ has: 'tomeFlame' }, { has: 'tomeFrost' }, { has: 'tomeMend' }, { has: 'tomeLight' }, { has: 'tomeWard' }] }] },
       { label: 'Show him the crown', say: 'ask fenn about crown', if: [{ has: 'crown' }, { quest: 'crown', min: 1 }] },
       ask('fenn', 'The barrow', 'barrow'),
       ask('fenn', 'The standing stones', 'menhir'),
@@ -538,6 +545,15 @@ export const chars: Record<string, CharDef> = {
       ],
       village: '"Hollowmere? I go in at midsummer, sell my skins to the smith, and come straight out again. Too many people. Eleven roofs!"',
       pelt: '"Four silver for a wolf, ten for a bear, if you can carry it. I pay better than that tight-fisted smith."',
+      pack: [
+        { if: [{ has: 'trappack' }], say: '"It will outlast you, if you keep it out of rivers." She tugs the chest-strap anyway, the way she would test a snare, and grunts.' },
+        {
+          if: [{ has: 'pelt', n: 6 }],
+          say: '"Six. Lay them out." She goes over each pelt as if it owed her money, and throws none of them back. Then she sits down by the fire with an awl and a hank of sinew and does not speak again until the light has gone. What she hands you at the end of it is a pack of grey wolf-hide, fur turned in, with a frame of willow sewn into the back and a strap across the chest. "There. Six wolves carried their own winters on their backs all their lives," she says. "They can carry yours."',
+          do: [{ lose: 'pelt', n: 6 }, { give: 'trappack' }, { score: 3, id: 'brekka.pack' }, { sound: 'quest' }],
+        },
+        { say: '"That bag." She looks at it as she looked at you the first time, as at a pelt, and finds it wanting. "You carry like somebody who means to come back for things. Out here nobody comes back for things. Bring me six wolf pelts, sound ones, and I will make you something worth carrying." She is already measuring your shoulders with her eye.' },
+      ],
       potion: '"Seven silver. My own brewing: frostcap, red moss, and a thing I will not name. It will close a wound."',
       name: '"Brekka. My mother had hopes for me. They did not include this."',
       wight: [
@@ -549,8 +565,10 @@ export const chars: Record<string, CharDef> = {
       wild: '"It goes on for ever, as far as I have ever walked. Wood, fell, water, wood again. There are old stones out there, and older things under them. It gets worse the further you go, and so does the pay, for those who hunt."',
     },
     shrug: '"I know traps and weather, says Brekka. "The rest is somebody else\'s trouble."',
+    full: '"You are carrying more than my sledge does," says Brekka. "Empty something out first. I do not mind things for people. They do not come back for them."',
     menu: [
       { label: 'Buy a red draught (7 silver)', say: 'buy potion' },
+      { label: 'A pack, from six wolf pelts', say: 'ask brekka about pack', if: [{ not: { has: 'trappack' } }] },
       { label: 'Sell a wolf pelt (4 silver)', say: 'sell pelt', if: [{ has: 'pelt' }] },
       { label: 'Sell a bearskin (10 silver)', say: 'sell bearskin', if: [{ has: 'bearskin' }] },
       { label: 'Sell frostcaps (2 silver)', say: 'sell herb', if: [{ has: 'herb' }] },
@@ -601,6 +619,7 @@ export const chars: Record<string, CharDef> = {
       ],
     },
     shrug: '"That is a young man\'s question," says Ivar, "and I have forgotten the answer."',
+    full: '"Lighten that pack first," says Ivar. "I went through the ice on the mere once, for the sake of one more thing on my back. That is where my other glove is."',
     menu: [
       { label: 'Buy a red draught (7 silver)', say: 'buy potion' },
       { label: 'Sell a wolf pelt (4 silver)', say: 'sell pelt', if: [{ has: 'pelt' }] },
@@ -640,6 +659,7 @@ export const chars: Record<string, CharDef> = {
       village: '"I was born under one of those eleven roofs. It was too loud. Out here I can hear things grow."',
     },
     shrug: '"If it does not grow, I have no opinion on it," says Runa.',
+    full: '"And where would it go? You are carrying half the country already." Runa waits, not unkindly, for you to put something down.',
     menu: [
       { label: 'Buy a red draught (7 silver)', say: 'buy potion' },
       { label: 'Sell frostcaps (2 silver)', say: 'sell herb', if: [{ has: 'herb' }] },

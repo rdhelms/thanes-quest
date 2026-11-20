@@ -17,7 +17,9 @@ export const vocab: VocabDef = {
     eat: ['taste', 'bite', 'chew'],
     equip: ['wield', 'wear', 'hold', 'draw', 'ready', 'arm'],
     unequip: ['sheathe', 'unwield', 'stow', 'put away', 'remove', 'take off', 'doff'],
-    drop: ['discard', 'throw'],
+    drop: ['discard', 'throw', 'put down', 'set down', 'lay down', 'abandon', 'dump'],
+    store: ['stash', 'deposit', 'keep safe'],
+    weigh: ['heft', 'how heavy', 'weight'],
     open: ['unlock', 'unbar', 'lift'],
     close: ['shut'],
     knock: ['rap', 'bang', 'knock on', 'ring', 'toll'],
@@ -223,6 +225,8 @@ export const vocab: VocabDef = {
     venison: ['meat', 'haunch', 'deer meat'],
     mail: ['armour', 'armor', 'mail shirt', 'chainmail'],
     longsword: ['steel sword', 'steel longsword', 'long sword'],
+    pack: ['bag', 'rucksack', 'knapsack', 'backpack', 'load', 'burden', 'wolf pack', 'wolfskin pack'],
+    frame: ['pack frame', 'packframe', 'carrying frame', 'crossbar', 'straps'],
     // Ideas
     work: ['job', 'coin', 'money', 'silver', 'trouble', 'quest', 'reward', 'task', 'pay', 'rumors', 'rumours', 'news', 'gossip', 'bounty', 'bounties', 'errand', 'errands'],
     thane: ['title', 'thaneship'],
@@ -252,6 +256,6 @@ export const vocab: VocabDef = {
     'am', 'i', 'game', 'gods', 'god', 'carving', 'carvings', 'figure', 'figures',
     'have', 'want', 'would', 'like', 'can', 'could', 'you', 'will', 'let', 'us', 'just',
     'what', 'which', 'how', 'much', 'many', 'do', 'does', 'should', 'it', 'there', 'here', 'away', 'old', 'any', 'all',
-    'everything', 'something', 'hands', 'days', 'more', 'another', 'way',
+    'everything', 'something', 'hands', 'days', 'more', 'another', 'way', 'every', 'both', 'back',
   ],
 };

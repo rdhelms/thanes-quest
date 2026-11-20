@@ -267,6 +267,19 @@ knees ever mend there is a chair by her hearth. She does not say whose.
 winters, and last month it ate her dog. The hero kills it in the crags near her steading. Brekka
 makes a cloak of its hide: "He kept me cold for six winters. He can keep you warm."
 
+**Brekka's pack.** Brekka thinks little of the hero's bag: they carry like somebody who means to
+come back for things, and out in the wild nobody comes back for things. For six sound wolf pelts
+she sits by her fire with an awl until the light goes, and makes a pack of wolf-hide, fur turned
+in, on a willow frame: "Six wolves carried their own winters on their backs all their lives. They
+can carry yours."
+
+**What is carried.** A Thane's pack holds only so much. Odd buys back what he made, for less than
+he sold it, and will not buy what he did not; the hatchet from the woodpile he never saw. Fenn
+takes back the books the hero has read and finds each a gap on his shelf: a book in a pack is
+only a weight, and a book on a shelf is a book. Halla keeps a chest at the foot of the inn's bed
+for lodgers' things, and nobody in Hollowmere steals from it, partly from virtue and partly
+because everybody would know by supper.
+
 **Runa's tonic.** Runa brews a black tonic from three frostcaps that puts back, for good, what the
 cold takes out of a person. She says the red draughts Halla sells as Fenn's are hers. Halla says
 Fenn brews them.
@@ -362,6 +375,13 @@ came up to count.
 and go through, and find the same snow on both sides. Notches on the post mark the heights of
 EYVIND, SIGRUN and LITTLE ODA, the last three cut on one day, deeper than the rest; nobody took the
 door. ORUN shows a fourth row on the far side of the post, low down, with a picture of a dog.
+
+**The pedlar's cairn.** Far out, a pedlar's carrying-frame of bent ash leans against a cairn.
+Burned into its crossbar: ELDMARK TO THE COAST AND BACK, FORTY WINTERS, and cut under it later:
+TAKE IT, IF YOU HAVE FURTHER TO GO THAN I DO. A hero who takes it can carry more for good. ORUN
+shows a word scratched on every stone of the cairn in the same hand, the oldest at the bottom:
+BELLS, RED CLOTH, NEEDLES, THE GOOD KETTLE, then HER CHAIR, and on the top stone, THE FRAME. I GO ON
+LIGHTER. Eldmark is the town on the fingerpost's third arm.
 
 ## Far places
 

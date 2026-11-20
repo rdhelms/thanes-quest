@@ -84,6 +84,35 @@ export const text: Record<string, string> = {
   tomeHint: 'Tip: READ TOME to study a book.',
   cantEquip: 'You could, but you would look ridiculous and gain nothing.',
   noDrop: 'You decide to hold on to it. You never know.',
+  // Carrying. %s is a thing ("the wolf pelt", "3 wolf pelts").
+  tooHeavy: 'Your pack will not take %s as well. Something has to come out first: eaten, sold, put down, or left in the chest at the inn.',
+  leftBehind: 'No room in your pack: %s stays where it lies.',
+  leftBehindMany: 'No room in your pack: %s stay where they lie.',
+  overladen: 'Your pack is fuller than it will hold. Lighten it before you take anything more.',
+  canCarry: 'You can carry %s now.',
+  strongerBack: 'A deeper wind, and a broader back with it: you can carry %s now.',
+  fullBuy: 'You would have nowhere to put %s. Lighten your pack first.',
+  dropped: 'You put down %s.',
+  stored: 'You put %s in the %t.',
+  dropWhat: 'Put down what?',
+  dropAll: 'You turn out your whole pack, look at it all lying there, and put it back again. Name what you mean to leave.',
+  noStore: 'There is nowhere here to keep things safe. You could put it down and come back for it, or leave it in the chest at the inn.',
+  notAStore: 'That would not keep it safe. Put it down, if you mean to leave it.',
+  notStored: 'There is none of that in it.',
+  storeEmpty: 'There is nothing in it.',
+  nothingDown: 'Nothing but snow and boot-prints.',
+  storeHolds: 'In it: %s.',
+  tookSome: 'You take %s. There is no room for %n.',
+  pileOf: 'There are %s here.',
+  loadIs: 'Your pack holds %l of the %m it will carry.',
+  weighs: '%s weighs %w.',
+  weighsEach: '%t weigh %s apiece: %n in all.',
+  weighsNothing: '%s weighs next to nothing.',
+  weighsKept: 'You hardly notice the weight of %s, and you would not put it down if you did.',
+  weighsWorn: 'It is on you, not in your pack, and you hardly feel it there.',
+  weighThere: 'You heft %s where it lies: %w, about.',
+  weighStore: 'It is not going anywhere, and neither is anything you put in it.',
+  weighWhat: 'You could not lift that to weigh it if you tried.',
   questStart: 'New task: %s.',
   questDone: 'Task complete: %s.',
   castWhat: 'Cast what? You have to name the spell.',
@@ -100,7 +129,7 @@ export const text: Record<string, string> = {
   help:
     'Arrow keys walk; so does a click or a tap on the place you want to go. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
     'Hold Shift to guard. Raise it when a foe shows a gold ! and the blow is turned aside, leaving them open.\n\n' +
-    'Tab opens your bag: choose a thing to see it, and to drink, eat, read, use, ready or wear it. Esc opens the menu; its Settings can make fights gentler. Whatever the menu opens goes back to it when closed.\n\n' +
+    'Tab opens your bag: what each thing weighs, and how full your pack is. Choose a thing to drink, eat, read, use, ready, wear, drop or store it; a full pack takes nothing more. Esc opens the menu; its Settings can make fights gentler. Whatever the menu opens goes back to it when closed.\n\n' +
     'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. Name something across the picture and you walk over to it first; an arrow key stops you. SWAP changes between your last two weapons.\n\n' +
     'MAP shows where you have been, and the arrow keys look about it. JOURNAL lists your tasks, SKILLS shows your character (health, skills, perks, spells), and DEEDS what you have done. EXITS lists the ways out. THINK reminds you what to do next, and what is within reach. SAVE and RESTORE do what they say.\n\n' +
     'On a touch screen: the pad walks, Hit and Guard fight, OK answers, Bag opens your bag, Menu goes back, and the buttons above the pad offer what can be done where you stand.\n\n' +

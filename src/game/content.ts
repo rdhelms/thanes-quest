@@ -16,81 +16,90 @@ const hero: CharSpec = {
 };
 
 const tome = (id: string, spell: string, name: string, look: string, learned: string): ItemDef => ({
-  id, name, nouns: ['tome', spell], kind: 'tome', look,
+  id, weight: 2, name, nouns: ['tome', spell], kind: 'tome', look,
   use: [{ teach: spell }, { run: 'study', arg: 20 }, { score: spell === 'flame' ? 5 : 2, id: `spell.${spell}` }, { say: learned }, { note: `Tip: CAST ${spell.toUpperCase()} to use it.` }],
 });
 
 const items: Record<string, ItemDef> = {
-  log: { id: 'log', name: 'split log', nouns: ['log'], kind: 'misc', look: 'A split pine log, dry and resinous. It ought to burn well. Nothing does, here.' },
-  hatchet: { id: 'hatchet', name: 'hatchet', nouns: ['hatchet'], kind: 'weapon', power: 4, look: 'A wood-hatchet with a nicked edge. Made for kindling, but it has no opinions about what it splits.' },
-  sword: { id: 'sword', name: 'iron sword', nouns: ['sword'], kind: 'weapon', power: 7, look: 'Plain iron, well kept. Odd made it before his forge died, and it shows: every line of it is impatient.' },
-  bow: { id: 'bow', name: 'hunting bow', nouns: ['bow'], kind: 'bow', power: 5, look: "Toke's yew bow. It comes with a quiver that never seems to run dry, which you have decided not to question." },
-  longsword: { id: 'longsword', name: 'steel longsword', nouns: ['sword', 'longsword'], kind: 'weapon', power: 10, look: 'Steel, not iron: brighter, longer, and balanced so that it seems to want to move. Odd is quietly proud of it.' },
-  mail: { id: 'mail', name: 'mail shirt', nouns: ['mail'], kind: 'armor', power: 25, look: 'A shirt of riveted rings. It weighs as much as a small sheep and turns a quarter of what hits you.' },
-  token: { id: 'token', name: 'wolf-tooth token', nouns: ['token', 'trinket'], kind: 'trinket', mods: { dmg: 12 }, look: "A wolf's eye-tooth on a thong, drilled and carved with a single line. Whoever wore it struck harder for it, or believed they did, which in a fight comes to the same thing." },
-  torc: { id: 'torc', name: 'iron torc', nouns: ['torc', 'trinket'], kind: 'trinket', mods: { armor: 8 }, look: 'A neck-ring of twisted iron, heavy and cold. It was made to turn the one blow that mail does not cover.' },
-  hearthstone: { id: 'hearthstone', name: 'hearthstone', nouns: ['hearthstone', 'trinket'], kind: 'trinket', mods: { regen: 14 }, look: 'A river pebble that somebody kept in a fire for a year and a day. It is still warm. Held against a wound, it seems to remind the flesh what it was like to be whole.' },
-  brooch: { id: 'brooch', name: 'moon-silver brooch', nouns: ['brooch', 'trinket'], kind: 'trinket', mods: { mana: 70 }, look: 'A cloak-pin of pale silver, set with a chip of something that holds the light. Spells come back to its wearer sooner than they should.' },
-  harefoot: { id: 'harefoot', name: "hare's foot", nouns: ['harefoot', 'trinket'], kind: 'trinket', mods: { stamina: 50 }, look: "A white hare's foot on a cord, for luck and for wind. Its last owner must have run out of one or the other." },
-  antlers: { id: 'antlers', name: "hart's-horn charm", nouns: ['antlers', 'trinket'], kind: 'trinket', mods: { stamina: 40, regen: 10 }, look: "A tine from the white hart's antler, pierced for a cord. Whoever wears it does not tire as other people tire, and mends a little as they walk." },
+  log: { id: 'log', weight: 0, keep: 'It is the one dry log in Hollowmere, and you know whose hearth it is for.', name: 'split log', nouns: ['log'], kind: 'misc', look: 'A split pine log, dry and resinous. It ought to burn well. Nothing does, here.' },
+  hatchet: { id: 'hatchet', weight: 4, icon: 'hatchet', name: 'hatchet', nouns: ['hatchet'], kind: 'weapon', power: 4, look: 'A wood-hatchet with a nicked edge. Made for kindling, but it has no opinions about what it splits.' },
+  sword: { id: 'sword', weight: 6, name: 'iron sword', nouns: ['sword'], kind: 'weapon', power: 7, look: 'Plain iron, well kept. Odd made it before his forge died, and it shows: every line of it is impatient.' },
+  bow: { id: 'bow', weight: 4, name: 'hunting bow', nouns: ['bow'], kind: 'bow', power: 5, look: "Toke's yew bow. It comes with a quiver that never seems to run dry, which you have decided not to question." },
+  longsword: { id: 'longsword', weight: 8, name: 'steel longsword', nouns: ['sword', 'longsword'], kind: 'weapon', power: 10, look: 'Steel, not iron: brighter, longer, and balanced so that it seems to want to move. Odd is quietly proud of it.' },
+  mail: { id: 'mail', weight: 20, name: 'mail shirt', nouns: ['mail'], kind: 'armor', power: 25, look: 'A shirt of riveted rings. It weighs as much as a small sheep and turns a quarter of what hits you.' },
+  token: { id: 'token', weight: 1, name: 'wolf-tooth token', nouns: ['token', 'trinket'], kind: 'trinket', mods: { dmg: 12 }, look: "A wolf's eye-tooth on a thong, drilled and carved with a single line. Whoever wore it struck harder for it, or believed they did, which in a fight comes to the same thing." },
+  torc: { id: 'torc', weight: 2, name: 'iron torc', nouns: ['torc', 'trinket'], kind: 'trinket', mods: { armor: 8 }, look: 'A neck-ring of twisted iron, heavy and cold. It was made to turn the one blow that mail does not cover.' },
+  hearthstone: { id: 'hearthstone', weight: 1, name: 'hearthstone', nouns: ['hearthstone', 'trinket'], kind: 'trinket', mods: { regen: 14 }, look: 'A river pebble that somebody kept in a fire for a year and a day. It is still warm. Held against a wound, it seems to remind the flesh what it was like to be whole.' },
+  brooch: { id: 'brooch', weight: 1, name: 'moon-silver brooch', nouns: ['brooch', 'trinket'], kind: 'trinket', mods: { mana: 70 }, look: 'A cloak-pin of pale silver, set with a chip of something that holds the light. Spells come back to its wearer sooner than they should.' },
+  harefoot: { id: 'harefoot', weight: 1, name: "hare's foot", nouns: ['harefoot', 'trinket'], kind: 'trinket', mods: { stamina: 50 }, look: "A white hare's foot on a cord, for luck and for wind. Its last owner must have run out of one or the other." },
+  antlers: { id: 'antlers', weight: 1, name: "hart's-horn charm", nouns: ['antlers', 'trinket'], kind: 'trinket', mods: { stamina: 40, regen: 10 }, look: "A tine from the white hart's antler, pierced for a cord. Whoever wears it does not tire as other people tire, and mends a little as they walk." },
   ember: {
-    id: 'ember', name: 'hearth-ember', nouns: ['ember'], kind: 'misc',
+    id: 'ember', weight: 0, keep: 'You would sooner leave your own hand behind. It is the way home.', name: 'hearth-ember', nouns: ['ember'], kind: 'misc',
     look: "A small horn box. Inside, on a bed of ash, a single coal from the Elder's hearth glows without ever burning down. It is warm through the horn, and it seems to lean, very slightly, toward home.",
     use: [{ run: 'emberHome' }],
     offer: { label: 'Go home by the ember', say: 'use ember', if: [{ quiet: true }, { not: { near: 'well', d: 400 } }] },
   },
-  glove: { id: 'glove', name: 'grey glove', nouns: ['glove'], kind: 'misc', look: "A man's glove of good grey wool, the left. Somebody knitted it with care a long time ago, and it has never been worn.", don: [{ say: 'It was knitted for one hand in particular, forty years ago, and yours is not the hand. You fold it away again.' }] },
-  spear: { id: 'spear', name: 'boar-spear', nouns: ['spear'], kind: 'weapon', power: 12, look: "Ivar's boar-spear: an ash shaft as thick as your wrist, and a blade like a willow leaf. It has stopped things a good deal bigger than you." },
-  bearcloak: { id: 'bearcloak', name: 'greyback cloak', nouns: ['bearcloak'], kind: 'armor', power: 35, look: "A cloak of the Greyback's hide, grey fur outward, stitched by Brekka with sinew. It turns a blade nearly as well as mail and weighs half as much. It still smells faintly of bear." },
+  glove: { id: 'glove', weight: 0, keep: 'It was made for somebody, and you are only carrying it to him.', name: 'grey glove', nouns: ['glove'], kind: 'misc', look: "A man's glove of good grey wool, the left. Somebody knitted it with care a long time ago, and it has never been worn.", don: [{ say: 'It was knitted for one hand in particular, forty years ago, and yours is not the hand. You fold it away again.' }] },
+  spear: { id: 'spear', weight: 10, name: 'boar-spear', nouns: ['spear'], kind: 'weapon', power: 12, look: "Ivar's boar-spear: an ash shaft as thick as your wrist, and a blade like a willow leaf. It has stopped things a good deal bigger than you." },
+  bearcloak: { id: 'bearcloak', weight: 10, name: 'greyback cloak', nouns: ['bearcloak'], kind: 'armor', power: 35, look: "A cloak of the Greyback's hide, grey fur outward, stitched by Brekka with sinew. It turns a blade nearly as well as mail and weighs half as much. It still smells faintly of bear." },
   tonic: {
-    id: 'tonic', name: "Runa's tonic", nouns: ['tonic'], kind: 'potion', consumed: true,
+    id: 'tonic', weight: 1, name: "Runa's tonic", nouns: ['tonic'], kind: 'potion', consumed: true,
     look: 'A thumb-sized bottle of something black, stoppered with wax. Runa says it puts back what the cold takes out.',
     use: [{ run: 'tonic' }, { say: 'It tastes like the bottom of a well. For a moment you can feel every one of your bones. Then they feel stronger than they did.' }],
   },
-  bearskin: { id: 'bearskin', name: 'white bearskin', nouns: ['bearskin'], kind: 'misc', look: 'The pelt of a snow bear, white as the drifts and heavy as a door. Worth real silver to anyone who has to sleep cold.' },
+  bearskin: { id: 'bearskin', weight: 15, icon: 'pelt', name: 'white bearskin', nouns: ['bearskin'], kind: 'misc', look: 'The pelt of a snow bear, white as the drifts and heavy as a door. Worth real silver to anyone who has to sleep cold.' },
   toyhorse: {
-    id: 'toyhorse', name: 'carved horse', nouns: ['horse'], kind: 'misc',
+    id: 'toyhorse', weight: 0, keep: 'It seemed wrong to leave it out in the snow by itself. It still does.', name: 'carved horse', nouns: ['horse'], kind: 'misc',
     look: 'A horse the length of your hand, carved from pine by somebody patient. One ear has been chewed, by somebody small.',
     don: [{ say: 'It is a horse. It is not a hat.' }],
   },
   ewe: {
-    id: 'ewe', name: 'stray ewe', nouns: ['sheep'], kind: 'misc',
+    id: 'ewe', weight: 0, keep: 'She leans on your leg with her whole weight and declines to be left. Somebody is expecting her.', name: 'stray ewe', nouns: ['sheep'], kind: 'misc',
     look: "She is not so much carried as accompanying. She has Gorm's mark on her fleece, and opinions about your pace.",
   },
   cheese: {
-    id: 'cheese', name: "Gorm's cheese", nouns: ['cheese'], kind: 'food', consumed: true,
+    id: 'cheese', weight: 1, name: "Gorm's cheese", nouns: ['cheese'], kind: 'food', consumed: true,
     look: 'A small hard cheese in a cloth, the colour of old candles. It smells strongly of sheep, and of somebody having very little and giving it anyway.',
     use: [{ heal: 12 }, { say: 'Hard, yellow, and sharp enough to make your eyes water. It was made from the milk of three discouraged ewes, and it is the best cheese you have ever eaten.' }],
   },
   venison: {
-    id: 'venison', name: 'haunch of venison', nouns: ['venison'], kind: 'food', consumed: true,
+    id: 'venison', weight: 5, plural: 'haunches of venison', name: 'haunch of venison', nouns: ['venison'], kind: 'food', consumed: true,
     look: 'A haunch of red deer, frozen hard already. Halla would give silver for it. So would your own stomach.',
     use: [{ heal: 16 }, { say: 'You carve off strips and eat them half frozen, the way hunters do. It is the best meal you have had since you came north.' }],
   },
   herb: {
-    id: 'herb', name: 'frostcap', nouns: ['herb'], kind: 'food', consumed: true,
+    id: 'herb', weight: 1, name: 'frostcap', nouns: ['herb'], kind: 'food', consumed: true,
     look: 'A small pale mushroom that grows under snow where the ground is sheltered. Bitter, and good for what ails you.',
     use: [{ heal: 8 }, { say: 'It tastes of cold earth and old pennies. Something in you eases all the same.' }],
   },
-  pelt: { id: 'pelt', name: 'wolf pelt', nouns: ['pelt'], kind: 'misc', look: 'A grey wolf pelt, thick with winter fur. Somebody in the village will give silver for it.' },
-  shield: { id: 'shield', name: 'round shield', nouns: ['shield'], kind: 'shield', look: 'Limewood and hide, with an iron boss. It has no paint on it yet. Earn some.' },
+  pelt: { id: 'pelt', weight: 3, icon: 'pelt', name: 'wolf pelt', nouns: ['pelt'], kind: 'misc', look: 'A grey wolf pelt, thick with winter fur. Somebody in the village will give silver for it.' },
+  shield: { id: 'shield', weight: 6, name: 'round shield', nouns: ['shield'], kind: 'shield', look: 'Limewood and hide, with an iron boss. It has no paint on it yet. Earn some.' },
   torch: {
-    id: 'torch', name: 'pitch torch', nouns: ['torch'], kind: 'misc',
+    id: 'torch', weight: 1, icon: 'torch', name: 'pitch torch', nouns: ['torch'], kind: 'misc',
     look: 'A stick wound with pitch-soaked rag, waiting for a spark.',
     use: [{ run: 'lightTorch' }],
   },
   potion: {
-    id: 'potion', name: 'red draught', nouns: ['potion'], kind: 'potion', consumed: true,
+    id: 'potion', weight: 1, name: 'red draught', nouns: ['potion'], kind: 'potion', consumed: true,
     look: 'Something red in a stoppered flask. It smells of iron and summer.',
     use: [{ heal: 25 }, { say: 'It tastes the way a hearth feels. Your wounds ease.' }],
   },
-  grain: { id: 'grain', name: 'sack of seed grain', nouns: ['grain'], kind: 'misc', look: "A heavy sack with a G in a ring burned into it. Gorm's whole spring is in here." },
-  amulet: { id: 'amulet', name: 'silver amulet', nouns: ['amulet'], kind: 'misc', look: 'A moonstone on a silver chain. Forty years in the ice have not dimmed it. It is faintly warm.',
+  grain: { id: 'grain', weight: 0, keep: 'Gorm\'s whole spring is in that sack. You are not putting it down anywhere but on his floor.', name: 'sack of seed grain', nouns: ['grain'], kind: 'misc', look: "A heavy sack with a G in a ring burned into it. Gorm's whole spring is in here." },
+  amulet: { id: 'amulet', weight: 0, keep: 'It went into the ice once. It is not going to be put down again until it is in his hand.', name: 'silver amulet', nouns: ['amulet'], kind: 'misc', look: 'A moonstone on a silver chain. Forty years in the ice have not dimmed it. It is faintly warm.',
     don: [{ say: 'You hold it up by the chain, and find you cannot. It was put round one neck, once, by one pair of hands, and you are only carrying it home.' }],
   },
-  crown: { id: 'crown', name: 'seven-pointed crown', nouns: ['crown'], kind: 'misc', look: 'Black iron, seven points, far heavier than it looks. It is the only thing the Barrow-King left behind. You do not feel like trying it on.',
+  crown: { id: 'crown', weight: 0, keep: 'You set it down, and find that you have picked it up again without meaning to. It is not done with you.', name: 'seven-pointed crown', nouns: ['crown'], kind: 'misc', look: 'Black iron, seven points, far heavier than it looks. It is the only thing the Barrow-King left behind. You do not feel like trying it on.',
     // What the crown does to its wearer is the second saga's whole secret; a glimpse of it is there for anyone who asks.
     don: [{ say: 'You lift it in both hands. It is heavier than it was a moment ago, and your fingers have gone to sleep. For one breath you are sitting in a stone seat with every fire of a village laid at your feet, and you are cold, and you have been cold for longer than there are words for. Then you are yourself again, and the crown is back in your pack. You do not remember putting it there.' }],
+  },
+  // What the pack is carried in. Each lets a Thane carry more, for good.
+  trappack: {
+    id: 'trappack', weight: 0, carry: 20, keep: 'Brekka would know. Somehow, from two ridges off, she would know.', name: "Brekka's pack", nouns: ['pack'], kind: 'misc', icon: 'sack', don: [{ say: 'It is on your back, and has not been off it since Brekka pulled the strap tight.' }],
+    look: 'A pack of grey wolf-hide, fur turned inward, with a frame of willow sewn into the back and a strap across the chest. Six wolves went into it. It rides high and close, and takes a good deal more than your old one ever did without once complaining about it.',
+  },
+  frame: {
+    id: 'frame', weight: 0, carry: 15, keep: 'Somebody carried it forty winters before you. You can manage a few more.', name: "pedlar's frame", nouns: ['frame'], kind: 'misc', icon: 'sack', don: [{ say: 'It is on your back already, and your pack rides on it.' }],
+    look: 'Two uprights of ash, bent and pegged, with a shelf at the foot and straps of plaited hide worn dark by somebody\'s shoulders. Burned into the crossbar: ELDMARK TO THE COAST AND BACK, FORTY WINTERS. Your pack rides on it now, with room to spare.',
   },
   tomeFlame: tome('tomeFlame', 'flame', 'singed tome', 'A book with scorched edges. The title page reads: FLAME, and How to Mean It.', 'The letters crawl, then settle. You understand, suddenly, how fire is spoken to. It is mostly a matter of tone.'),
   tomeFrost: tome('tomeFrost', 'frost', 'pale blue tome', 'A book bound in pale hide, cold to the touch. FROST: A Slowing.', 'Your breath smokes as you read. When you close the book the cold stays in your hands, waiting.'),
@@ -99,7 +108,7 @@ const items: Record<string, ItemDef> = {
   tomeWard: tome('tomeWard', 'ward', 'grey tome', 'A book bound in grey iron-cloth. WARD: Against What Is Coming.', 'You feel the air around you consider hardening, and wait to be asked.'),
 };
 
-const robber: Effect[] = [{ add: 'bandits.killed', n: 1 }, { gold: 3 }, { chance: 0.25, do: [{ give: 'potion' }, { note: 'It was carrying a red draught.' }] }];
+const robber: Effect[] = [{ add: 'bandits.killed', n: 1 }, { gold: 3 }, { chance: 0.25, do: [{ give: 'potion', took: 'It was carrying a red draught.' }] }];
 
 const enemies: Record<string, EnemyDef> = {
   wolf: {
@@ -107,7 +116,7 @@ const enemies: Record<string, EnemyDef> = {
     spec: { body: 'wolf', skin: 'fur', hair: 'fur', hairStyle: 'short', tunic: 'fur', legs: 'fur', boots: 'fur' },
     look: 'Lean, grey, and entirely focused on you. Its ribs show. Winter has been hard on everyone.',
     kills: 'The wolf was hungry and you were slow. In the spring, something green grows where you fell.',
-    death: [{ add: 'wolves.killed', n: 1 }, { chance: 0.6, do: [{ give: 'pelt' }, { note: 'You take the pelt.' }] }],
+    death: [{ add: 'wolves.killed', n: 1 }, { chance: 0.6, do: [{ give: 'pelt', took: 'You take the pelt.' }] }],
   },
   bandit: {
     id: 'bandit', name: 'bandit', nouns: ['bandit'], ai: 'melee', hp: 22, dmg: 6, speed: 1.2,
@@ -135,7 +144,7 @@ const enemies: Record<string, EnemyDef> = {
     spec: { body: 'deer', size: 1.15, skin: 'leather', hair: 'leather', hairStyle: 'short', tunic: 'leather', legs: 'leather', boots: 'leather' },
     look: 'A red stag, scraping at the snow for what is under it. It has not seen you yet. The moment it does, it will be somewhere else.',
     kills: '',
-    death: [{ give: 'venison' }, { set: 'deer.killed' }, { note: 'Venison. Tonight you eat like a jarl.' }],
+    death: [{ set: 'deer.killed' }, { give: 'venison', took: 'Venison. Tonight you eat like a jarl.' }],
   },
   whitehart: {
     id: 'whitehart', name: 'white hart', nouns: ['stag', 'whitehart'], ai: 'prey', hp: 13, dmg: 0, speed: 2.9,
@@ -149,7 +158,7 @@ const enemies: Record<string, EnemyDef> = {
     spec: { body: 'bear', size: 1.5, skin: 'cream', hair: 'cream', hairStyle: 'short', tunic: 'cream', legs: 'cream', boots: 'cream' },
     look: 'A bear the colour of the drifts, with a head like an anvil. It was asleep until you came. It would like you to know that.',
     kills: 'The bear does not hurry, because it does not have to. Afterwards it goes back to sleep.',
-    death: [{ give: 'bearskin' }, { note: 'You take the great white pelt.' }],
+    death: [{ give: 'bearskin', took: 'You take the great white pelt.' }],
   },
   greyback: {
     id: 'greyback', name: 'the Greyback', nouns: ['bear', 'greyback'], ai: 'melee', reach: 34, hp: 110, dmg: 15, speed: 1.2,
@@ -170,7 +179,7 @@ const enemies: Record<string, EnemyDef> = {
     spec: { skin: 'skin', hair: 'red', hairStyle: 'long', beard: true, tunic: 'red', legs: 'leather', boots: 'fur', cloak: 'fur', collar: 'fur', armed: true, size: 1.15 },
     look: 'Bigger than the others, better fed, and wearing somebody else\'s good cloak. The rest watch him before they do anything.',
     kills: 'The chief wipes his blade on your cloak, decides he likes the cloak, and takes that as well.',
-    death: [{ add: 'bandits.killed', n: 1 }, { gold: 14 }, { give: 'potion' }, { note: 'He carried silver, and a red draught.' }],
+    death: [{ add: 'bandits.killed', n: 1 }, { gold: 14 }, { give: 'potion', took: 'He carried silver, and a red draught.' }],
   },
   coldsmith: {
     // "The smith" is Odd's word everywhere else. Down here it can only mean this one.
@@ -398,6 +407,8 @@ const deeds: Content['deeds'] = [
   { if: [{ quest: 'message', is: 3 }], text: 'Carried a glove forty years late from Marta Coldhand to Ivar One-Glove.' },
   { if: [{ quest: 'greyback', min: 2 }], text: 'Killed the Greyback, who had robbed traps for six winters.' },
   { if: [{ flag: 'tonic' }], text: "Drank Runa's tonic, and kept it down." },
+  { if: [{ has: 'trappack' }], text: 'Carried the hides of six wolves to Brekka, and carried them away again as a pack.' },
+  { if: [{ has: 'frame' }], text: "Took up a pedlar's frame where he set it down, having further to go than he did." },
   { if: [{ flag: 'gate.open' }], text: 'Found the door in the Frost Gate, where the west wind is born.' },
   { if: [{ flag: 'smith.dead' }], text: 'Broke the Cold Smith at his own anvil.' },
   { if: [{ flag: 'crown.unmade' }], text: 'Unmade the seven-pointed crown, and ended a winter four thousand years long.' },
@@ -429,6 +440,8 @@ export const content: Content = {
   perks,
   frontier,
   rules,
+  // A pack holds thirty-five to begin with; a deeper wind adds five for every level put into stamina.
+  carry: { base: 35, stamina: 0.5 },
   music,
   cues: { title: 'valley', battle: 'battle', fallback: 'wild', night: 'night', boss: 'doom' },
   calm: [{ flag: 'crown.unmade' }],

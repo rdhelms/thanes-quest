@@ -234,6 +234,13 @@ export const village: RoomDef = {
     { on: ['sell pelt'], if: [{ near: 'odd' }], do: [{ say: '"Bring me a pelt and I will give you three silver for it," says Odd.' }] },
     { on: ['sell trinket', 'sell token', 'sell torc', 'sell hearthstone', 'sell brooch', 'sell harefoot', 'sell antlers'], if: [{ near: 'odd' }], do: [{ run: 'sellTrinket' }] },
     { on: ['sell bearskin', 'give bearskin'], if: [{ near: 'odd' }, { has: 'bearskin' }], do: [{ lose: 'bearskin' }, { gold: 8 }, { sound: 'take' }, { say: 'Odd runs a thumb through the white fur and almost whistles. "Eight silver. And I am not asking how."' }] },
+    // What Odd made he will buy back, for less than he sold it; what he did not make, he will not.
+    { on: ['sell sword', 'give sword odd'], if: [{ near: 'odd' }, { has: 'sword' }], do: [{ run: 'buyBack', arg: 'sword=10' }] },
+    { on: ['sell longsword', 'sell sword', 'give longsword odd'], if: [{ near: 'odd' }, { has: 'longsword' }], do: [{ run: 'buyBack', arg: 'longsword=25' }] },
+    { on: ['sell mail', 'give mail odd'], if: [{ near: 'odd' }, { has: 'mail' }], do: [{ run: 'buyBack', arg: 'mail=18' }] },
+    { on: ['sell shield', 'give shield odd'], if: [{ near: 'odd' }, { has: 'shield' }], do: [{ run: 'buyBack', arg: 'shield=6' }] },
+    { on: ['sell hatchet', 'give hatchet odd'], if: [{ near: 'odd' }, { has: 'hatchet' }], do: [{ say: '"If you mean the one from the woodpile, I never saw it, and I do not want it back," says Odd. "Leave it where you found it. Somebody has to split the kindling."' }] },
+    { on: ['sell spear', 'sell bow', 'sell bearcloak', 'sell tome', 'sell flame', 'sell frost', 'sell mend', 'sell light', 'sell ward'], if: [{ near: 'odd' }], do: [{ say: '"I did not make it, and I do not buy what I did not make," says Odd. "Then I would have to know what it was worth."' }] },
   ],
 };
 
