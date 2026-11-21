@@ -25,54 +25,48 @@ examples of games that achieve that feeling of depth and scale, each in a differ
 
 ## How to write its stories
 
-These hold for every story in the game, the main one and the side ones. Check a story against all
-of them before any of it is written into the game.
+What professional writers and game designers say makes a story work. These hold for every story in
+the game, the main one and the side ones.
 
 **Character**
 
-- Someone must want something, and it must cost them. (Vonnegut: every character should want
-  something, even if only a glass of water.)
-- A story belongs to whoever makes a choice under pressure, and the choice shows who they are
-  (McKee). If things only happen to a character, it is not yet their story.
-- The conflict worth writing is inside a person: "the human heart in conflict with itself"
-  (Faulkner).
+- Someone must want something, and it must cost them. Vonnegut: every character should want
+  something, even if only a glass of water.
+- True character is revealed in the choices a person makes under pressure (Robert McKee).
+- The conflict worth writing is internal: "the human heart in conflict with itself" (Faulkner).
 
 **Plot**
 
-- Cause, not sequence. "The king died and then the queen died" is a list; "the king died, and then
-  the queen died of grief" is a plot (Forster). Between any two beats it must be possible to say
-  "therefore" or "but", never "and then".
-- An ending should be surprising and, looking back, inevitable (Aristotle). Coincidence may get
-  people into trouble, never out of it.
-- Build forwards from what people wanted and knew, never backwards from a prop or a twist. Every
-  step has to survive "why would they do that?" and "why didn't they just...?"
+- Cause, not sequence. "The king died and then the queen died" is a story; "the king died, and
+  then the queen died of grief" is a plot (E. M. Forster). Between any two beats it should be
+  possible to say "therefore" or "but", never "and then" (Trey Parker and Matt Stone).
+- An ending should be surprising yet inevitable (Aristotle). Coincidence may get characters into
+  trouble, never out of it (Pixar).
 
 **World**
 
-- Magic is its limits and its costs (Sanderson). A problem may only be solved by magic the player
-  already understands, and what exists is deepened before anything new is added. A rune does what
-  it says and nothing more.
-- Know far more than is shown (Hemingway's iceberg). Depth comes from glimpses of histories that
-  are never told in full.
-- Time and scale should be ones people could live in: a custom or a rhyme lasts a few hundred
-  years, not thousands.
+- Magic is defined by its limits and costs (Brandon Sanderson). Problems can only be solved with
+  magic the audience already understands, limitations are more interesting than powers, and what
+  exists should be deepened before anything new is added.
+- Know far more than is shown (Hemingway's iceberg). Tolkien's sense of depth comes from glimpses
+  of histories that are never told.
 
 **Telling**
 
-- Give the player two and two, not four (Stanton). Know what a story is about in one sentence, and
-  never let anyone in it say so.
-- People talk to get something, and rarely say what they mean. Each voice should be known without
-  its name.
-- A legend is somebody's version: what the tellers saw, what they could not know, and what they
-  needed to believe. It should sound like neighbours talking. In-world accounts may be partial and
-  may disagree.
+- Give the audience two plus two, not four: let them do the sum (Andrew Stanton). Know what the
+  story is about in one sentence, and never have anyone say it.
+- People talk to get something, and rarely say what they mean. Each voice should be recognisable
+  without the name attached.
 
-**In a game**
+**Games**
 
 - The player is the protagonist. The story is what they do and find, not what they are told. A
-  place should make them ask "what happened here?" and let them work it out.
-- Obstacles come out of the story and move it on. No arbitrary puzzles, and reward what the player
-  meant to do (Ron Gilbert).
+  place should make the player ask "what happened here?" and let them work it out (Harvey Smith
+  and Matthias Worch, on environmental storytelling).
+- In-world sources are partial and biased. The Elder Scrolls tells its history through books that
+  disagree with each other. A legend is somebody's version.
+- Obstacles come out of the story and move it forward. No arbitrary puzzles, and reward the
+  player's intent (Ron Gilbert, "Why Adventure Games Suck").
 
 ## How to work here
 
