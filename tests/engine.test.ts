@@ -998,7 +998,7 @@ describe('the map', () => {
     cells = chart(content, sim.state.flags, sim.state.room);
     // Indoors, you are shown where the door leads out.
     expect(cells.find((c) => c.here)?.name).toBe('Hollowmere');
-    expect(cellOf(content, 'throne')).toEqual([0, -2]);
+    expect(cellOf(content, 'hut')).toEqual([2, -2]);
     sim.enterRoom('wild_2_1', 20, 140);
     cells = chart(content, sim.state.flags, sim.state.room);
     expect(cells.find((c) => c.here)).toMatchObject({ x: 2, y: 1 });
@@ -1145,17 +1145,7 @@ describe('what the wild holds', () => {
   });
 });
 
-describe('after the first saga', () => {
-  const thane = (room: string, x: number, y: number): Sim => {
-    const sim = game(room, x, y);
-    sim.state.flags['hearth.lit'] = true;
-    sim.state.flags['marta.met'] = true;
-    sim.state.flags['quest:hearth'] = 5;
-    sim.enterRoom(room, x, y);
-    sim.drain();
-    return sim;
-  };
-
+describe('once the hearth is lit', () => {
   it('lets the smith temper a blade and mail, for more each time', () => {
     const sim = thane('village', 124, 158);
     const odd = sim.rs.actors.find((a) => a.ref === 'odd')!;
@@ -1199,8 +1189,11 @@ describe('after the first saga', () => {
       sim.p.y = marta.y;
     };
     stand();
-    expect(type(sim, 'talk to elder')[0]).toContain('more work');
+    // The first thing she has to say, the morning after, is not about work.
+    expect(type(sim, 'talk to elder')[0]).toContain("He'll be half right");
+    expect(sim.state.flags['bounty.room']).toBeUndefined();
     const offer = type(sim, 'talk to elder');
+    expect(offer[0]).toContain("I've other work for a Thane");
     expect(offer.join(' ')).toMatch(/ridges? (north|south|east|west)/);
     expect(offer.join(' ')).toContain("New task: The Elder's Work");
     const first = String(sim.state.flags['bounty.room']);
