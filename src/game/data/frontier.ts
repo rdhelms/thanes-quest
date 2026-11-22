@@ -36,7 +36,7 @@ const sights: SightDef[] = [
     prop: { t: 'signpost' },
     thing: { nouns: ['sign'], try: ['read sign'], look: 'An oak post with three arms, each cut to a point and carved deep. The names are worn, but they can still be read.' },
     rules: [
-      { on: 'orun', do: [{ say: "ORUN. Under the snow at the foot of the post lies a fourth arm, snapped off short. It says THE KING'S ROAD. Under that, in the hand that carved all the rest: KEEP OFF IT." }] },
+      { on: 'orun', do: [{ say: 'ORUN. Under the snow at the foot of the post lies a fourth arm, snapped off short. It says THE GATE. Under that, in the hand that carved all the rest: NO FURTHER.' }] },
       {
         on: ['read sign', 'pet sign'], if: [near('fingerpost'), { not: { flag: 'sight.fingerpost' } }],
         do: [{ set: 'sight.fingerpost' }, { run: 'study', arg: 12 }, { say: 'One arm says HOLLOWMERE, and points more or less the right way. One says THE FERRY, and points toward the sunrise, where there is no river. The third says ELDMARK, THREE DAYS. Under that somebody has cut, later and smaller: NOT ANY MORE.' }],
@@ -47,21 +47,21 @@ const sights: SightDef[] = [
     ],
   },
   {
-    id: 'kingsroad', name: 'The Road Stone', biomes: ['open', 'pines'], minDepth: 2, side: 'w',
+    id: 'roadstone', name: 'The Road Stone', biomes: ['open', 'pines'], minDepth: 2, side: 'n',
     seen: 'A squared stone stands in the snow here, too regular to be a boulder.',
     prop: { t: 'stone', h: 22 },
     thing: { nouns: ['menhir'], try: ['read stone'], look: 'A waist-high stone, squared on four sides, with a single line cut down the face of it, like a road seen from a height. No number. No name.' },
     rules: [
       {
-        on: 'orun', if: [{ flag: 'fenn.told' }],
-        do: [{ say: 'ORUN. The snow goes to glass, and under it is a road: flagged, straight as a rule, running out of the barrow country and into the west. It is exactly as wide as one man walking, and the flags are worn in a single line down the middle. You know now who walked it, and what he went to ask for.' }],
+        on: 'orun', if: [{ flag: 'winter.broken' }],
+        do: [{ say: "ORUN. The wet snow goes to glass, and under it is a road: flagged, straight as a rule, running north. And on it, many winters down, footprints: a woman's, long in the stride, and a child's beside them. Here the small ones are still keeping up. You know where they stop." }],
       },
-      { on: 'orun', do: [{ say: 'ORUN. The snow goes to glass, and under it is a road: flagged, straight as a rule, running out of the barrow country and into the west. It was never built for carts. It is exactly as wide as one man walking, and the flags are worn in a single line down the middle, as if he had walked it more than once.' }] },
+      { on: 'orun', do: [{ say: "ORUN. The snow goes to glass, and under it is a road: flagged, straight as a rule, as wide as a cart, running north. And on it, many winters down, footprints: a woman's, long in the stride, and a child's beside them. Here the small ones are still keeping up, and still going straight." }] },
       {
-        on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('kingsroad'), { not: { flag: 'sight.kingsroad' } }],
-        do: [{ set: 'sight.kingsroad' }, { run: 'study', arg: 12 }, { say: 'You put your palm to the cut line. It is no rune, and it teaches you nothing. It only points along itself: east, the way you came, and west, the way the wind comes from.' }],
+        on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('roadstone'), { not: { flag: 'sight.roadstone' } }],
+        do: [{ set: 'sight.roadstone' }, { run: 'study', arg: 12 }, { say: 'You put your palm to the cut line. It is no rune, and it teaches you nothing. It only points along itself: south, toward the smoke of Hollowmere, and north, where nobody goes.' }],
       },
-      { on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('kingsroad')], do: [{ say: 'A line, cut deep, pointing east and west. That is all it has to say.' }] },
+      { on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('roadstone')], do: [{ say: 'A line, cut deep, pointing south and north. That is all it has to say.' }] },
       { on: ['read menhir', 'pet menhir', 'read inscription'], do: [{ say: 'You are not close enough.' }] },
     ],
   },
@@ -155,21 +155,29 @@ const sights: SightDef[] = [
     ],
   },
   {
-    id: 'boundary', name: 'The Open Hand', biomes: ['open', 'crags'], minDepth: 4,
-    seen: 'A tall stone leans here, with a hand carved on it, palm outward.',
-    prop: { t: 'stone', h: 46 },
+    id: 'shuthouse', name: 'The Shut House', biomes: ['open', 'pines'], minDepth: 2,
+    seen: 'A house stands here by itself, drifted to the eaves, with no smoke at its roof.',
+    prop: { t: 'hall', w: 60, v: 'cold' },
     thing: {
-      nouns: ['menhir'], try: ['read stone'],
-      look: 'A stone twice your height, with an open hand cut into the side that faces the valley: palm out, fingers up, the sign in any country for THIS FAR. It is as old as the barrow. Something has been at the foot of it with a chisel, a good deal later.',
+      nouns: ['hall', 'door'], reach: 60, try: ['open door', 'sleep'],
+      look: 'A turf-roofed house of logs, drifted to the eaves. The door is frozen into its frame: a skin of ice runs right round it, like the seal on a jar. No smoke, and no tracks but yours.',
+      lookWhen: [{ if: [{ flag: 'sight.shuthouse' }], look: 'A turf-roofed house of logs, drifted to the eaves, with its door standing a hand open. Inside: one room, a cold hearth, a chair, and the man in the chair. His boots are side by side by the door.' }],
     },
     rules: [
-      { on: 'orun', do: [{ say: 'ORUN. All round you under the snow are the stumps of other stones like this one, broken off short: a ring of them, miles round, a great fence of open hands. Every one of them faces inward. They were not set up to keep anything out.' }] },
+      { on: 'orun', if: [{ flag: 'sight.shuthouse' }], do: [{ say: 'ORUN. Under the hearthstone there is a crock, and in the crock, as dry as the day it was put there, a double handful of seed corn. He kept back his spring. And on the lintel, inside, cut with a knife, small: his winters here, in fives. They stop at thirty-one.' }] },
+      { on: 'orun', do: [{ say: 'ORUN. The logs go thin as horn. There is one room in there, and a chair drawn up to a cold hearth, and somebody sitting in it who does not turn round.' }] },
       {
-        on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('boundary'), { not: { flag: 'sight.boundary' } }],
-        do: [{ set: 'sight.boundary' }, { run: 'study', arg: 20 }, { sound: 'word' }, { say: "You lay your hand in the carved one. It is bigger than yours, and it wears a ring on every finger. The old tongue comes up through your palm: no word of power, only a sentence. THE KING'S FIRE REACHES HERE. Under it, cut small and badly by somebody in a hurry: AND HIS COLD, FURTHER." }],
+        on: 'veth', if: [near('shuthouse'), { not: { flag: 'sight.shuthouse' } }],
+        do: [{ set: 'sight.shuthouse' }, { sound: 'door' }, { say: 'VETH. The ice round the door lets go all at once, like a held breath, and the door swings in.\n\nInside there is one room, a cold hearth, and a man in a chair in front of it, with his boots off and set side by side by the door, as a man sets them who has come in for the night. He has been dead some winters. He is the only one of the dead you have met out here who is where he was left.' }],
       },
-      { on: ['read menhir', 'pet menhir', 'read inscription'], if: [near('boundary')], do: [{ say: "THE KING'S FIRE REACHES HERE. And under it: AND HIS COLD, FURTHER." }] },
-      { on: ['read menhir', 'pet menhir', 'read inscription'], do: [{ say: 'You are not close enough.' }] },
+      { on: 'veth', if: [{ not: { flag: 'sight.shuthouse' } }], do: [{ say: 'The word goes out across the snow, and the house does not hear it. You would need to be nearer the door.' }] },
+      {
+        on: ['sleep', 'sleep hall', 'enter hall', 'enter door', 'enter', 'open door'], if: [{ flag: 'sight.shuthouse' }, { quiet: true }, near('shuthouse')],
+        do: [{ run: 'rest' }, { say: 'You sleep on his floor, out of the wind, with the door pushed to. He does not seem to mind the company. In the morning you are whole again. You set his boots straight, which they were already, and shut the door behind you as well as it will shut.' }],
+      },
+      { on: ['sleep', 'sleep hall', 'enter hall', 'enter door', 'enter'], if: [{ flag: 'sight.shuthouse' }], do: [{ say: 'Not with something at your heels, and not from over here.' }] },
+      { on: ['open door', 'push door', 'pull door', 'knock door', 'enter hall', 'enter door', 'attack door', 'sleep', 'sleep hall'], do: [{ say: 'The door is frozen into its frame, all the way round. You put your shoulder to it, and then your boot. It has been shut a great deal longer than you have been pushing.' }, { note: 'It wants opening by something stronger than a shoulder.' }] },
+      { on: ['take hall', 'light hearth', 'light'], if: [{ flag: 'sight.shuthouse' }], do: [{ say: 'There is wood laid on his hearth, and you have a flint. You leave it. It is his fire, and he let it go out.' }] },
     ],
   },
   {
@@ -220,11 +228,11 @@ const sights: SightDef[] = [
       look: 'A knee-high heap of pebbles and flat stones, and every one has a few words scratched on it. They are wishes. The ones on top say LESS SNOW, and LESS SNOW, and A DOG, and LESS SNOW, and SPRING. ANY SPRING. I AM NOT FUSSY.',
     },
     rules: [
-      { on: 'orun', do: [{ say: 'ORUN. The heap goes clear as water to the frozen ground, and you can read every stone in it. Near the top they ask for less snow. Further down they ask for an early spring, and further still for a mild winter. At the very bottom, on stones worn nearly smooth, in letters nobody has cut for four thousand years, they ask for rain.' }] },
+      { on: 'orun', do: [{ say: 'ORUN. The heap goes clear as water to the frozen ground, and you can read every stone in it. Near the top they ask for less snow. Further down they ask for an early spring, and further still for a mild winter. At the very bottom, on stones worn nearly smooth, in letters nobody has cut for three hundred winters, they ask for a fine day for the wedding, and good weather for the hay.' }] },
       { on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [{ flag: 'sight.wishes' }, near('wishes')], do: [{ say: 'One stone each seems to be the custom. You have had yours.' }] },
       {
-        on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [{ flag: 'crown.unmade' }, near('wishes')],
-        do: [{ set: 'sight.wishes' }, { say: 'You find a flat stone and begin to scratch LESS SNOW on it, out of habit, and then you stop. In Hollowmere the eaves are dripping. You turn the stone over, scratch THANK YOU on the other side instead, and set it on the top, that side up.' }],
+        on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [{ flag: 'winter.broken' }, near('wishes')],
+        do: [{ set: 'sight.wishes' }, { say: 'You find a flat stone and begin to scratch LESS SNOW on it, out of habit, and then you stop. There is rain on the back of your hand. You turn the stone over, scratch THANK YOU on the other side instead, and set it on the top, that side up.' }],
       },
       {
         on: ['wish', 'wish wishes', 'use wishes', 'give wishes'], if: [near('wishes')],
@@ -306,6 +314,10 @@ const sights: SightDef[] = [
     rules: [
       { on: 'orun', do: [{ say: 'ORUN. The snow on the ledge above blows clear, and the rock there is scratched all over with small pictures in rows: each one a roof, with a line of smoke going up from it. Somebody who lived out here climbed up, winter after winter, to count the smoke of home. The first rows have twenty roofs. The last has eleven. After that nobody came up to count.' }] },
       {
+        on: ['climb pegs', 'climb crag', 'climb', 'use pegs'], if: [{ flag: 'winter.broken' }, near('lookout')],
+        do: [{ say: 'You go up the pegs, which are wet, and haul yourself onto the ledge. The whole country lies below you, going grey and brown at the edges, and at the far end of it is Hollowmere: eleven threads of smoke going up, and bending now, because there is a wind. You sit and look at it for a while before you climb down.' }],
+      },
+      {
         on: ['climb pegs', 'climb crag', 'climb', 'use pegs'], if: [{ flag: 'hearth.lit' }, near('lookout')],
         do: [{ say: 'You go up the pegs, which are colder than iron has any right to be, and haul yourself onto the ledge. The whole country you have crossed lies below you, white and folded, and at the far end of it, so small you nearly miss it, is Hollowmere, with smoke going straight up from all eleven of its roofs. It is a fine thing to see from a long way off. You sit and look at it for a while before you climb down.' }],
       },
@@ -371,13 +383,15 @@ export const frontier: FrontierDef = {
   grid: {
     ridge: [-2, -2], barrow: [0, -2], tarn: [2, -2],
     pinewood: [-2, 0], village: [0, 0], farm: [2, 0],
-    camp: [-2, 2], ford: [0, 2], tower: [2, 2],
-    // Far out to the west, where the second saga ends.
-    frostgate: [-5, 0],
-    // Landmarks for those who walk east and north instead.
+    camp: [-2, 2], ford: [0, 2],
+    // A morning beyond the valley's mouth, on the south road.
+    tower: [0, 4],
+    // Landmarks, far out. The Giant's Table is beyond the first wall.
     bellmere: [5, -1],
     hangtree: [0, -5],
-    dolmen: [1, 5],
+    dolmen: [1, 8],
+    // The gate in the north wall, and the road beyond it. Nothing else lies north of the wall.
+    northgate: [0, -10], oldroad: [0, -11], windend: [0, -12], hanging: [0, -13], hollow: [0, -14],
   },
   // The barrow's mound closes off its north side; every other edge opens onto the valley's roads
   // or the country beyond.
@@ -385,7 +399,9 @@ export const frontier: FrontierDef = {
     ridge: 'nsew', barrow: 'sew', tarn: 'nsew',
     pinewood: 'nsew', village: 'nsew', farm: 'nsew',
     camp: 'nsew', ford: 'nsew', tower: 'nsew',
-    frostgate: 'se', bellmere: 'nsew', hangtree: 'nsew', dolmen: 'nsew',
+    bellmere: 'nsew', hangtree: 'nsew', dolmen: 'nsew',
+    // The gate's north side is its own road; the places beyond it open onto nothing but each other.
+    northgate: 'sew', oldroad: '', windend: '', hanging: '', hollow: '',
   },
   valley: {
     reach: 2,
@@ -395,7 +411,7 @@ export const frontier: FrontierDef = {
     quiet: 1,
     called: {
       village: 'Hollowmere', barrow: 'the barrow', tarn: 'the tarn', ridge: 'the ridge', pinewood: 'the pinewood',
-      farm: "Gorm's farm", camp: 'the bandit camp', ford: 'the ford', tower: 'the old watchtower',
+      farm: "Gorm's farm", camp: 'the bandit camp', ford: 'the ford',
     },
   },
   music: 'wild',
@@ -419,14 +435,17 @@ export const frontier: FrontierDef = {
     steading: [['wolf', 'wolf'], ['bandit', 'archer'], ['bandit', 'chief', 'archer']],
   },
   folk: ['brekka', 'ivar', 'runa'],
+  // Runa lives out past the old watchtower: the next screen down the south road is her steading.
+  folkPast: { runa: 'tower' },
+  kinds: { '0,5': 'steading' },
+  // The second wall is the last on its north side: it runs on without end, and has one gate.
+  northWall: 10,
   haunts: [{ kind: 'greyback', near: 'brekka', biome: 'crags', if: [{ quest: 'greyback', is: 1 }] }],
   herb: 'herb',
   game: { pines: 'deer', open: 'deer', mere: 'deer' },
   rareGame: { kind: 'whitehart', odds: 0.12, minDepth: 3 },
   trinkets: ['token', 'torc', 'hearthstone', 'brooch', 'harefoot'],
   sights,
-  // Once the King's people have been given their fire, nothing walks at night that ought to be asleep.
-  nightIf: [{ not: { flag: 'dead.rested' } }],
   // Near home, a good deal of the country has nothing in it but snow and quiet; far out, very
   // little does. A reaver camp is never empty.
   quiet: {
@@ -457,17 +476,12 @@ export const frontier: FrontierDef = {
         held: 'They will not let you by. Every time you make for the gap, something with teeth is there first.',
         open: 'Nothing is left alive in the gap. The way through the wall is open now, and the bones in it are all that says what lived here.',
       },
-      {
-        id: 'dead',
-        life: [['wight', 'wight'], ['rimewalker', 'wight', 'wight'], ['rimewalker', 'rimewalker', 'wight'], ['rimewalker', 'rimewalker', 'wight', 'wight']],
-        first: ['Bone', 'Grave', 'Hollow', 'Old', 'Cold'],
-        look: "There was a gate across the gap %s once, in somebody's kingdom. Two worn posts of stone are all that is left of it, and its guards are still at them. They have been dead a long time, and nobody has told them.",
-        held: 'The dead guards close the way. They were set here to let nobody through, and they are still doing it.',
-        open: 'The last of the guards falls, and lies still at last. Nobody keeps the old gate now. The way through the wall is open.',
-      },
     ],
   },
   text: {
+    deadRestSeen: 'One of the dead has sat down here, at the side of the way, facing north, and does not get up as you pass.',
+    deadRest: 'One of the dead, sitting where it stopped, with its back against a drift and its face to the north: the way it was going. It does not get up. It has the look of somebody who walked a long way to hear a thing, and has heard it.',
+    deadRestNouns: ['wight'],
     pines: {
       first: ['The Hollow', 'The Crowding', 'The Silent', 'The Leaning', 'The Black', 'The Winter', 'The Listening', 'The Wolf', 'The Hare', 'The Owl', 'The Deep', 'The Fox', 'The Raven', 'The Snow-Bent', 'The Long'],
       second: ['Pines', 'Wood', 'Stand', 'Thicket', 'Boughs', 'Firs', 'Holt', 'Grove', 'Shaw', 'Brake'],
@@ -649,7 +663,7 @@ export const frontier: FrontierDef = {
     cryptTake: 'You take what will carry: %s silver in old coin and hack-silver. It is very cold to the touch.',
     cryptTrinket: 'Among the coin your fingers close on something that is not coin: %s. It has lain here a long time, waiting to be of use to somebody.',
     cryptWake: 'The last coin is hardly in your pack when stone grinds on stone behind you. The lids are moving. They were not asleep. They were waiting to see what you would do.',
-    cryptTrap: 'A flagstone sinks a finger\'s width under your boot, and something old and sharp comes out of the wall at knee height. It has been waiting four thousand years to do that, and it has lost none of its enthusiasm.',
+    cryptTrap: 'A flagstone sinks a finger\'s width under your boot, and something old and sharp comes out of the wall at knee height. It has been waiting a very long time to do that, and it has lost none of its enthusiasm.',
     cryptTaken: 'You have had the best of it. The rest is too heavy, or too closely watched.',
     cryptRune: 'A rune cut into the wall, giving a faint green light. It is not one of the great words. It is a name, perhaps, or a warning.',
     cryptRead: 'You trace the rune, and it gives up a little of what it knows: not a word of power, only a glimpse of how such words are made. You understand the old tongue a shade better than you did.',
@@ -658,3 +672,4 @@ export const frontier: FrontierDef = {
     cryptWayOut: 'The stair back up to the snow.',
   },
 };
+

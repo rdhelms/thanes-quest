@@ -2,7 +2,7 @@
 // Data refers to them by name with { run: 'name' }.
 
 import { gainSkill, hostile } from '../engine/combat';
-import { findNear, homes, lair, parseWild, roomOf, wildId } from '../engine/frontier';
+import { cellOf, depthOf, findNear, homes, lair, parseWild, roomOf, wildId } from '../engine/frontier';
 import { DAY_LENGTH, type Behaviour } from '../engine/sim';
 
 const COUNT = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
@@ -23,7 +23,70 @@ export const TEMPER_COST = (n: number): number => 40 + 30 * n;
 const BOUNTY_KINDS = ['camp', 'deadwood', 'crags', 'ruin'];
 const RUMOUR_KINDS = ['camp', 'shrine', 'ruin', 'steading', 'crags'];
 
+/** The country past the north gate, where nothing burns and the coal will not wake until the word ends. */
+const STILL = ['oldroad', 'windend', 'hanging', 'hollow'];
+
 export const behaviours: Record<string, Behaviour> = {
+  /**
+   * The first time the stranger has been fed at the inn, the Elder comes down to look at them:
+   * unless they have been up to her hall already.
+   */
+  martaEnters: (sim) => {
+    const f = sim.state.flags;
+    if (f['marta.met']) return;
+    f['marta.met'] = true;
+    sim.say(
+      `The door opens and lets the cold in, and the room goes quiet the way a room does for one person. The woman who comes in is tall and thin and very straight in the back, with a muffler of purple wool that is the only colour in the room. She looks at nobody but you, for long enough that you start to feel the cold again.\n\n"Who would miss you?" says Marta Coldhand.\n\nYou have no answer to that${f['sigga.met'] ? ' either' : ''}.\n\n"Good," she says. "Come up to the hall."`,
+    );
+    sim.setQuest('hearth', 1);
+  },
+
+  /** A guard of the north gate, knocked down, gets up again; and is the harder for it. */
+  guardRises: (sim) => {
+    const def = sim.content.enemies.gateguard;
+    for (const a of sim.rs.actors) {
+      if (a.ref !== 'gateguard' || a.act !== 'dead') continue;
+      sim.rs.dead = sim.rs.dead.filter((id) => id !== a.id);
+      if (sim.rs.deadAt) delete sim.rs.deadAt[a.id];
+      a.ai = { lv: (a.ai.lv ?? 0) + 2 };
+      a.ai.max = Math.round(def.hp * (1 + 0.25 * a.ai.lv));
+      a.hp = a.ai.max;
+      a.act = 'idle';
+      a.t = 0;
+      a.ai.stun = 40;
+    }
+    sim.state.flags.kills = Math.max(0, Number(sim.state.flags.kills ?? 1) - 1);
+    sim.note('He goes down. Then, without hurry, he gets up again. Nobody has come to relieve him.');
+  },
+
+  /** The sun's name is said at the gate: the guards go back into their towers. */
+  guardsGo: (sim) => {
+    sim.rs.actors = sim.rs.actors.filter((a) => a.ref !== 'gateguard');
+  },
+
+  /** The word ends. From here the weather is only weather; how soon Hollowmere knows it depends on how the news travels. */
+  winterBreaks: (sim) => {
+    sim.state.flags['winter.tick'] = sim.state.tick;
+    sim.p.cd = {};
+  },
+
+  /**
+   * The thaw reaches Hollowmere. Whoever walks home arrives after it; whoever is carried home in a
+   * breath arrives before it, and it is half a day behind them.
+   */
+  thawComes: (sim) => {
+    const f = sim.state.flags;
+    if (!f['winter.broken'] || f['thaw.home']) return;
+    if (!f['coal.given'] && sim.state.tick - Number(f['winter.tick'] ?? 0) < DAY_LENGTH / 2) return;
+    f['thaw.home'] = true;
+    f['hall.thaw'] = true;
+  },
+
+  /** The coal has carried somebody, and wants time by a fire. */
+  emberReady: (sim) => {
+    sim.state.flags['ember.ready'] = sim.state.tick + DAY_LENGTH / 2;
+  },
+
   /** Reading and deciphering teaches Lore. */
   study: (sim, arg) => gainSkill(sim, 'lore', Number(arg ?? 12)),
 
@@ -35,8 +98,13 @@ export const behaviours: Record<string, Behaviour> = {
 
   /** A lit torch sees you through a couple of minutes of darkness. */
   lightTorch: (sim) => {
-    if (!sim.state.flags['hearth.lit'] && (sim.state.room === 'hall' || sim.state.room === 'inn' || sim.state.room === 'village')) {
-      sim.say('You strike a light. The torch catches, gutters, and dies. Nothing burns properly in Hollowmere just now.');
+    const at = cellOf(sim.content, sim.state.room);
+    if (!sim.state.flags['hearth.lit'] && at && !depthOf(sim.content, at[0], at[1])) {
+      sim.say('You strike a light. The torch catches; and then the flame lies down flat along the pitch, as if a wind were on it, and goes out. Nothing burns in this valley just now.');
+      return;
+    }
+    if (STILL.includes(sim.state.room) && !sim.state.flags['winter.broken']) {
+      sim.say('Nothing will burn here. The sparks hang in the air like little red seeds, and go dark where they hang.');
       return;
     }
     sim.state.flags.light = sim.state.tick + 2400;
@@ -128,6 +196,10 @@ export const behaviours: Record<string, Behaviour> = {
       sim.say('You fumble the horn box open. The coal dims, as if to say: not while something is trying to kill you.');
       return;
     }
+    if (STILL.includes(sim.state.room) && !f['winter.broken']) {
+      sim.say('You open the horn box, afraid, and the coal in it is dull as an old eye; but there is still a coal in it. You breathe on it. Nothing. Nothing burns here, and nothing wakes. You shut the lid.');
+      return;
+    }
     if (['village', 'hall', 'inn'].includes(sim.state.room)) {
       sim.say('You open the box. The coal glows contentedly. It is already where it wants to be.');
       return;
@@ -138,17 +210,12 @@ export const behaviours: Record<string, Behaviour> = {
     }
     f['ember.ready'] = sim.state.tick + DAY_LENGTH / 2;
     sim.sound('word');
-    sim.enterRoom('village', 160, 152, 'down');
-    sim.say('You breathe on the coal. It flares; the snow, the cold and the long way back all fold up like a letter, and when you can see again you are standing in the square at Hollowmere with woodsmoke in your nose. The coal has gone grey. It will want a while before it does that again.');
-  },
-
-  /** The crown unmade: what it had taken goes into whoever stood nearest. */
-  thaw: (sim) => {
-    const p = sim.p;
-    p.maxHp += 20;
-    p.maxMp += 10;
-    p.hp = p.maxHp;
-    p.mp = p.maxMp;
+    sim.enterRoom('hall', 160, 124, 'down');
+    sim.say(
+      f['sol.said'] && !f['thaw.home']
+        ? 'You breathe on the coal. It flares; the snow, the wind and the long way back all fold up like a letter, and when you can see again you are standing on the Elder\'s hearthstone, with broth in your nose. Nothing has changed here. Weather walks; it will be a day yet before any of this has heard.'
+        : 'You breathe on the coal. It flares; the snow, the cold and the long way back all fold up like a letter, and when you can see again you are standing on the Elder\'s hearthstone, with smoke and broth in your nose. The coal has gone grey. It will want a while by its own fire before it does that again.',
+    );
   },
 
   /** The bell's note stays with whoever rang it: more mana, for good. */
@@ -319,19 +386,7 @@ export const behaviours: Record<string, Behaviour> = {
     f['bounty.n'] = n + 1;
     for (const k of ['bounty.room', 'bounty.done', 'goal']) delete f[k];
     f['quest:bounty'] = 0;
-    // The first time, something else makes itself felt: the second saga begins.
-    if (n === 0 && sim.p.inv.crown && !f['quest:crown']) {
-      sim.say("As you turn to go, something in your pack knocks against your hip: the Barrow-King's crown. It is cold enough to feel through the leather, and it was not so cold yesterday. Marta sees your face, and looks at the pack, and very deliberately looks away.");
-      sim.setQuest('crown', 1);
-    }
   },
 
-  /** A great foe calls up the dead as he weakens: the Barrow-King from his barrow, the Cold Smith from the ice of his hall. */
-  bossPhase: (sim, stage) => {
-    const smith = sim.rs.actors.some((a) => a.ref === 'coldsmith');
-    if (smith) sim.note(stage === 1 ? 'The Cold Smith strikes his anvil, and one of the dead steps out of the ice.' : 'The Smith strikes again. The pillars crack, and more of the dead come out.');
-    else sim.note(stage === 1 ? 'The Barrow-King calls, and the dead answer.' : 'The King howls. The barrow shakes.');
-    sim.spawn('wight', 60, 140);
-    if (stage === 2) sim.spawn('wight', 260, 140);
-  },
 };
+

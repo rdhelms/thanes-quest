@@ -1,19 +1,56 @@
-// Interiors (the Elder's hall, the inn, the hermit's hut) and the three rooms of the barrow.
+// Interiors: the Elder's hall, the inn, and the hermit's hut.
 
-import type { RoomDef, Rule } from '../../../engine/types';
+import type { Cond, RoomDef, Rule } from '../../../engine/types';
 
 const firstVisit = (id: string, points = 1): Rule => ({ enter: true, if: [{ not: { flag: `seen.${id}` } }], do: [{ set: `seen.${id}` }, { score: points, id: `seen.${id}` }] });
 
 const FL = 96;
+const LIT: Cond = { flag: 'hearth.lit' };
+const COLD: Cond = { not: LIT };
+/** Either feast: the night the hearth was lit, or the one held for the thaw. */
+const FEAST: Cond = { any: [{ flag: 'hall.feast' }, { flag: 'hall.thaw' }] };
+const NOFEAST: Cond = { not: FEAST };
+
+const LAY = ['use log', 'use log hearth', 'use hearth', 'give log hearth', 'drop log hearth', 'use log pallet'];
+const STRIKE = ['light hearth', 'light', 'light log', 'use flint', 'use flint hearth', 'use flint log', 'light hearth flint', 'attack flint', 'light flint'];
+const OFFER = ['give flint elder', 'give elder flint', 'give flint', 'use flint elder', 'equip flint elder', 'equip flint'];
+const SIT = ['sit', 'sit bench', 'sit table', 'sit cup', 'use bench', 'sit door'];
+const DRINK = ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table', 'drink', 'drink ale'];
+
+/**
+ * Fenn sells and takes back his books wherever he happens to be: in the corner of the inn while
+ * the fires are out, on the shore of the tarn, or at home.
+ */
+export const fennRules: Rule[] = [
+  { on: ['buy frost'], if: [{ near: 'fenn', d: 80 }, { has: 'tomeFrost' }], do: [{ say: '"You have that one. Reading it twice won\'t make it colder."' }] },
+  { on: ['buy frost'], if: [{ near: 'fenn', d: 80 }, { gold: 20 }], do: [{ gold: -20 }, { give: 'tomeFrost' }, { sound: 'take' }, { say: 'Twenty silver. Fenn produces a book bound in pale blue hide. It is cold to hold. "Frost. It slows what it strikes, and it isn\'t kind about it."' }] },
+  { on: ['buy mend'], if: [{ near: 'fenn', d: 80 }, { has: 'tomeMend' }], do: [{ say: '"You have that one already."' }] },
+  { on: ['buy mend'], if: [{ near: 'fenn', d: 80 }, { gold: 15 }], do: [{ gold: -15 }, { give: 'tomeMend' }, { sound: 'take' }, { say: 'Fifteen silver for a small green book, soft with handling. "Mend. The only spell worth knowing, in the end."' }] },
+  { on: ['buy ward'], if: [{ near: 'fenn', d: 80 }, { has: 'tomeWard' }], do: [{ say: '"You have that one already."' }] },
+  { on: ['buy ward'], if: [{ near: 'fenn', d: 80 }, { gold: 25 }], do: [{ gold: -25 }, { give: 'tomeWard' }, { sound: 'take' }, { say: 'Twenty-five silver. The book is bound in grey iron-cloth. "Ward. It halves what hits you, for a little while."' }] },
+  { on: ['buy frost', 'buy mend', 'buy ward', 'buy tome', 'buy light', 'buy magic', 'learn magic'], if: [{ near: 'fenn', d: 80 }], do: [{ say: '"Books cost silver," says Fenn. "Mend is fifteen, Frost twenty, Ward twenty-five. Light I don\'t sell. Light I give, to people who do me a kindness."' }] },
+  // A book read is a book that can go back on the shelf.
+  {
+    on: ['give tome', 'give tome fenn', 'give fenn tome', 'sell tome', 'give shelf', 'give shelf fenn', 'use tome shelf', 'give tome shelf', 'drop tome shelf', 'store tome shelf'],
+    if: [{ near: 'fenn', d: 80 }, { any: [{ has: 'tomeFlame' }, { has: 'tomeFrost' }, { has: 'tomeMend' }, { has: 'tomeLight' }, { has: 'tomeWard' }] }],
+    do: [{ run: 'shelve' }],
+  },
+  {
+    on: ['give amulet', 'give amulet fenn', 'give fenn amulet'], if: [{ near: 'fenn', d: 80 }, { has: 'amulet' }],
+    do: [{ lose: 'amulet' }, { give: 'tomeLight' }, { score: 2, id: 'errand.start' }, { score: 8, id: 'errand.done' }, { say: 'Fenn takes the amulet in both hands and says nothing for a while. "Forty years I\'ve looked at this from the shore, every morning," he says at last. "I\'d forgotten it was so small." He closes his hand on it. Then, briskly, as if you had caught him at something, he puts a slim white book in yours. "Light. You\'ll want it, in the dark places."' }, { quest: 'errand', stage: 2 }, { muster: true }],
+  },
+];
 
 export const hall: RoomDef = {
   id: 'hall',
   music: 'hearth',
   name: "The Elder's Hall",
-  look: "A long hall hung with banners. A great hearth of river-stone fills the middle of the back wall, and beside it stands the Elder's carved chair. It is colder in here than it has any right to be.",
+  look: "The Elder's hall is colder inside than the square was. Frost has grown on the inside of the walls in long white feathers, and the feathers all lean one way, the way grass leans in a stream: toward the hearth at the far end. There is no fire on it. In front of it is a pallet, and a woman on a stool beside the pallet. The long table is bare except for one cup, set at the end nearest the door.",
   lookWhen: [
-    { if: [{ flag: 'hall.feast' }], look: 'The hall is full, and warm, and loud. Half of Hollowmere has come in out of the snow to stand in front of a fire that stays lit, and to have a look at whoever lit it. The banners stir in the heat. Nobody is in any hurry to go home.' },
-    { if: [{ flag: 'hearth.lit' }], look: "A long hall hung with banners, and warm. The great hearth of river-stone is alight from end to end, and the Elder's carved chair has been drawn up beside it. The banners stir in the heat." },
+    { if: [{ flag: 'hall.thaw' }], look: 'The hall is full of noise, and light, and the smell of a feast. Everybody in Hollowmere is at the long table, and the door has been opened and shut so often that the latch is warm. At the end of the table nearest the door there is a space on the bench, and a cup.' },
+    { if: [{ flag: 'hall.feast' }], look: 'The hall is full, and warm, and loud. All of Hollowmere has come in, in its blankets, to stand in front of a fire that stays lit, and to have a look at whoever struck it. The frost has gone from the walls and left them wet. Nobody is in any hurry to go home.' },
+    { if: [{ flag: 'marta.stopped' }, COLD], look: 'The cold has gone out of the hall, the way water goes out of a pool. The frost on the walls has gone soft at the edges. A fire is laid on the hearth. Marta has both hands on the girl, and her lips are still, and she is looking at you.' },
+    { if: [LIT], look: "A long hall hung with banners, and warm. The great hearth of river-stone is alight from end to end. There is a bed made up on either side of it: one for a girl of seven, and one, nearer the high seat, for you. At the end of the long table nearest the door stands one cup, filled and not touched." },
   ],
   scene: {
     kind: 'indoor', walkTop: 104, ambient: 0.5,
@@ -30,99 +67,216 @@ export const hall: RoomDef = {
     ],
     lights: [{ x: 112, y: 122, r: 34, i: 0.5, kind: 'warm' }],
     when: [
-      { if: [{ not: { flag: 'hearth.lit' } }], props: [{ t: 'greathearth', x: 160, y: FL }, { t: 'rime', x: 0, y: 1, w: FL, h: 30 }] },
-      // Lit, and with a bench made up beside it for the one who lit it.
+      // Cold: frost on the walls, a pallet before the dead hearth, and a stool beside it.
+      { if: [COLD], props: [{ t: 'greathearth', x: 160, y: FL }, { t: 'rime', x: 0, y: 1, w: FL, h: 30 }, { t: 'bed', x: 150, y: 124, ramp: 'cream' }, { t: 'stool', x: 196, y: 126 }] },
+      // Lit: a bed on either side of it.
       {
-        if: [{ flag: 'hearth.lit' }],
-        props: [{ t: 'greathearth', x: 160, y: FL, lit: 1 }, { t: 'bench', x: 262, y: 160, w: 52, v: 'bed' }],
+        if: [LIT],
+        props: [{ t: 'greathearth', x: 160, y: FL, lit: 1 }, { t: 'bench', x: 262, y: 160, w: 52, v: 'bed' }, { t: 'bed', x: 118, y: 127, ramp: 'cream' }],
         lights: [{ x: 160, y: 92, r: 110, i: 1.3, kind: 'warm' }],
       },
-      { if: [{ not: { flag: 'hall.feast' } }], props: [{ t: 'longtable', x: 92, y: 142, w: 110 }] },
-      { if: [{ flag: 'hall.feast' }], props: [{ t: 'longtable', x: 92, y: 142, w: 110, v: 'feast' }] },
+      { if: [NOFEAST], props: [{ t: 'longtable', x: 92, y: 142, w: 110 }] },
+      { if: [FEAST], props: [{ t: 'longtable', x: 92, y: 142, w: 110, v: 'feast' }] },
       { if: [{ flag: 'hall.rug' }], props: [{ t: 'bearskin', x: 254, y: 124 }] },
     ],
   },
   doors: [{ x0: 52, y0: 105, x1: 68, y1: 107, to: 'village', x: 69, y: 124, dir: 'down' }],
-  // The night the hearth is lit, the village comes in to see it. They stay until the Thane makes for the door.
   zones: [{ id: 'leaving', x0: 40, y0: 105, x1: 80, y1: 114 }],
   npcs: [
-    { char: 'marta', x: 222, y: 120, wander: [196, 118, 236, 128] },
-    // Behind whoever is standing at the hearth: nobody arrives on top of the Thane.
-    { char: 'halla', x: 116, y: 118, dir: 'right', if: [{ flag: 'hall.feast' }] },
-    { char: 'sigga', x: 144, y: 152, dir: 'up', if: [{ flag: 'hall.feast' }] },
-    { char: 'odd', x: 170, y: 160, dir: 'up', if: [{ flag: 'hall.feast' }] },
-    { char: 'gorm', x: 196, y: 152, dir: 'up', if: [{ flag: 'hall.feast' }] },
-    { char: 'toke', x: 228, y: 146, dir: 'up', if: [{ flag: 'hall.feast' }] },
+    // By the pallet until the fire is lit; at the far end of the table for the thaw feast; otherwise by her hearth.
+    { char: 'marta', x: 204, y: 124, dir: 'left', if: [COLD] },
+    { char: 'marta', x: 222, y: 120, wander: [196, 118, 236, 128], if: [LIT, { not: { flag: 'hall.thaw' } }] },
+    { char: 'marta', x: 216, y: 150, dir: 'left', if: [{ flag: 'hall.thaw' }] },
+    // Sitting up in it: drawn behind the bed, so that it covers her to the waist.
+    { char: 'tova', x: 110, y: 123, dir: 'down', if: [LIT] },
+    { char: 'halla', x: 30, y: 130, dir: 'right', if: [{ flag: 'hall.feast' }] },
+    { char: 'halla', x: 132, y: 160, dir: 'left', if: [{ flag: 'hall.thaw' }] },
+    { char: 'sigga', x: 144, y: 152, dir: 'up', if: [FEAST] },
+    { char: 'odd', x: 170, y: 160, dir: 'up', if: [FEAST] },
+    { char: 'gorm', x: 196, y: 152, dir: 'up', if: [FEAST] },
+    { char: 'toke', x: 236, y: 140, dir: 'left', if: [FEAST] },
   ],
   things: [
     {
-      id: 'hearth', nouns: ['hearth'], x: 160, y: 106, reach: 40, try: ['light hearth'], look: 'A hearth you could roast an ox in. The logs are laid and dry. The ash under them is nine days cold.',
-      lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: 'A hearth you could roast an ox in, burning as if it had never stopped. You lit that. Nobody in Hollowmere is going to let you forget it, in the kindest way.' }],
+      id: 'hearth', nouns: ['hearth'], x: 160, y: 106, reach: 44, try: ['lay the log on the hearth', 'light fire'],
+      look: 'A hearth you could roast an ox in. There is no fire on it, and the ash is nine days cold. The frost on the walls leans toward it from every side; or toward what is lying in front of it.',
+      lookWhen: [
+        { if: [LIT], look: 'A hearth you could roast an ox in, burning as if it had never stopped. You laid that. Nobody in Hollowmere is going to let you forget it, in the kindest way.' },
+        { if: [{ flag: 'hall.laid' }], look: 'A fire is laid on the hearth, as it should be laid: kindling, and a dry log across it. It wants a spark; and it wants the spark to be let live.' },
+      ],
     },
-    { id: 'throne', nouns: ['throne'], x: 258, y: 112, reach: 40, look: "The Elder's chair, carved with knotwork and capped with brass. Nobody but the Elder sits in it, and lately not even she." },
+    {
+      id: 'pallet', nouns: ['tova', 'girl', 'pallet'], x: 152, y: 124, reach: 40,
+      look: 'On the pallet, under what looks like every fur in Hollowmere, is a girl of about seven, lying on her back with her mouth a little open, as if she had been about to say something and had been interrupted. There is frost on her eyelashes. Nothing about her moves at all.',
+      lookWhen: [{ if: [{ flag: 'marta.stopped' }], look: "Her breath has come out of her: a long thin thread of white, the end of the breath she began at midwinter. Her chest does not move. Marta's hand is on it." }],
+    },
+    {
+      id: 'rime', nouns: ['rime'], x: 160, y: 100, reach: 400, look: 'Frost, grown on the inside of the walls in long white feathers. The feathers all lean one way, the way grass leans in a stream: toward the pallet in front of the hearth.',
+      lookWhen: [{ if: [{ flag: 'marta.stopped' }], look: 'The frost feathers have gone soft at the edges. One of them lets go of the wall while you watch.' }],
+    },
+    { id: 'stool', nouns: ['stool'], x: 196, y: 126, reach: 40, look: 'A three-legged stool, drawn up to the pallet. She has sat on it for nine days.' },
+    { id: 'throne', nouns: ['throne'], x: 258, y: 112, reach: 40, look: "The Elder's chair, carved with knotwork and capped with brass. Nobody but the Elder sits in it." },
     { id: 'banner', nouns: ['banner'], x: 160, y: 106, reach: 400, look: 'Two banners, purple and red, each with a gold lozenge: the mark of Hollowmere. They hang very still.' },
     {
-      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table with one candle, and at the end nearest the door one cup, filled and not touched. Feasts were held here. The table remembers; you can tell by the stains.',
-      lookWhen: [{ if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the end nearest the door, beside the cup that is always set there and never drunk, lies the seven-pointed crown, where you laid it down. The hall is packed to the walls, and nobody is standing within arm\'s reach of that end of the table.' }],
-    },
-    // The cup set for the King at every feast, at the end of the table nearest the door.
-    {
-      id: 'cup', nouns: ['cup'], x: 78, y: 142, reach: 34,
-      look: 'A plain horn cup at the end of the long table nearest the door, filled to the brim and not touched. Nobody sits on the bench in front of it. It is for the King in the rhyme, as anybody in Hollowmere will tell you; and nobody in Hollowmere can tell you why.',
+      id: 'table', nouns: ['table'], x: 104, y: 144, reach: 44, look: 'A long table, bare except for one cup, set at the end nearest the door. Feasts were held here. The table remembers; you can tell by the stains.',
       lookWhen: [
-        { if: [{ flag: 'marta.rest' }], look: 'The cup at the end of the table, by the door, filled fresh and set straight. Nobody sits in front of it.' },
-        { if: [{ flag: 'crown.unmade' }], look: 'Filled, and set at the end nearest the door, and not touched. You know now what the King asked for at the Frost Gate, in place of the summer. Somebody set him a cup all the same, and somebody has every feast since.' },
-        { if: [{ flag: 'hall.feast' }], look: 'Somebody has filled the cup fresh for the feast and set it straight. The crown lies beside it. The two of them have that end of the table to themselves.' },
+        { if: [{ flag: 'hall.thaw' }], look: 'The long table is doing what it was built for: bread, broth, the first of Gorm\'s cheese, and everybody in Hollowmere on the benches. At the end nearest the door there is a space, and a cup in front of it.' },
+        { if: [{ flag: 'hall.feast' }], look: 'Somebody has found a cask and somebody else has found the horns, and the long table is doing what it was built for. At the end nearest the door stands the one cup, with a clear space on the bench in front of it, even tonight.' },
       ],
+    },
+    // The cup that nobody drinks, at the end of the table nearest the door.
+    {
+      id: 'cup', nouns: ['cup'], x: 78, y: 142, reach: 34, try: ['drink from the cup'],
+      look: 'A plain horn cup at the end of the long table nearest the door, with its ale frozen solid in it. Nobody sits on the bench in front of it.',
+      lookWhen: [
+        { if: [{ flag: 'home.cup' }], look: 'A plain horn cup at the end of the table, by the door, filled. It is yours. It seems to have been yours for some time before you got here.' },
+        { if: [{ flag: 'hall.thaw' }], look: 'The cup that nobody drinks. Halla filled it this morning, as she does every feast-day, with the best she has.' },
+        { if: [LIT], look: 'A plain horn cup at the end of the long table nearest the door, filled to the brim and not touched. Nobody sits on the bench in front of it. Ask anybody in Hollowmere who it is for, and you will get a different answer from each, and a look.' },
+      ],
+    },
+    {
+      id: 'seat', nouns: ['bench'], x: 80, y: 156, reach: 34, try: ['sit down'],
+      look: 'The end of the bench nearest the door: the first place anybody would sit, coming in. Nobody does. The wood is worn everywhere else.',
+      lookWhen: [{ if: [{ flag: 'home.cup' }], look: 'The end of the bench nearest the door, where somebody coming in out of the cold would sit down first. It is your place.' }],
     },
     { id: 'shelf', nouns: ['shelf'], x: 296, y: 106, reach: 40, look: "The village's whole library: nine books, three of them about sheep." },
     { id: 'door', nouns: ['door'], x: 60, y: 106, reach: 400, look: 'The way out, back to the square.' },
-    { id: 'bench', nouns: ['bed'], x: 262, y: 162, reach: 44, hidden: true, try: ['sleep'], look: 'A bench made up as a bed, with a bearskin over it, where the heat of the hearth reaches. Nobody has said whose it is. Nobody has needed to.' },
+    { id: 'bench', nouns: ['bed'], x: 262, y: 162, reach: 44, hidden: true, try: ['sleep'], look: "A bed made up for you beside the Elder's hearth, with a bearskin over it. On the other side of the fire is another, a good deal smaller. Nobody has said anything about either." },
   ],
   rules: [
     firstVisit('hall'),
     {
-      on: ['light hearth', 'use log', 'use log hearth', 'light log', 'give log hearth'],
-      if: [{ quest: 'hearth', is: 4 }, { has: 'log' }, { near: 'hearth', d: 60 }],
-      do: [
-        { lose: 'log' }, { set: 'hearth.lit' }, { sound: 'win' }, { score: 25, id: 'hearth.done' }, { quest: 'hearth', stage: 5 }, { gold: 50 },
-        { set: 'hall.feast' }, { muster: true }, { show: 'bench' },
-        { win: 'You lay the log on the old ash and strike a spark. It catches. It keeps catching. Flame climbs the wood the way it is supposed to, and for the first time in nine days the hall is warm.\n\nMarta Coldhand watches it for a long moment. Then she takes the brass ring from her own hand and puts it on yours. "Hollowmere has no gold worth the name," she says, "so take a title instead. Thane." The hall, which has been filling quietly behind you, roars.' },
-        { note: 'They came to see you. The door is there when you have had enough of it.' },
-      ],
+      enter: true, if: [COLD, { not: { flag: 'hall.sat' } }],
+      do: [{ set: 'hall.sat' }, { say: 'The Elder\'s hall is colder inside than the square was. Frost has grown on the inside of the walls in long white feathers, and the feathers all lean one way, the way grass leans in a stream, toward the hearth at the far end.\n\nYou are so tired that you sit down at the first place you come to, the end of the bench by the door.\n\n"Not there," says the woman at the far end of the hall.\n\nYou get up. She does not say why. If you asked her, she could not tell you.' }],
     },
     {
-      // Making for the door ends the night: the hall empties, and Marta has two things to hand over.
+      enter: true, if: [COLD, { quest: 'hearth', is: 3 }, { knows: 'word:iska' }, { not: { flag: 'hall.heard' } }],
+      do: [{ set: 'hall.heard' }, { say: 'Marta is where you left her, on the stool, with her hand flat on the furs over the girl\'s chest. You stand inside the door with the bottle, and watch her lips move, and this time you hear what they say.\n\nYou know that word. Your fingers remember it.\n\nYou look at the frost feathers on the walls, all leaning toward the pallet. You look at the girl, who has not finished the breath she was letting go, and has not been allowed to.' }],
+    },
+    {
+      enter: true, if: [COLD, { quest: 'hearth', is: 3 }, { not: { knows: 'word:iska' } }, { not: { flag: 'hall.lips' } }],
+      do: [{ set: 'hall.lips' }, { say: 'Marta is where you left her, on the stool, with her hand flat on the furs over the girl\'s chest. Her lips move. You are near enough, this time, to hear that it is a word, and the same word, over and over. It is not a word you know.' }],
+    },
+    { enter: true, if: [LIT], do: [{ show: 'bench' }, { hide: 'pallet' }, { hide: 'stool' }, { hide: 'rime' }] },
+    {
+      enter: true, if: [LIT, { knows: 'word:sol' }, { not: { flag: 'hall.wiped' } }, NOFEAST],
+      do: [{ set: 'hall.wiped' }, { say: 'The hall is warm and smells of smoke and broth. Marta does not look up from her mending.\n\n"Wipe your feet," she says.\n\nTova is sitting by the hearth with a lump of purple wool, which Marta is teaching her to knit, badly. It is Marta\'s own muffler, unravelled.' }],
+    },
+    {
+      enter: true, if: [{ flag: 'hall.thaw' }, { not: { flag: 'home.door' } }],
+      do: [{ set: 'home.door' }, { say: 'You open the door, and the cold goes in ahead of you.\n\n"Shut the door," says Marta, from the far end of the table, without looking up.\n\nYou shut it.' }],
+    },
+
+    // --- The hearth. A fire is laid; it will not take while she is holding the child still; she has to be asked to stop.
+    {
+      on: LAY, if: [COLD, { has: 'log' }, { not: { flag: 'hall.laid' } }, { near: 'hearth', d: 70 }],
+      do: [{ lose: 'log' }, { set: 'hall.laid' }, { sound: 'take' }, { say: 'You kneel down at the cold hearth beside the pallet, and lay a fire, carefully, the way it should be laid: the kindling you split, and the dry log across it.\n\nMarta watches you do it.\n\n"It won\'t take," she says.' }],
+    },
+    { on: LAY, if: [COLD, { has: 'log' }, { not: { flag: 'hall.laid' } }], do: [{ say: 'You are not close enough to the hearth.' }] },
+    { on: LAY, if: [COLD, { flag: 'hall.laid' }], do: [{ say: 'It is laid, and laid properly. It wants a spark.' }] },
+    { on: LAY, if: [COLD], do: [{ say: 'The hall wood is damp through, and white with frost. There is a pile of split pine out in the square, and a hatchet by it.' }] },
+    {
+      on: STRIKE, if: [COLD, { flag: 'marta.stopped' }, { has: 'flint' }],
+      do: [
+        { lose: 'bottle' }, { set: 'hearth.lit' }, { give: 'ring' }, { sound: 'win' }, { score: 25, id: 'hearth.done' }, { quest: 'hearth', stage: 5 },
+        { set: 'hall.feast' }, { muster: true }, { show: 'bench' }, { hide: 'pallet' }, { hide: 'stool' }, { hide: 'rime' },
+        { win: 'You strike. The spark falls into the tinder and you bend and blow on it, and it smokes, and the smoke thickens, and a flame stands up out of it.\n\nIt does not lie down. It eats the kindling. It finds the log and climbs it.\n\nThe girl\'s chest does not move. Marta\'s hand is on it.\n\nThen it moves.\n\nMarta has the bottle open before you have seen her reach for it. She tips the girl\'s head and puts the stuff in her mouth, and Tova swallows, and coughs, and screws her whole face up and cries, thin and furious, the best noise anyone has made in Hollowmere since midwinter.\n\nMarta sits back on the stool. She looks at the fire for a while. Then she works the brass ring off her own finger, which has grown thin enough this winter that it comes easily, and takes your hand, and puts the ring on your finger.\n\n"Thane of Hollowmere," she says.\n\nBehind you the hall has filled up quietly. You did not hear them come: Odd first, and then all of them, in their blankets, crowded inside the door to see whether it would take. It roars.' },
+        { note: 'They came to see if it would take. The door is there when you have had enough.' },
+      ],
+    },
+    { on: STRIKE, if: [COLD, { flag: 'marta.stopped' }], do: [{ say: 'You have nothing to strike a light with.' }] },
+    {
+      on: STRIKE, if: [COLD, { flag: 'hall.laid' }, { has: 'flint' }],
+      do: [{ set: 'hall.tried' }, { say: 'You strike the steel. The spark falls into the tinder, and catches; and then the little flame lies down flat, as if a wind were pressing on it, and goes out without smoking.\n\n"It won\'t take," says Marta, "while I—" and does not finish.\n\nThe hall is very quiet.' }],
+    },
+    { on: STRIKE, if: [COLD, { has: 'flint' }], do: [{ say: 'There is nothing on the hearth but ash nine days cold. A fire wants laying first: a log that is dry all through, and kindling split from it. There is a woodpile out in the square.' }] },
+    { on: STRIKE, if: [COLD], do: [{ say: 'You have nothing to strike a light with. Halla has a flint. She has had it round her neck for nine days.' }] },
+    { on: STRIKE, do: [{ say: 'It is burning beautifully. Leave it be.' }] },
+    {
+      on: OFFER, if: [COLD, { flag: 'marta.stopped' }], do: [{ say: 'She has stopped. It is for you to strike it now.' }],
+    },
+    {
+      on: OFFER, if: [COLD, { has: 'flint' }, { flag: 'hall.laid' }, { knows: 'word:iska' }, { quest: 'hearth', is: 3 }],
+      do: [
+        { set: 'marta.stopped' }, { quest: 'hearth', stage: 4 }, { sound: 'word' },
+        { say: 'You hold out Halla\'s flint to her. It is her hearth.\n\nShe does not take it. She keeps both her hands on the girl.\n\n"If I stop," says Marta, "she breathes out. She has been breathing out since midwinter. And there is no fire in here to breathe in by." She looks at the bottle, and at the kindling, and at you. "And if it doesn\'t catch?"\n\nYou have nothing to say to that. You came here with nothing. You strike the steel once, so that she can see the spark.\n\nShe looks at you for a long time: at somebody she would not miss. Then she looks down at Tova.\n\n"When I stop," she says. "Not before."\n\nShe stops.\n\nNothing happens, and then something does. The cold goes out of the hall the way water goes out of a pool when a sluice is lifted. The frost feathers on the walls soften at the edges. Tova\'s breath comes out of her, a long thin thread of white: the end of the breath she began at midwinter.' },
+      ],
+    },
+    { on: OFFER, if: [COLD, { has: 'flint' }, { flag: 'hall.laid' }, { knows: 'word:iska' }], do: [{ say: 'You hold out the flint to her. It is her hearth.\n\nShe does not take it. "If I stop, she breathes out," says Marta. "With the lung-cold on her, and nothing to put back what it has taken." She does not look at the flint, or at you. "Bring me the bottle."' }] },
+    { on: OFFER, if: [COLD, { has: 'flint' }, { flag: 'hall.laid' }], do: [{ say: 'You hold out the flint. Marta looks at it, and at you. "It won\'t take," she says, and her lips go on moving. You have the feeling that if you knew what they were saying, you would know what it was you were asking of her.' }] },
+    { on: OFFER, if: [COLD, { has: 'flint' }], do: [{ say: 'You hold out the flint. Marta looks at the hearth, where there is nothing but ash nine days cold, and then at you, and says nothing at all.' }] },
+    { on: OFFER, if: [LIT, { has: 'flint' }], do: [{ say: '"It\'s Halla\'s," says Marta. "And she tells me she never wants to see it again."' }] },
+    // Nobody walks out between her stopping and the spark.
+    { zone: 'leaving', if: [{ flag: 'marta.stopped' }, COLD], do: [{ goto: 'hall', x: 120, y: 126, dir: 'right' }, { say: 'You have your hand on the door. Behind you Marta says nothing at all. You turn round.' }] },
+    // The bottle.
+    { on: ['give bottle', 'give bottle elder', 'give elder bottle', 'use bottle table', 'drop bottle', 'drop bottle table', 'use bottle'], if: [COLD, { has: 'bottle' }, { flag: 'marta.stopped' }], do: [{ say: 'Not yet. She has to breathe in first; and there is nothing in this hall to breathe in by.' }] },
+    { on: ['give bottle tova', 'give tova bottle', 'give bottle girl', 'use bottle tova', 'use bottle girl'], if: [COLD, { has: 'bottle' }], do: [{ say: 'You go down on one knee with the bottle. The girl\'s mouth is a little open. Nothing goes in, and nothing comes out.\n\n"She can\'t swallow," says Marta. "Put it on the table."' }] },
+    { on: ['give bottle', 'give bottle elder', 'give elder bottle', 'use bottle table', 'drop bottle', 'drop bottle table', 'use bottle'], if: [COLD, { has: 'bottle' }], do: [{ say: 'You hold out the bottle. Marta does not reach for it; she would have to take her hand off the furs. "On the table," she says. So you keep it by you, where it can be got at quickly.' }] },
+    { on: ['talk tova', 'talk girl', 'pet tova', 'pet girl', 'pet pallet', 'take tova', 'take girl', 'kiss tova'], if: [COLD], do: [{ say: 'You put out a hand. Marta\'s eyes come up, and you take it back. But you were near enough to know that there was no warmth coming off the child at all, and none going in.' }] },
+    { on: ['talk elder'], if: [COLD, { flag: 'hall.laid' }, { not: { flag: 'marta.stopped' } }, { quest: 'hearth', is: 3 }, { knows: 'word:iska' }], do: [{ cmd: 'give flint elder' }] },
+    // Words spoken in the hall while she is saying hers.
+    { on: 'iska', if: [COLD], do: [{ set: 'hall.said' }, { say: 'ISKA. Across the hall Marta\'s head comes round as if you had called her by a name nobody has used in fifty years. For a moment the cold of your word and the cold of hers are in the room together, and the frost on the walls grows a finger\'s breadth while you watch.\n\n"Don\'t," says Marta. It is the only thing you have heard her ask for.' }] },
+    { on: 'veth', if: [COLD], do: [{ say: 'VETH. The furs lift on the pallet, and Marta\'s free hand comes down on them like a lid. She looks at you. You find that you have nothing further to say.' }] },
+    { on: ['veth', 'iska', 'sol'], do: [{ say: '"Not under this roof," says Marta, without turning round. "This roof has had enough of words."' }] },
+
+    // --- The night the hearth is lit. Making for the door ends it: the hall empties, and Marta has something to hand over.
+    {
       zone: 'leaving', if: [{ flag: 'hall.feast' }],
       do: [
-        { set: 'hall.feast', to: false }, { muster: true }, { give: 'ember' }, { sound: 'quest' },
-        { say: 'It is late before the hall empties. They go out by twos and threes into a night with woodsmoke in it, and every one of them finds some reason to pass close to you on the way.\n\nMarta sees you to the door herself. She presses a small horn box into your hand. Inside, on a bed of ash, a single coal from the hearth glows without burning down. "It knows where it was lit," she says. "When you are far out and have had enough of the far out, breathe on it."\n\nThen she nods back at the long table, and at the thing still lying at the end of it. "And that goes with you. The candle beside it has gone out three times tonight, and nothing in this hall is going out again while I am Elder of it." You wrap the crown in a cloth and put it at the bottom of your pack.\n\nSo ends the first saga of THANE\'S QUEST. The valley is still yours to walk, and there is a great deal more of it than you have seen. In your pack is a crown that has spent a whole night beside the biggest fire in the north, and has not warmed at all.' },
-        { note: 'The Elder has work for a Thane, and the forge is lit again.' },
+        { set: 'hall.feast', to: false }, { muster: true }, { give: 'ember' }, { sound: 'quest' }, { goto: 'hall', x: 236, y: 150, dir: 'up' },
+        { say: 'Late that night, when the hall has emptied and the fire has settled into the kind of red that will last till morning, Marta rakes out one coal with the tongs and drops it into a little box of horn and shuts the lid.\n\n"A coal knows its own hearth," she says. "Breathe on that and it\'ll bring you back to this one, wherever you are. One, and what you can carry in your arms. Don\'t sneeze."\n\nYou hold the box in both hands. It is warm. As far as you know, nothing has ever been made to bring you back anywhere.\n\nYou turn the ring on your finger. It is old, and worn smooth by a good many hands.\n\n"It\'s an old word, Thane," says Marta. "There hasn\'t been one in Hollowmere since before this hall was built. The Elder keeps a ring by for when there is." She looks at the fire. "The Elder before me gave me that ring and a broom, and took me up to the barrow, and showed me a place in it that was swept clean with nobody in it. She told me to keep it swept. She didn\'t know who for. I\'ve swept it forty years."\n\nShe stands up, and her knees crack.\n\n"You can have the ring," says Marta. "I\'ll keep the broom."' },
+        { note: 'A bed has been made up for you beside the hearth.' },
       ],
     },
-    { on: ['light hearth', 'use log', 'use log hearth', 'light log'], if: [{ quest: 'hearth', is: 4 }, { has: 'log' }], do: [{ say: 'You are not close enough to the hearth.' }] },
-    { on: ['light hearth', 'use log', 'use log hearth', 'light log'], if: [{ quest: 'hearth', is: 4 }], do: [{ say: '"With what?" says Marta. "The hall wood is damp through. Fetch a dry log from the pile outside."' }] },
-    { on: ['light hearth', 'use log', 'use log hearth', 'light log'], if: [{ flag: 'hearth.lit' }], do: [{ say: 'It is burning beautifully. Leave it be.' }] },
-    { on: ['light hearth', 'use log', 'use log hearth', 'light log'], do: [{ say: 'You strike a spark into the kindling. It catches, gutters, and dies, exactly as if something far away had breathed it in.' }] },
+    // --- The feast for the thaw, and the end of the bench nearest the door.
     {
-      on: ['give bearskin elder', 'give elder bearskin', 'give bearskin', 'use bearskin', 'drop bearskin'], if: [{ has: 'bearskin' }, { not: { flag: 'hall.rug' } }],
-      do: [{ lose: 'bearskin' }, { set: 'hall.rug' }, { gold: 20 }, { heal: 10 }, { sound: 'take' }, { say: 'You unroll the white bearskin in front of the Elder\'s chair. Marta looks at it for a while. "My father had one of those," she says. "It went for boots, the winter I was nine." She puts her feet on it, experimentally, and her face does something it has not done in your hearing. "Twenty silver. Do not tell the smith what I paid; he will want the same for nails."' }],
+      on: SIT, if: [{ flag: 'hall.thaw' }, { flag: 'coal.given' }, { not: { flag: 'home.sat' } }],
+      do: [
+        { set: 'home.sat' }, { give: 'ember' }, { gold: 80 }, { sound: 'quest' },
+        { say: 'You are very tired, and you sit down at the first place you come to: the end of the bench nearest the door, where somebody coming in out of the cold would sit down first. In front of you is the cup. Halla filled it this morning, as she does every feast-day, with the best she has.\n\nHalla is coming down the table with a jug. She sees you, and her hand goes out to the cup from habit, to move it.\n\n"Leave it," says Marta.\n\nShe has looked up now. She gets to her feet and comes the whole length of the hall, with the whole of Hollowmere watching her do it, and puts down two things by the cup. One is a purse, lumpy with all the different things that every household in the valley has put into it. The other is a little box of horn, warm to the touch.\n\n"It came back without you," says Marta Coldhand. "Don\'t do that again."\n\nShe goes back to her place.' },
+      ],
     },
-    { on: ['take crown', 'look crown'], if: [{ flag: 'hall.feast' }], do: [{ say: 'It lies at the end of the long table, black against the wood. The feast has left a clear space round it, the way a crowd leaves room for a dog it does not know.' }] },
-    // The King's cup. Nobody drinks from it, and what Marta says about it changes as she learns whose it is.
-    { on: ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table'], if: [{ flag: 'marta.rest' }], do: [{ say: '"Leave it," says Marta, without turning round. "It is his."' }] },
-    { on: ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table'], if: [{ flag: 'hearth.lit' }], do: [{ say: '"Not even you, Thane," says Marta, without turning round. "That one is for whoever it is for."' }] },
-    { on: ['drink cup', 'take cup', 'use cup', 'eat cup', 'drink table', 'take table'], do: [{ say: '"That one is not for you," says Marta, without turning round. "It is not for anybody living, so far as I was ever able to learn. Leave it be."' }] },
+    {
+      on: SIT, if: [{ flag: 'hall.thaw' }, { flag: 'sol.said' }, { not: { flag: 'home.sat' } }],
+      do: [
+        { set: 'home.sat' }, { set: 'home.done' }, { set: 'marta.thaw' }, { gold: 80 }, { heal: 10 }, { score: 5, id: 'thaw.marta' }, { quest: 'north', stage: 8 }, { sound: 'quest' },
+        { win: 'You are very tired, and you sit down at the first place you come to: the end of the bench nearest the door. In front of you is the cup.\n\nHalla is coming down the table with a jug. She sees you, and her hand goes out to the cup, from habit, and moves it out of your way, and sets a horn of ale down where it stood.\n\nMarta has looked up. She comes the whole length of the hall, and puts a purse down by your hand, lumpy with all the different things that every household in the valley has put into it.\n\n"What was it?" she says. "Up there."\n\nYou tell her: the footprints, the hollow, the hands flat on the snow, the brass ring. You tell her what you said, and what went off into the white with its hands over its face. Marta hears all of it standing up.\n\n"A ring like that one," she says at last. She looks at your hand, and she does not ask about the boy a second time. "Then I know a little more than I did about a broom." She straightens her back, which was straight already. "The winter\'s broken, Thane. Eat."\n\nShe goes back to her place.' },
+      ],
+    },
+    { on: SIT, if: [{ flag: 'home.sat' }, { flag: 'hall.thaw' }], do: [{ say: 'You are sitting. The cup is in front of you.' }] },
+    { on: SIT, if: [{ flag: 'home.cup' }], do: [{ say: 'You sit down at the end of the bench nearest the door. It is your place. The cup has been filled.' }] },
+    { on: SIT, if: [{ flag: 'marta.thaw' }], do: [{ say: 'You sit down at the end of the bench nearest the door. Nobody says anything. The cup has been set back where it always stands, a hand\'s breadth out of your reach.' }] },
+    { on: ['sit throne'], do: [{ say: 'Marta looks at you. You discover you were only admiring the carving.' }] },
+    { on: SIT, do: [{ say: '"Not there," says Marta.\n\nShe does not say why. If you asked her, she could not tell you.' }] },
+    {
+      on: DRINK, if: [{ flag: 'hall.thaw' }, { flag: 'home.sat' }, { flag: 'coal.given' }, { not: { flag: 'home.cup' } }],
+      do: [
+        { set: 'home.cup' }, { set: 'home.done' }, { set: 'marta.thaw' }, { heal: 40 }, { score: 30, id: 'home.cup' }, { score: 5, id: 'thaw.marta' }, { quest: 'north', stage: 8 }, { sound: 'win' },
+        { win: 'You pick up the cup that nobody drinks, and you drink it, all of it.\n\nThen Halla fills it again.' },
+      ],
+    },
+    { on: DRINK, if: [{ flag: 'hall.thaw' }, { flag: 'coal.given' }, { not: { flag: 'home.sat' } }], do: [{ cmd: 'sit bench' }] },
+    { on: DRINK, if: [{ flag: 'home.cup' }], do: [{ heal: 6 }, { say: 'You drink. It is the best Halla has. By the time you have set the cup down, somebody has filled it.' }] },
+    { on: DRINK, if: [LIT], do: [{ say: '"Not that one," says Marta, without turning round. "That one is for whoever it\'s for."' }] },
+    { on: DRINK, do: [{ say: 'The ale is frozen solid in it. "And it\'s not for you," says Marta, without turning round. "It\'s not for anybody, so far as I was ever able to learn. Leave it be."' }] },
+    // Once the feast for the thaw has had what it was held for, it ends when the Thane goes out.
+    { zone: 'leaving', if: [{ flag: 'hall.thaw' }, { flag: 'home.done' }], do: [{ set: 'hall.thaw', to: false }] },
     {
       on: 'orun',
       do: [{ say: 'ORUN. The table gives up its wear. Under the cup the board is worn into a shallow ring; and round it, fainter and fainter, one laid over another, are the rings of other cups on other tables, older than this one, older than the hall. Always in the same place: at the end nearest the door, where somebody coming in out of the cold would sit down first.' }],
     },
-    // Hollowmere's one rhyme, sung in the hall it is about.
-    { on: ['sing rhyme', 'sing king', 'sing cup', 'sing'], if: [{ flag: 'marta.rest' }, { flag: 'rhyme.heard' }], do: [{ say: 'You sing it in the Elder\'s hall, with the fire going. West went the King when the snow lay deep, to wake the summer out of her sleep. Set him a cup and bank the fire...\n\nMarta does not sing. But she says the last line with you, flatly, as one reads out a bill. "He will be home when the sun is higher."' }] },
-    { on: ['sit throne', 'sit'], do: [{ say: 'Marta looks at you. You discover you were only admiring the carving.' }] },
-    { on: ['sleep', 'sleep *'], if: [{ flag: 'hall.feast' }], do: [{ say: 'With half of Hollowmere standing round the bed? They would only watch. See them out first.' }] },
-    { on: ['sleep', 'sleep *'], if: [{ flag: 'hearth.lit' }], do: [{ run: 'rest' }, { say: 'Marta has had a bench made up for you by the hearth, with a bearskin over it. Nobody has said anything about it; it is simply there. You sleep nine hours without moving, and wake warm, which you had forgotten was possible.' }] },
-    { on: ['warm', 'warm *', 'sit hearth'], if: [{ flag: 'hearth.lit' }], do: [{ say: 'You stand in front of your own fire and let it soak into you. It is a thing you could get used to.' }] },
+    {
+      on: ['give bearskin elder', 'give elder bearskin', 'give bearskin', 'use bearskin', 'drop bearskin'], if: [LIT, { has: 'bearskin' }, { not: { flag: 'hall.rug' } }],
+      do: [{ lose: 'bearskin' }, { set: 'hall.rug' }, { gold: 20 }, { heal: 10 }, { sound: 'take' }, { say: 'You unroll the white bearskin in front of the Elder\'s chair. Marta looks at it for a while. "My father had one of those," she says. "It went for boots, the winter I was nine." She puts her feet on it, experimentally, and her face does something it has not done in your hearing. "Twenty silver. Don\'t tell the smith what I paid; he\'ll want the same for nails."' }],
+    },
+    { on: ['sleep', 'sleep *'], if: [FEAST], do: [{ say: 'With all of Hollowmere round the bed? They would only watch.' }] },
+    {
+      on: ['sleep', 'sleep *'], if: [LIT, { not: { flag: 'hall.slept' } }],
+      do: [{ set: 'hall.slept' }, { run: 'rest' }, { say: 'You sleep nine hours without moving, and wake warm, which you had forgotten was possible.\n\nIn the morning there is smoke from every roof. Odd\'s forge is roaring, and Odd is talking to it about iron. Halla sleeps for a day and a night. So does the Elder, in her chair, and nobody says so. In the bed on the other side of the hearth, Tova asks you whether you have a name, and accepts that you have not, and names you herself, several times, none of them suitable.\n\nAnd it is still the coldest winter anyone can remember. It is colder every day.' }],
+    },
+    { on: ['sleep', 'sleep *'], if: [LIT], do: [{ run: 'rest' }, { say: 'You sleep in the bed by the Elder\'s hearth, and wake warm. On the other side of the fire somebody small is already awake, and has been waiting for you to be.' }] },
+    { on: ['sleep', 'sleep *'], do: [{ say: 'Lie down in this hall and you would not get up. Even the frost in here is leaning away from where you are standing.' }] },
+    { on: ['warm', 'warm *', 'sit hearth'], if: [LIT], do: [{ say: 'You stand in front of the fire and let it soak into you. It is a thing you could get used to.' }] },
     { on: ['read tome', 'take tome', 'look tome', 'read shelf'], do: [{ say: 'You open one at random. It is about sheep. So is the next.' }] },
   ],
 };
@@ -131,8 +285,8 @@ export const inn: RoomDef = {
   id: 'inn',
   music: 'hearth',
   name: 'The Kettle and Helm',
-  look: 'The inn: one room, a counter, a table, a bed in the corner that is let by the night. A small fire sulks in the hearth, kept alive by constant attention. It smells of ale and wet wool.',
-  lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: 'The inn: one room, a counter, a table, a bed in the corner that is let by the night. The fire burns without being begged to, and there are more people at the table than you have seen here before. It smells of ale, wet wool and bread.' }],
+  look: 'The whole of Hollowmere is in the common room of the inn: in blankets, on benches, on the floor, as close to the hearth as they can be without touching it. The fire is small and low, and it lies flat, as if a wind were pressing on it, though there is no wind. A woman sits on a stool in front of it and feeds it one stick at a time. Nothing in here smells of anything but people.',
+  lookWhen: [{ if: [LIT], look: 'The inn: one room, a counter, a table, a bed in the corner that is let by the night. The fire burns without being begged to. It smells of ale, wet wool and bread, and of having been scrubbed.' }],
   scene: {
     kind: 'indoor', walkTop: 104, ambient: 0.6,
     layers: [{ t: 'interior', floor: FL, wall: 'log' }, { t: 'boards', from: 22, floor: FL }, { t: 'joists', y: 18 }],
@@ -155,18 +309,25 @@ export const inn: RoomDef = {
     ],
     lights: [{ x: 250, y: 104, r: 46, i: 0.45, kind: 'warm' }],
     when: [
-      // The last fire in the village, kept in by hand; after the hearth is lit, a fire like any other.
-      { if: [{ not: { flag: 'hearth.lit' } }], props: [{ t: 'fireplace', x: 104, y: FL, w: 50, v: 'inn' }], lights: [{ x: 104, y: 98, r: 56, i: 0.7, kind: 'warm' }] },
-      { if: [{ flag: 'hearth.lit' }], props: [{ t: 'fireplace', x: 104, y: FL, w: 50, v: 'inn', lit: 1 }], lights: [{ x: 104, y: 98, r: 80, i: 1, kind: 'warm' }] },
+      // The last fire in the valley, kept in by hand, with a stool before it; after the hearth is lit, a fire like any other.
+      { if: [COLD], props: [{ t: 'fireplace', x: 104, y: FL, w: 50, v: 'inn' }, { t: 'stool', x: 128, y: 116 }, { t: 'bearskin', x: 190, y: 158 }], lights: [{ x: 104, y: 98, r: 56, i: 0.7, kind: 'warm' }] },
+      { if: [LIT], props: [{ t: 'fireplace', x: 104, y: FL, w: 50, v: 'inn', lit: 1 }], lights: [{ x: 104, y: 98, r: 80, i: 1, kind: 'warm' }] },
     ],
   },
   doors: [{ x0: 152, y0: 105, x1: 168, y1: 107, to: 'village', x: 252, y: 120, dir: 'down' }],
-  npcs: [{ char: 'halla', x: 250, y: 114 }],
+  npcs: [
+    { char: 'halla', x: 132, y: 118, dir: 'left', if: [COLD] },
+    { char: 'halla', x: 250, y: 114, if: [LIT, { not: FEAST }] },
+    { char: 'gorm', x: 62, y: 124, dir: 'right', if: [COLD] },
+    { char: 'toke', x: 206, y: 122, dir: 'left', if: [COLD] },
+    { char: 'fenn', x: 286, y: 152, dir: 'left', if: [COLD] },
+  ],
   things: [
     {
-      id: 'hearth', nouns: ['hearth'], x: 104, y: 106, reach: 40, look: 'A small fire, coaxed along with bellows and bad language. It is the only one in the village that has stayed lit, and it costs Halla her sleep.',
-      lookWhen: [{ if: [{ flag: 'hearth.lit' }], look: 'A good fire, burning by itself like any other. Halla still looks at it every few minutes, out of habit, and then looks away again, pleased.' }],
+      id: 'hearth', nouns: ['hearth'], x: 104, y: 106, reach: 40, look: 'A small fire, lying flat on its sticks as if a wind were on it. It is the only one in the valley that did not go out at midwinter, and only because Halla did not let it.',
+      lookWhen: [{ if: [LIT], look: 'A good fire, burning by itself like any other. Halla still looks at it every few minutes, out of habit, and then looks away again, pleased.' }],
     },
+    { id: 'children', nouns: ['girl', 'boy'], x: 190, y: 156, reach: 40, hidden: true, look: 'Two children, asleep in one coat, on a bearskin, as near the hearth as they were let. One of them has hold of the other\'s ear.' },
     { id: 'counter', nouns: ['counter'], x: 250, y: 132, reach: 44, look: 'A plank counter, scrubbed white. Behind it: red draughts for the hurt, pitch torches for the dark, and ale for everything else.' },
     { id: 'barrel', nouns: ['barrel', 'ale'], x: 306, y: 116, reach: 40, look: 'The ale barrel. It is the one thing in Hollowmere that has not run short.' },
     { id: 'bed', nouns: ['bed'], x: 31, y: 106, reach: 40, look: 'A box bed with a fur blanket. Four silver a night, fleas at no extra charge.' },
@@ -180,21 +341,29 @@ export const inn: RoomDef = {
   ],
   rules: [
     firstVisit('inn'),
+    { enter: true, if: [COLD], do: [{ show: 'children' }] },
+    { enter: true, if: [LIT], do: [{ hide: 'children' }] },
+    { on: ['talk girl', 'talk boy', 'pet girl', 'pet boy', 'take girl'], if: [COLD], do: [{ say: 'They are asleep, in the one coat. Let them be. It is the warmest either of them will be today.' }] },
+    { on: ['warm', 'warm *'], if: [COLD], do: [{ say: 'You hold your hands out, from as far back as everybody else does. There is not much to be had. Nobody goes nearer: it would be taking it from the fire.' }] },
     { on: ['warm', 'warm *'], do: [{ say: 'You hold your hands to the fire until the feeling comes back into them, which hurts, and then stops hurting, which is better than anything.' }] },
-    { on: ['veth', 'iska', 'sol', 'orun'], do: [{ say: '"Not in here," says Halla, without turning round, in the voice of a woman who has put out a great many drunks. "Whatever that was. I have one fire and I am fond of it."' }] },
-    { on: ['buy potion'], if: [{ gold: 6 }], do: [{ gold: -6 }, { give: 'potion' }, { sound: 'take' }, { say: 'Six silver. Halla slides a red draught across the counter. "For when you are hurt, not when you are thirsty."' }] },
-    { on: ['buy potion'], do: [{ say: '"Six silver for a draught," says Halla, "and you have not got six silver."' }] },
-    { on: ['buy torch'], if: [{ has: 'torch' }], do: [{ say: '"One torch is plenty. It will last longer than you will, where you are going."' }] },
-    { on: ['buy torch'], if: [{ gold: 3 }], do: [{ gold: -3 }, { give: 'torch' }, { sound: 'take' }, { say: 'Three silver for a pitch torch. "It only burns away from the village," says Halla. "Do not ask me why."' }, { note: 'Tip: LIGHT TORCH when you need to see.' }] },
+    { on: 'iska', if: [COLD], do: [{ say: 'ISKA. Halla\'s fire goes down flat on its sticks like a dog that has been shouted at, and for a moment you think you have killed it. Halla is off her stool and between you and the hearth before you have shut your mouth. She does not say anything. She does not need to.\n\nIt is some time before anybody in the room breathes out. In the corner, the old man with the books is looking at you with great attention.' }] },
+    { on: ['veth', 'iska', 'sol', 'orun'], do: [{ say: '"Not in here," says Halla, without turning round, in the voice of a woman who has put out a great many drunks. "Whatever that was. I have one fire and I\'m fond of it."' }] },
+    { on: ['light hearth', 'light', 'use flint'], if: [COLD], do: [{ say: 'It is lit. That is the whole of what can be said for it, and Halla is the only one who goes near it.' }] },
+    { on: ['buy potion'], if: [{ gold: 6 }], do: [{ gold: -6 }, { give: 'potion' }, { sound: 'take' }, { say: 'Six silver. Halla hands you a red draught. "For when you\'re hurt, not when you\'re thirsty."' }] },
+    { on: ['buy potion'], do: [{ say: '"Six silver for a draught," says Halla, "and you haven\'t got six silver."' }] },
+    { on: ['buy torch'], if: [{ has: 'torch' }], do: [{ say: '"One torch is plenty."' }] },
+    { on: ['buy torch'], if: [{ gold: 3 }], do: [{ gold: -3 }, { give: 'torch' }, { sound: 'take' }, { say: 'Three silver for a pitch torch. "For the dark places," says Halla. "There are vaults out there, they say, under the old towers."' }, { note: 'Tip: LIGHT TORCH when you need to see.' }] },
     { on: ['buy torch'], do: [{ say: '"Three silver," says Halla. You do not have three silver.' }] },
-    { on: ['buy food', 'eat food', 'eat'], if: [{ gold: 1 }], do: [{ gold: -1 }, { heal: 6 }, { say: 'One silver buys a bowl of something brown with barley in it. It is hot, which just now is the best thing a food can be.' }] },
+    { on: ['buy food', 'eat food', 'eat'], if: [{ gold: 1 }], do: [{ gold: -1 }, { heal: 6 }, { say: 'One silver buys a bowl of something brown with barley in it. It is mostly hot, which just now is the best thing a food can be.' }] },
     { on: ['buy food', 'eat food'], do: [{ say: '"One silver for the stew," says Halla. "Smelling it is free."' }] },
     { on: ['buy ale', 'drink ale', 'buy'], if: [{ gold: 1 }], do: [{ gold: -1 }, { heal: 4 }, { say: 'One silver buys a horn of ale. It is thin, sour, and exactly what you needed.' }] },
     { on: ['buy ale', 'drink ale', 'buy'], do: [{ say: '"No silver, no ale," says Halla, not unkindly.' }] },
-    { on: ['sell venison', 'give venison', 'give venison halla'], if: [{ has: 'venison' }], do: [{ lose: 'venison' }, { gold: 4 }, { sound: 'take' }, { say: '"Venison!" Halla weighs the haunch in both hands as if it were a baby. "Four silver, and there will be a proper stew tonight, the first since autumn."' }] },
-    { on: ['sell herb', 'give herb', 'give herb halla'], if: [{ has: 'herb' }], do: [{ lose: 'herb' }, { gold: 2 }, { sound: 'take' }, { say: '"Frostcaps!" Halla has two silver on the counter before you have finished unwrapping them. "That is the stew saved. Bring more."' }] },
+    { on: ['sell venison', 'give venison', 'give venison halla'], if: [{ has: 'venison' }], do: [{ lose: 'venison' }, { gold: 4 }, { sound: 'take' }, { say: '"Venison!" Halla weighs the haunch in both hands as if it were a baby. "Four silver, and there\'ll be a proper stew tonight."' }] },
+    { on: ['sell herb', 'give herb', 'give herb halla'], if: [{ has: 'herb' }], do: [{ lose: 'herb' }, { gold: 2 }, { sound: 'take' }, { say: '"Frostcaps!" Halla has two silver out before you have finished unwrapping them. "That\'s the stew saved. Bring more."' }] },
+    { on: ['give flint halla', 'give halla flint', 'give flint'], if: [LIT, { has: 'flint' }], do: [{ say: '"Keep it," says Halla. "I never want to strike that thing again as long as I live."' }] },
     { on: ['sleep', 'sleep bed', 'buy bed', 'use bed'], if: [{ gold: 4 }], do: [{ gold: -4 }, { run: 'rest' }, { say: 'Four silver. You sleep like a felled tree, under a fur that has opinions of its own. In the morning you are whole again, and only slightly bitten.' }] },
     { on: ['sleep', 'sleep bed', 'buy bed', 'use bed'], do: [{ say: '"Four silver for the bed," says Halla. "The floor is free, and so is the door."' }] },
+    ...fennRules,
   ],
 };
 
@@ -202,7 +371,11 @@ export const hut: RoomDef = {
   id: 'hut',
   music: 'hearth',
   name: "The Hermit's Hut",
-  look: 'One snug room, mostly books. A fire burns in the hearth as if it had never heard there was a problem. Old Fenn keeps a table, a bed, and more shelves than walls.',
+  look: 'One room, mostly books, and as cold as the shore outside. The hearth is dead and swept. Whoever lives here has taken the books worth saving and gone where there is a fire.',
+  lookWhen: [
+    { if: [LIT, { quest: 'errand', is: 2 }], look: 'One snug room, mostly books. A fire burns in the hearth. Old Fenn keeps a table, a bed, and more shelves than walls; and by the window, on a nail, where the light gets at it, hangs a moonstone on a silver chain.' },
+    { if: [LIT], look: 'One snug room, mostly books, with a fire in the hearth and nobody in front of it. Fenn keeps a table, a bed, and more shelves than walls. He is down on the shore.' },
+  ],
   scene: {
     kind: 'indoor', walkTop: 104, ambient: 0.46,
     layers: [{ t: 'interior', floor: FL, wall: 'log' }, { t: 'earthfloor', floor: FL }, { t: 'thatchroof', y: 20 }],
@@ -210,7 +383,6 @@ export const hut: RoomDef = {
       { t: 'bookcase', x: 24, y: FL, w: 46, h: 76, v: 'deep', seed: 1 },
       { t: 'bookcase', x: 72, y: FL, w: 46, h: 76, v: 'deep', seed: 2 },
       { t: 'bookcase', x: 122, y: FL, w: 44, h: 76, v: 'deep', seed: 3 },
-      { t: 'fireplace', x: 176, y: FL, w: 54, v: 'hut', lit: 2 },
       { t: 'hutwindow', x: 226, y: 62, w: 24, h: 26 },
       { t: 'doorway', x: 262, y: FL },
       { t: 'bookcase', x: 298, y: FL, w: 44, h: 76, v: 'deep', seed: 4 },
@@ -228,342 +400,36 @@ export const hut: RoomDef = {
       { t: 'bed', x: 250, y: 160, ramp: 'blue' },
       { t: 'bookstack', x: 266, y: 161, r: 15, h: 3, seed: 3, v: 'on' },
     ],
-    lights: [{ x: 176, y: 100, r: 96, i: 1.2, kind: 'warm' }, { x: 106, y: 122, r: 24, i: 0.35, kind: 'warm' }, { x: 226, y: 48, r: 22, i: 0.35, kind: 'glow' }],
-    // After he has it back, his wife's amulet hangs on a nail by the window.
-    when: [{ if: [{ quest: 'errand', is: 2 }], props: [{ t: 'amulet', x: 244, y: 38 }] }],
+    lights: [{ x: 226, y: 48, r: 22, i: 0.35, kind: 'glow' }],
+    when: [
+      { if: [COLD], props: [{ t: 'fireplace', x: 176, y: FL, w: 54, v: 'hut' }] },
+      { if: [LIT], props: [{ t: 'fireplace', x: 176, y: FL, w: 54, v: 'hut', lit: 2 }], lights: [{ x: 176, y: 100, r: 96, i: 1.2, kind: 'warm' }, { x: 106, y: 122, r: 24, i: 0.35, kind: 'warm' }] },
+      // After he has it back, his wife's amulet hangs on a nail by the window.
+      { if: [{ quest: 'errand', is: 2 }], props: [{ t: 'amulet', x: 244, y: 38 }] },
+    ],
   },
   doors: [{ x0: 254, y0: 105, x1: 270, y1: 107, to: 'tarn', x: 262, y: 116, dir: 'down' }],
-  npcs: [{ char: 'fenn', x: 196, y: 124, wander: [150, 120, 230, 132] }],
+  // He is at home only once he has stopped going down to the shore.
+  npcs: [{ char: 'fenn', x: 196, y: 124, wander: [150, 120, 230, 132], if: [LIT, { quest: 'errand', is: 2 }] }],
   things: [
-    { id: 'tome', nouns: ['tome'], x: 122, y: 143, lift: 16, reach: 34, icon: 'tome', take: 'tomeFlame', takeSay: 'You pick up the singed book. Fenn waves a hand without looking round. "Take it. I know that one by heart."', look: 'A book with scorched edges lies open on the table.' },
-    { id: 'hearth', nouns: ['hearth'], x: 176, y: 106, reach: 40, look: "A proper fire, steady and hot. Either the village's trouble stops at the tarn, or this fire is more afraid of Fenn than of the barrow." },
+    { id: 'tome', nouns: ['tome'], x: 122, y: 143, lift: 16, reach: 34, icon: 'tome', take: 'tomeFlame', takeSay: 'You pick up the singed book. He said he never liked it.', look: 'A book with scorched edges lies open on the table.' },
+    {
+      id: 'hearth', nouns: ['hearth'], x: 176, y: 106, reach: 40, look: 'A dead hearth, swept, with the ash in a bucket. Whoever lives here went out the same night as everybody else\'s fire did, and was tidy about it.',
+      lookWhen: [{ if: [LIT], look: 'A proper fire, steady and hot, in a hearth that has plainly been told what is expected of it.' }],
+    },
     { id: 'shelf', nouns: ['shelf'], x: 70, y: 106, reach: 50, look: 'Books two deep, in six scripts. Some have locks. One has teeth marks, from the inside.' },
-    { id: 'table', nouns: ['table'], x: 112, y: 144, reach: 44, look: 'Ink, a candle stub, a mug, and whatever Fenn was reading when you came in.' },
+    { id: 'table', nouns: ['table'], x: 112, y: 144, reach: 44, look: 'Ink, a candle stub, a mug, and whatever its owner was reading when the fire went out.' },
     { id: 'bed', nouns: ['bed'], x: 250, y: 162, reach: 40, look: "The hermit's bed. It does not look slept in. It looks read in." },
     { id: 'door', nouns: ['door'], x: 262, y: 106, reach: 400, look: 'The way out, back to the tarn.' },
   ],
   rules: [
     firstVisit('hut'),
-    { on: ['warm', 'warm *'], do: [{ say: 'You warm yourself at the hermit\'s fire. It is a very good fire. Fenn watches you do it as if you were using up something of his.' }] },
-    { on: ['buy frost'], if: [{ has: 'tomeFrost' }], do: [{ say: '"You have that one. Reading it twice will not make it colder."' }] },
-    { on: ['buy frost'], if: [{ gold: 20 }], do: [{ gold: -20 }, { give: 'tomeFrost' }, { sound: 'take' }, { say: 'Twenty silver. Fenn pulls down a book bound in pale blue hide. It is cold to hold. "Frost. It slows what it strikes, and it is not kind about it."' }] },
-    { on: ['buy mend'], if: [{ has: 'tomeMend' }], do: [{ say: '"You have that one already."' }] },
-    { on: ['buy mend'], if: [{ gold: 15 }], do: [{ gold: -15 }, { give: 'tomeMend' }, { sound: 'take' }, { say: 'Fifteen silver for a small green book, soft with handling. "Mend. The only spell worth knowing, in the end."' }] },
-    { on: ['buy ward'], if: [{ has: 'tomeWard' }], do: [{ say: '"You have that one already."' }] },
-    { on: ['buy ward'], if: [{ gold: 25 }], do: [{ gold: -25 }, { give: 'tomeWard' }, { sound: 'take' }, { say: 'Twenty-five silver. The book is bound in grey iron-cloth. "Ward. It halves what hits you, for a little while."' }] },
-    { on: ['buy frost', 'buy mend', 'buy ward', 'buy', 'buy tome', 'buy light', 'buy magic', 'learn', 'learn magic'], do: [{ say: '"Books cost silver," says Fenn. "Mend is fifteen, Frost twenty, Ward twenty-five. Light I do not sell. Light I give, to people who do me a kindness."' }] },
-    { on: ['give crown', 'give crown fenn', 'give fenn crown'], if: [{ has: 'crown' }], do: [{ cmd: 'ask fenn about crown' }] },
-    // A book read is a book that can go back on the shelf.
-    {
-      on: ['give tome', 'give tome fenn', 'give fenn tome', 'sell tome', 'give shelf', 'give shelf fenn', 'use tome shelf', 'give tome shelf', 'drop tome shelf', 'store tome shelf'],
-      if: [{ any: [{ has: 'tomeFlame' }, { has: 'tomeFrost' }, { has: 'tomeMend' }, { has: 'tomeLight' }, { has: 'tomeWard' }] }],
-      do: [{ run: 'shelve' }],
-    },
-    { on: ['give amulet', 'give amulet fenn'], if: [{ has: 'amulet' }], do: [{ lose: 'amulet' }, { give: 'tomeLight' }, { score: 2, id: 'errand.start' }, { score: 8, id: 'errand.done' }, { say: 'Fenn takes the amulet in both hands and says nothing for a while. "Forty years I have looked at this from the shore, every morning," he says at last. "I had forgotten it was so small." He closes his hand on it. Then, briskly, as if you had caught him at something, he puts a slim white book in yours. "Light. You will want it under the barrow."' }, { quest: 'errand', stage: 2 }] },
-    { on: ['sleep', 'sleep bed'], do: [{ say: '"That is my bed," says Fenn, "and I may want it some day."' }] },
-  ],
-};
-
-// ---------------------------------------------------------------------------------------------
-// Under the barrow
-
-const DF = 98;
-
-export const ante: RoomDef = {
-  id: 'ante',
-  music: 'barrow',
-  name: 'The Antechamber',
-  look: 'A chamber of fitted stone under the mound. Three figures are carved on the back wall: a wolf, a stag and a crown, with a line of writing beneath. A brazier burns here, which is worrying. To the east an archway is filled with something that is not quite air. The stair behind you climbs to daylight.',
-  lookWhen: [{ if: [{ flag: 'ante.open' }], look: 'A chamber of fitted stone under the mound. Three figures are carved on the back wall: a wolf, a stag and a crown, with a line of writing beneath. A brazier burns here, which is worrying. To the east the archway stands open, and the cold that filled it has gone down ahead of you. The stair behind you climbs to daylight.' }],
-  scene: {
-    kind: 'indoor', walkTop: 106, ambient: 0.3,
-    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
-    props: [
-      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
-      { t: 'arch', x: 284, y: DF, w: 40, h: 60 },
-      { t: 'pillar', x: 84, y: 110, lit: 1 },
-      { t: 'pillar', x: 244, y: 110, lit: -1 },
-      { t: 'brazier', x: 170, y: 142 },
-      { t: 'boulder', x: 30, y: 152, r: 5, seed: 31, ramp: 'stone' },
-      { t: 'rune', x: 124, y: 58, h: 18, v: 'a', lit: 0 },
-      { t: 'rune', x: 170, y: 58, h: 18, v: 'b', lit: 0 },
-      { t: 'rune', x: 216, y: 58, h: 18, v: 'c', lit: 0 },
-    ],
-    lights: [{ x: 170, y: 124, r: 72, i: 1.25, kind: 'warm' }],
-    when: [
-      { if: [{ flag: 'ante.wolf' }], props: [{ t: 'rune', x: 124, y: 58, h: 18, v: 'a' }], lights: [{ x: 124, y: 58, r: 16, i: 0.4, kind: 'glow' }] },
-      { if: [{ flag: 'ante.stag' }], props: [{ t: 'rune', x: 170, y: 58, h: 18, v: 'b' }], lights: [{ x: 170, y: 58, r: 16, i: 0.4, kind: 'glow' }] },
-      { if: [{ flag: 'ante.open' }], props: [{ t: 'rune', x: 216, y: 58, h: 18, v: 'c' }], lights: [{ x: 216, y: 58, r: 16, i: 0.4, kind: 'glow' }] },
-    ],
-  },
-  doors: [
-    { x0: 36, y0: 107, x1: 52, y1: 109, to: 'barrow', x: 160, y: 126, dir: 'down' },
-    {
-      x0: 274, y0: 107, x1: 294, y1: 109, to: 'sleepers', x: 48, y: 116, dir: 'right',
-      if: [{ flag: 'ante.open' }],
-      locked: 'Cold fills the archway like glass. You put a hand to it and snatch it back, numb to the elbow. Something has to be said, or done, before this lets anyone through.',
-    },
-  ],
-  things: [
-    { id: 'wolf', nouns: ['wolf'], x: 124, y: 108, reach: 30, try: ['push wolf'], look: 'A wolf, carved running, mouth open. Whoever cut it had watched wolves.' },
-    { id: 'stag', nouns: ['stag'], x: 170, y: 108, reach: 30, try: ['push stag'], look: 'A stag with its head thrown back, in the last moment before it runs.' },
-    { id: 'crown', nouns: ['crown'], x: 216, y: 108, reach: 30, try: ['push crown'], look: 'A crown of seven points, carved deep. No head under it.' },
-    { id: 'writing', nouns: ['inscription', 'rune'], x: 170, y: 108, reach: 70, try: ['read inscription'], look: 'Cut beneath the figures, in letters you can just follow: "FIRST THE ONE WHO HUNTS. THEN THE ONE WHO IS HUNTED. LAST THE ONE WHO IS CROWNED, FOR ALL COME TO HIM IN THE END."' },
-    { id: 'arch', nouns: ['arch'], x: 284, y: 108, reach: 400, look: 'West, a stair climbs to the surface. East, an archway leads deeper, and the air in it shimmers like the air over ice.' },
-    { id: 'brazier', nouns: ['hearth'], x: 170, y: 144, reach: 40, look: 'An iron brazier, burning steadily. Somebody down here tends it. You would rather not meet them.' },
-    { id: 'pillar', nouns: ['pillar'], x: 84, y: 112, reach: 40, look: 'Drums of grey stone, ringed with notches that might be a tally. It is a long tally.' },
-  ],
-  rules: [
-    firstVisit('ante', 3),
-    { on: ['read inscription', 'read rune'], do: [{ say: '"FIRST THE ONE WHO HUNTS. THEN THE ONE WHO IS HUNTED. LAST THE ONE WHO IS CROWNED, FOR ALL COME TO HIM IN THE END."' }] },
-    { on: ['push wolf', 'pet wolf'], if: [{ flag: 'ante.open' }], do: [{ say: 'The way is already open.' }] },
-    { on: ['push wolf', 'pet wolf'], if: [{ not: { near: 'wolf' } }], do: [{ say: 'You are not close enough.' }] },
-    { on: ['push wolf', 'pet wolf'], if: [{ not: { flag: 'ante.wolf' } }], do: [{ set: 'ante.wolf' }, { sound: 'take' }, { say: 'The wolf sinks a finger\'s width into the wall, and a rune above it wakes, green and steady.' }] },
-    { on: ['push wolf', 'pet wolf'], do: [{ say: 'The wolf is already pressed home.' }] },
-    { on: ['push stag', 'pet stag'], if: [{ flag: 'ante.open' }], do: [{ say: 'The way is already open.' }] },
-    { on: ['push stag', 'pet stag'], if: [{ not: { near: 'stag' } }], do: [{ say: 'You are not close enough.' }] },
-    { on: ['push stag', 'pet stag'], if: [{ flag: 'ante.wolf' }, { not: { flag: 'ante.stag' } }], do: [{ set: 'ante.stag' }, { sound: 'take' }, { say: 'The stag slides back. A second rune wakes beside the first.' }] },
-    { on: ['push stag', 'pet stag'], if: [{ flag: 'ante.stag' }], do: [{ say: 'The stag is already pressed home.' }] },
-    { on: ['push stag', 'pet stag'], do: [{ set: 'ante.wolf', to: false }, { hurt: 7, why: 'The barrow does not care for guesswork. The cold stops your heart between one beat and the next.' }, { say: 'The stag does not move. Cold comes out of the wall like a blow, and you stagger back with frost on your sleeve.' }] },
-    { on: ['push crown', 'pet crown'], if: [{ flag: 'ante.open' }], do: [{ say: 'The way is already open.' }] },
-    { on: ['push crown', 'pet crown'], if: [{ not: { near: 'crown' } }], do: [{ say: 'You are not close enough.' }] },
-    { on: ['push crown', 'pet crown'], if: [{ flag: 'ante.wolf' }, { flag: 'ante.stag' }], do: [{ set: 'ante.open' }, { sound: 'door' }, { score: 10, id: 'ante.open' }, { say: 'The crown goes in with a click you feel in your teeth. The third rune wakes, and in the eastern archway the cold lets go all at once, like a held breath. The way down is open.' }] },
-    { on: ['push crown', 'pet crown'], do: [{ set: 'ante.wolf', to: false }, { set: 'ante.stag', to: false }, { hurt: 7, why: 'The barrow does not care for guesswork. The cold stops your heart between one beat and the next.' }, { say: 'The crown does not move. The runes go dark, and cold comes out of the wall like a blow.' }] },
-    { on: 'veth', do: [{ say: 'The word booms round the chamber and comes back unanswered. Whatever holds the archway is not a door, and does not open like one.' }] },
-  ],
-};
-
-export const sleepers: RoomDef = {
-  id: 'sleepers',
-  music: 'barrow',
-  name: 'The Hall of Sleepers',
-  look: 'A long hall of niches and stone coffins. The dead of forty generations were laid here to rest. The lids are off several of the coffins. An arch at the far end leads on.',
-  dark: true,
-  scene: {
-    kind: 'indoor', walkTop: 106, ambient: 0.32,
-    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
-    props: [
-      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
-      { t: 'arch', x: 284, y: DF, w: 40, h: 60 },
-      { t: 'niche', x: 92, y: 52, w: 26, h: 20 },
-      { t: 'niche', x: 146, y: 52, w: 26, h: 20 },
-      { t: 'niche', x: 200, y: 52, w: 26, h: 20 },
-      { t: 'pillar', x: 76, y: 110, lit: 1 },
-      { t: 'pillar', x: 246, y: 110, lit: -1 },
-      { t: 'sarcophagus', x: 96, y: 154, w: 56 },
-      { t: 'sarcophagus', x: 190, y: 138, w: 56 },
-      { t: 'boulder', x: 290, y: 150, r: 5, seed: 33, ramp: 'stone' },
-    ],
-    lights: [
-      { x: 160, y: 62, r: 46, i: 0.5, kind: 'glow' },
-      { x: 160, y: 130, r: 80, i: 0.55, kind: 'warm' },
-    ],
-  },
-  doors: [
-    { x0: 36, y0: 107, x1: 52, y1: 109, to: 'ante', x: 284, y: 116, dir: 'left' },
-    { x0: 274, y0: 107, x1: 294, y1: 109, to: 'throne', x: 48, y: 116, dir: 'right' },
-  ],
-  spawns: [
-    { id: 'wight1', kind: 'wight', x: 150, y: 124 },
-    { id: 'wight2', kind: 'wight', x: 230, y: 156 },
-    { id: 'wight3', kind: 'wight', x: 262, y: 122 },
-  ],
-  things: [
-    { id: 'coffins', nouns: ['sarcophagus'], x: 124, y: 156, reach: 50, look: 'Stone coffins with figures carved on the lids. Where the lids are still on.' },
-    { id: 'niches', nouns: ['niche'], x: 160, y: 108, reach: 400, look: 'Burial niches, each with an urn. The dust on them has been disturbed by something walking past, often.' },
-    { id: 'arch', nouns: ['arch'], x: 284, y: 108, reach: 400, look: 'The arch to the west leads back to the antechamber. The one to the east has a draught coming out of it, and the draught smells of old iron.' },
-    { id: 'pillar', nouns: ['pillar'], x: 76, y: 112, reach: 40, look: 'The same grey drums as upstairs, the same long tally.' },
-  ],
-  rules: [
-    firstVisit('sleepers', 3),
-    { on: ['open sarcophagus', 'push sarcophagus'], if: [{ not: { flag: 'sleepers.lid' } }], do: [{ set: 'sleepers.lid' }, { spawn: 'wight', x: 124, y: 132 }, { say: 'You put your shoulder to a lid that is still in place. It grinds aside. What is underneath sits up, looks at you with eyes like marsh-lights, and reaches for its sword. You have nobody to blame for this.' }] },
-    { on: ['open sarcophagus', 'look sarcophagus', 'enter sarcophagus', 'push sarcophagus'], do: [{ say: 'You look into the nearest open coffin. It is empty. That is not as reassuring as it ought to be.' }] },
-    { on: ['take niche', 'open niche'], do: [{ say: 'You leave the urns alone. Enough of the dead are annoyed with you already.' }] },
-    { on: 'sol', do: [{ say: 'SOL. Daylight, down here, where there has been none in four thousand years. The dust hangs gold in it. Every one of the sleepers flinches, the standing and the lying alike, and from the far arch comes a sound like a long breath drawn in through teeth.' }] },
-  ],
-};
-
-export const throne: RoomDef = {
-  id: 'throne',
-  music: 'barrow',
-  name: "The Barrow-King's Chamber",
-  look: 'The heart of the barrow: a round chamber with a stone seat at its centre and grave-gold heaped against the wall. Two braziers burn green-edged. On the far wall a rune is cut, bigger than a man. All the warmth of Hollowmere seems to have ended up in this room, and it is still cold.',
-  scene: {
-    kind: 'indoor', walkTop: 106, ambient: 0.34,
-    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
-    props: [
-      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
-      { t: 'rune', x: 286, y: 54, h: 30, v: 'c' },
-      { t: 'pillar', x: 96, y: 110, lit: 1 },
-      { t: 'pillar', x: 226, y: 110, lit: -1 },
-      { t: 'throne', x: 160, y: 112 },
-      { t: 'brazier', x: 112, y: 140 },
-      { t: 'brazier', x: 210, y: 140 },
-      { t: 'treasure', x: 270, y: 150, r: 24 },
-    ],
-    lights: [
-      { x: 112, y: 122, r: 60, i: 1.1, kind: 'warm' },
-      { x: 210, y: 122, r: 60, i: 1.1, kind: 'warm' },
-      { x: 286, y: 54, r: 30, i: 0.6, kind: 'glow' },
-    ],
-  },
-  doors: [{ x0: 36, y0: 107, x1: 52, y1: 109, to: 'sleepers', x: 284, y: 116, dir: 'left' }],
-  spawns: [{ id: 'king', kind: 'king', x: 160, y: 126 }],
-  things: [
-    { id: 'throne', nouns: ['throne'], x: 160, y: 114, reach: 40, look: 'A seat cut from one block, worn smooth by a very long sitting.' },
-    { id: 'treasure', nouns: ['treasure'], x: 270, y: 152, reach: 40, try: ['take treasure'], look: 'Arm-rings, cups, coin from kingdoms nobody remembers. A king was buried with all he owned, so that nobody else should have it.' },
-    { id: 'rune', nouns: ['rune', 'inscription'], x: 286, y: 108, reach: 40, try: ['read rune'], look: 'A rune as tall as you are, cut into the wall and filled with green light. It hurts a little to look at directly, like a word on the tip of your tongue.' },
-    { id: 'brazier', nouns: ['hearth'], x: 112, y: 142, reach: 40, look: 'The flames have green edges and give no warmth at all. They are burning something that is not wood.' },
-    { id: 'arch', nouns: ['arch'], x: 44, y: 108, reach: 400, look: 'The only way out is the way you came in.' },
-  ],
-  rules: [
-    firstVisit('throne', 3),
-    { on: ['read rune', 'pet rune', 'read inscription'], if: [{ not: { flag: 'king.dead' } }], do: [{ say: 'The King takes exception to your reading in his presence.' }] },
-    { on: ['read rune', 'pet rune', 'read inscription'], if: [{ near: 'rune' }, { not: { knows: 'word:orun' } }], do: [{ teach: 'word:orun' }, { run: 'study', arg: 40 }, { sound: 'word' }, { score: 6, id: 'word.orun' }, { say: 'You stand before the great rune until it stops being a shape and becomes a meaning: ORUN. See. Uncover. Let nothing stay hidden. There may be things in this valley that have been waiting to be seen.' }, { note: 'Tip: type ORUN to speak the word.' }] },
-    { on: ['read rune', 'pet rune', 'read inscription'], if: [{ near: 'rune' }], do: [{ say: 'ORUN. You have it now. The rune is only a carving again.' }] },
-    { on: ['read rune', 'pet rune', 'read inscription'], do: [{ say: 'You are not close enough.' }] },
-    { on: ['take treasure', 'take crown'], if: [{ not: { flag: 'king.dead' } }], do: [{ say: 'Its owner is standing right there.' }] },
-    { on: ['take treasure'], if: [{ flag: 'throne.looted' }], do: [{ say: 'You have taken what you can carry. The rest can stay buried, which is what it was for.' }] },
-    { on: ['take treasure'], if: [{ near: 'treasure' }], do: [{ set: 'throne.looted' }, { gold: 60 }, { sound: 'take' }, { score: 4, id: 'treasure' }, { say: 'You fill your pack with sixty silver\'s worth of dead men\'s coin. It is very cold to the touch, and you decide not to think about that.' }] },
-    { on: ['take treasure'], do: [{ say: 'You are not close enough.' }] },
-    { on: ['sit throne', 'sit'], if: [{ flag: 'king.dead' }], do: [{ die: 'You sit in the Barrow-King\'s seat, just to see. It is comfortable. It is so comfortable. Centuries later, somebody else opens the barrow, and finds you still sitting there, wearing a crown.' }] },
-    { on: ['sit throne', 'sit'], do: [{ say: 'It is occupied.' }] },
-  ],
-};
-
-// ---------------------------------------------------------------------------------------------
-// The third saga: behind the barrow's second door.
-
-const LIT = { flag: 'rest.lit' };
-const RESTED = { flag: 'dead.rested' };
-
-export const tally: RoomDef = {
-  id: 'tally',
-  music: 'barrow',
-  name: "The Servants' Stair",
-  look: "A narrow stair, worn hollow down the middle by people carrying things, going down under the mound. The walls on both sides are covered with marks, from the floor to as high as an arm can reach. At the foot of it an arch opens on a wider dark.",
-  dark: true,
-  scene: {
-    kind: 'indoor', walkTop: 106, ambient: 0.3,
-    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
-    props: [
-      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
-      { t: 'arch', x: 284, y: DF, w: 40, h: 60 },
-      { t: 'pillar', x: 110, y: 110, lit: 1 },
-      { t: 'pillar', x: 210, y: 110, lit: -1 },
-      { t: 'boulder', x: 236, y: 152, r: 4, seed: 41, ramp: 'stone' },
-    ],
-    lights: [{ x: 160, y: 126, r: 90, i: 0.5, kind: 'glow' }],
-  },
-  doors: [
-    { x0: 36, y0: 107, x1: 52, y1: 109, to: 'barrow', x: 118, y: 126, dir: 'down' },
-    { x0: 274, y0: 107, x1: 294, y1: 109, to: 'winterhall', x: 48, y: 118, dir: 'right' },
-  ],
-  things: [
-    {
-      // "Marks" is a word for runes everywhere else; here it means these.
-      id: 'marks', nouns: ['inscription', 'rune'], x: 160, y: 106, reach: 400, try: ['read marks'],
-      look: 'Five strokes and a bar, five strokes and a bar, in rows without end, cut into both walls with the same chisel. Somebody was counting something, and there was a great deal of it.',
-    },
-    {
-      id: 'chisel', nouns: ['chisel'], x: 236, y: 150, reach: 34, look: "A mason's chisel, worn to a stub, lying against the wall at the foot of the stair where a hand let it fall. Above it, the last tally mark is only half cut.",
-      lookWhen: [{ if: [{ flag: 'rest.count' }], look: "A mason's chisel, worn to a stub, laid straight at the foot of the wall. The count above it is finished." }],
-    },
-    { id: 'archUp', nouns: ['arch'], x: 44, y: 108, reach: 400, look: 'West, the stair climbs to the snow. East, at its foot, an arch opens on a hall you cannot see the end of.' },
-  ],
-  rules: [
-    firstVisit('tally', 2),
-    { on: 'orun', if: [{ flag: 'sight.boundary' }], do: [{ say: 'ORUN. Under the last tally, low down, where a man sitting against the wall would reach, there is one thing more cut into the stone. It is not a number. It is a hand, palm out, the sign in any country for THIS FAR. You have seen its like on a stone a long way from here. This one wears no rings.' }] },
-    { on: 'orun', do: [{ say: 'ORUN. Under the last tally, low down, where a man sitting against the wall would reach, there is one thing more cut into the stone. It is not a number. It is a hand, palm out, the sign in any country for THIS FAR. It wears no rings.' }] },
-    { on: ['read inscription', 'pet inscription', 'read rune', 'pet rune', 'read'], if: [{ flag: 'rest.read' }], do: [{ say: 'Nine thousand and eleven, in one hand, with the last bar half cut.' }] },
-    { on: ['read inscription', 'pet inscription', 'read rune', 'pet rune', 'read'], do: [{ set: 'rest.read' }, { run: 'study', arg: 10 }, { say: 'You follow the rows down the stair with one finger. They are tallies, all in one hand, and the hand grows less steady as it goes. Near the foot the count stops. You work it out twice, on the wall, with your lips moving: nine thousand and eleven. The last bar is only half cut.' }] },
-    { on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'chop rune', 'dig inscription'], if: [{ flag: 'rest.count' }], do: [{ say: 'The count is closed. You leave his chisel where you laid it.' }] },
-    {
-      on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'dig inscription'], if: [RESTED, { near: 'chisel', d: 44 }],
-      do: [{ set: 'rest.count' }, { sound: 'take' }, { say: 'You take up the chisel, find a loose stone for a mallet, and finish the bar he left half cut. It takes four blows. Nine thousand and eleven, and done. Then you lay the chisel straight at the foot of the wall, where he can find it.' }],
-    },
-    { on: ['take chisel', 'use chisel', 'use chisel inscription', 'chop inscription', 'dig inscription'], do: [{ say: 'You pick it up. The handle is worn to the shape of one hand, and it is not yours. Whoever was counting had not finished, and neither, you think, have you. You put it back.' }] },
-  ],
-};
-
-export const winterhall: RoomDef = {
-  id: 'winterhall',
-  music: 'barrow',
-  name: 'The Winter Hall',
-  look: "A king's hall, buried whole: long tables laid for a feast, a high seat, and at the far end a hearth of river-stone bigger than the Elder's, laid with logs and stone cold. The benches are full. They sit in their rows with the frost on them, every face turned to the hearth, as people sit who are waiting to be told the feast may begin.",
-  lookWhen: [
-    { if: [RESTED], look: 'A long hall under the hill, warm from end to end. The fire in the great hearth has burned down to a steady red, and somebody has stacked fresh logs beside it. The benches are empty. The tables are only tables.' },
-    { if: [LIT], look: "The hall is lit from end to end by its own hearth, for the first time. Along the tables the frost is running off them like sweat, and every face is turned to the fire. Nobody gets up. They are warm, and they are still here. Something more than fire is owed them, and they do not know its name either." },
-  ],
-  scene: {
-    kind: 'indoor', walkTop: 106, ambient: 0.34,
-    layers: [{ t: 'stonewall', floor: DF }, { t: 'flagstones', floor: DF }],
-    props: [
-      { t: 'arch', x: 44, y: DF, w: 30, h: 46 },
-      { t: 'pillar', x: 96, y: 110, lit: 1 },
-      { t: 'pillar', x: 224, y: 110, lit: -1 },
-      { t: 'throne', x: 262, y: 112 },
-      { t: 'table', x: 120, y: 146, w: 76 },
-      { t: 'table', x: 214, y: 158, w: 76 },
-    ],
-    when: [
-      { if: [{ not: LIT }], props: [{ t: 'hearth', x: 160, y: DF }], lights: [{ x: 60, y: 120, r: 70, i: 0.45, kind: 'glow' }, { x: 160, y: 130, r: 110, i: 0.4, kind: 'glow' }] },
-      { if: [LIT], props: [{ t: 'hearth', x: 160, y: DF, lit: 1 }], lights: [{ x: 160, y: 102, r: 130, i: 1.25, kind: 'warm' }] },
-    ],
-  },
-  doors: [{ x0: 36, y0: 107, x1: 52, y1: 109, to: 'tally', x: 276, y: 118, dir: 'left' }],
-  npcs: [
-    { char: 'dead1', x: 104, y: 136, dir: 'right', if: [{ not: RESTED }] },
-    { char: 'dead2', x: 136, y: 152, dir: 'up', if: [{ not: RESTED }] },
-    { char: 'dead3', x: 196, y: 148, dir: 'up', if: [{ not: RESTED }] },
-    { char: 'dead4', x: 232, y: 164, dir: 'up', if: [{ not: RESTED }] },
-    { char: 'dead5', x: 240, y: 136, dir: 'left', if: [{ not: RESTED }] },
-  ],
-  things: [
-    {
-      id: 'hearth', nouns: ['hearth'], x: 160, y: 108, reach: 44, try: ['light hearth'], look: 'A hearth a whole village could stand in front of. The logs are laid as they were laid four thousand years ago, on a bed of older ash. The last fire here went out in the middle of a feast, and none has held since.',
-      lookWhen: [
-        { if: [RESTED], look: 'A good fire, burning low and steady, with wood stacked ready beside it. Somebody from Hollowmere has been down.' },
-        { if: [LIT], look: 'It is burning as if it had only been waiting to be asked. The coal from the Elder\'s hearth is somewhere in the heart of it.' },
-      ],
-    },
-    {
-      id: 'tables', nouns: ['table'], x: 160, y: 150, reach: 400, look: 'Long tables, laid for a homecoming: horn cups, wooden platters, knives set straight, and at every place a sprig of something that was green once. Nothing was ever put on the platters. The fire went out as he came in at the door, and they sat on, waiting for it to take again.',
-      lookWhen: [{ if: [RESTED], look: 'Long tables, and empty benches, and horn cups set out in rows for a feast that was four thousand years late.' }],
-    },
-    { id: 'highseat', nouns: ['throne', 'cup'], x: 262, y: 114, reach: 44, look: 'The high seat, at the head of the hall, facing the hearth, with the best cup in the house set ready on its arm. It is the only empty place in the room. He came home, and walked past it.' },
-    { id: 'arch', nouns: ['arch'], x: 44, y: 108, reach: 400, look: "The foot of the servants' stair. It is the only way out, and it goes up." },
-  ],
-  rules: [
-    { enter: true, if: [{ not: { flag: 'seen.winterhall' } }], do: [{ set: 'seen.winterhall' }, { score: 5, id: 'seen.winterhall' }, { quest: 'rest', stage: 4 }] },
-    { on: 'orun', do: [{ say: 'ORUN. The floor shows its wear. From every bench a path is trodden into the stone, to the hearth and back: thousands of them, the way people go to a fire. And one more, laid over all the rest: in from where the great door stood, straight up the middle of the hall between the tables, past the high seat without a turn, to the stair, and up. It does not come back.' }] },
-    // SOL: a blow, while they are cold. A kindness, once they are warm.
-    { on: 'sol', if: [RESTED], do: [{ say: 'Day. There is nobody left in the hall to need telling.' }] },
-    {
-      on: 'sol', if: [LIT],
-      do: [
-        { set: 'dead.rested' }, { muster: true }, { sound: 'win' }, { score: 25, id: 'rest.done' }, { quest: 'rest', stage: 6 },
-        { say: "SOL. You say it quietly, the way you would tell somebody the time. Day. The sun's own name: the thing he went west to fetch.\n\nIt is four thousand years late, and it is not much. One word, and a coal from somebody else's hearth. But it is what these tables were laid for, and it has come. Along the benches the last of the frost goes out of nine thousand faces, and what is under it is only people: tired, and warm, and finished with waiting. It was never that they could not bear the word. They could not bear it cold. One by one they lay their heads down on their arms, as people do at the end of a long feast when the fire is good.\n\nWhen you look again the benches are empty. The fire burns on. Somebody ought to keep it in.\n\nYou have finished the third saga of THANE'S QUEST. Tonight, for the first time in four thousand years, nothing is walking in the north that ought to be asleep." },
-      ],
-    },
-    { on: 'sol', do: [{ say: 'SOL. The word goes down the hall like a slap, and nine thousand heads turn away from it together. It is day you are offering them, and they have nothing yet to be warm with. You find that you are ashamed.' }] },
-    { on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'drop ember', 'light', 'cast flame', 'use torch', 'light torch'], if: [LIT], do: [{ say: 'It is burning. It does not need you now. They may.' }] },
-    {
-      on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'drop ember', 'light'], if: [{ has: 'ember' }, { near: 'hearth', d: 60 }],
-      do: [
-        { lose: 'ember' }, { set: 'rest.lit' }, { sound: 'quest' }, { score: 10, id: 'rest.lit' }, { quest: 'rest', stage: 5 },
-        { say: "You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. The cold has been in these logs four thousand years, and a spark is no argument against it. Fire will not be struck here. It would have to be brought.\n\nSo you open the horn box. The coal from Marta's hearth glows in its bed of ash, as it has every day since she gave it to you: fire from a hall where anybody may come in out of the snow. You tip it onto the old logs.\n\nIt does not gutter. It catches, and keeps catching, as the Elder's hearth did, and the light walks down the hall from table to table, and every face at every table lifts toward it. Nobody gets up. They have waited a long time to be warm. They are not going to hurry it now." },
-      ],
-    },
-    { on: ['light hearth', 'use ember', 'use ember hearth', 'give ember hearth', 'give ember', 'light'], if: [{ has: 'ember' }], do: [{ say: 'You are not close enough to the hearth.' }] },
-    { on: ['light hearth', 'light', 'cast flame', 'use torch', 'light torch', 'use ember'], do: [{ say: 'You strike a spark into kindling four thousand years dry. It takes at once and goes out at once, the way a word does when nobody is listening. Along the tables nobody moves; but you have the feeling of a great many people not letting themselves hope. The cold has been in these logs four thousand years, and a spark is no argument against it. Fire will not be struck here. It would have to be brought in alive, from a hearth where one is burning.' }] },
-    { on: ['sit', 'sit table', 'sit throne'], if: [RESTED], do: [{ say: 'You sit a while at the long table, alone, in front of a good fire. It seems a thing somebody should do.' }] },
-    { on: ['sing rhyme', 'sing king', 'sing cup', 'sing'], if: [RESTED, { flag: 'rhyme.heard' }], do: [{ say: 'You sing it to the empty benches and the good fire. The hall keeps the tune a moment after you stop, the way a warm room keeps a voice.' }] },
-    { on: ['sing rhyme', 'sing king', 'sing cup', 'sing'], if: [{ flag: 'rhyme.heard' }], do: [{ say: 'You sing it down the long hall: West went the King when the snow lay deep. Nobody moves. But along the benches, very faintly, under the frost, a great many people know the tune.' }] },
-    { on: ['take cup', 'drink cup', 'use cup', 'take throne'], do: [{ say: 'It was set ready for one man, four thousand years ago, and it is still his. You leave it where it is.' }] },
-    { on: ['sit throne'], do: [{ say: 'Nine thousand people are looking at the hearth. If you sat there, they would look at you instead. You stay on your feet.' }] },
-    { on: ['sit', 'sit table'], do: [{ say: 'There is one place left at the nearest bench, and you take it. Nobody objects. It is the coldest seat you have ever sat in, and the company is very quiet. After a while you get up again, because you can.' }] },
-    { on: ['attack wight', 'shoot wight', 'shoot'], if: [{ not: RESTED }], do: [{ say: 'They have not lifted a hand to you. They are not going to. You put your own hand down.' }] },
+    { on: ['warm', 'warm *'], if: [LIT], do: [{ say: 'You warm yourself at the hermit\'s fire. It is a very good fire.' }] },
+    { on: ['light hearth', 'light', 'use flint'], if: [COLD], do: [{ say: 'There is kindling in the basket, laid ready by somebody methodical. You strike a spark into it. The flame comes up, and lies down flat, and goes out.' }] },
+    ...fennRules,
+    { on: ['buy', 'buy *', 'learn'], if: [{ not: { near: 'fenn', d: 400 } }], do: [{ say: 'There is nobody here to sell you anything. The books look at you from the shelves.' }] },
+    { on: ['sleep', 'sleep bed'], if: [{ near: 'fenn', d: 400 }], do: [{ say: '"That\'s my bed," says Fenn, "and I may want it some day."' }] },
+    { on: ['sleep', 'sleep bed'], do: [{ say: 'It is somebody else\'s bed, and there are books in it.' }] },
   ],
 };
 

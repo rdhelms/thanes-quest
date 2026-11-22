@@ -3,8 +3,9 @@
 
 import type { CharSpec, Cond, Content, Effect, EnemyDef, ItemDef, PerkDef, QuestDef, RoomDef, Rule, SpellDef, WordDef } from '../engine/types';
 import { chars } from './data/cast';
-import { ante, hall, hut, inn, sleepers, tally, throne, winterhall } from './data/rooms/inside';
-import { bellmere, dolmen, frostgate, hangtree, rimehall } from './data/rooms/west';
+import { hall, hut, inn } from './data/rooms/inside';
+import { bellmere, dolmen, hangtree } from './data/rooms/far';
+import { hanging, hollow, northgate, oldroad, windend } from './data/rooms/north';
 import { barrow, camp, farm, ford, pinewood, ridge, tarn, tower, village } from './data/rooms/world';
 import { frontier } from './data/frontier';
 import { music } from './data/music';
@@ -21,7 +22,26 @@ const tome = (id: string, spell: string, name: string, look: string, learned: st
 });
 
 const items: Record<string, ItemDef> = {
-  log: { id: 'log', weight: 0, keep: 'It is the one dry log in Hollowmere, and you know whose hearth it is for.', name: 'split log', nouns: ['log'], kind: 'misc', look: 'A split pine log, dry and resinous. It ought to burn well. Nothing does, here.' },
+  log: { id: 'log', weight: 0, keep: 'You chose it with some care, and you know whose hearth it is for.', name: 'dry log', nouns: ['log'], kind: 'misc', look: 'A split pine log, dry all through, and a fistful of kindling you split off it. It ought to burn well. Nothing does, here.' },
+  flint: {
+    id: 'flint', weight: 0, keep: 'It is Halla\'s, and it has been struck more in nine days than in the nine years before. You will be giving it back, not leaving it in the snow.', name: 'flint and steel', nouns: ['flint'], kind: 'misc',
+    look: 'A flint and a curl of steel on a thong, worn bright where a thumb goes. Halla has struck it every quarter hour for nine days.',
+    use: [{ cmd: 'light hearth' }],
+  },
+  coals: {
+    id: 'coals', weight: 0, keep: 'Three coals from the last fire in Hollowmere. You would not put them down in the snow.', name: 'horn of coals', nouns: ['coals'], kind: 'misc',
+    look: "A cow's horn, stopped with clay, with three coals from Halla's fire in it. They are red yet. She did not seem to think they would stay so.",
+  },
+  bottle: {
+    id: 'bottle', weight: 0, keep: 'It is for the girl under the furs. It is not going anywhere but the Elder\'s hall.', name: 'black bottle', nouns: ['bottle', 'tonic'], kind: 'misc',
+    look: "A stone bottle, stopped and still warm from Runa's pot. It puts back what the cold takes out. If the girl can swallow it.",
+    use: [{ say: 'It is not yours to drink. Three frostcaps and a long night went into it, and it is for a girl of seven.' }],
+  },
+  ring: {
+    id: 'ring', weight: 0, keep: 'It does not come off as easily as it went on.', name: 'brass ring', nouns: ['ring'], kind: 'misc',
+    look: 'A plain ring of brass, old, and worn smooth by a good many hands. It was on Marta\'s finger, and before that it was kept by. It fits.',
+    don: [{ say: 'It is on your finger, where Marta put it. You turn it. It is worn smooth, inside and out.' }],
+  },
   hatchet: { id: 'hatchet', weight: 4, icon: 'hatchet', name: 'hatchet', nouns: ['hatchet'], kind: 'weapon', power: 4, look: 'A wood-hatchet with a nicked edge. Made for kindling, but it has no opinions about what it splits.' },
   sword: { id: 'sword', weight: 6, name: 'iron sword', nouns: ['sword'], kind: 'weapon', power: 7, look: 'Plain iron, well kept. Odd made it before his forge died, and it shows: every line of it is impatient.' },
   bow: { id: 'bow', weight: 4, name: 'hunting bow', nouns: ['bow'], kind: 'bow', power: 5, look: "Toke's yew bow. It comes with a quiver that never seems to run dry, which you have decided not to question." },
@@ -35,16 +55,16 @@ const items: Record<string, ItemDef> = {
   antlers: { id: 'antlers', weight: 1, name: "hart's-horn charm", nouns: ['antlers', 'trinket'], kind: 'trinket', mods: { stamina: 40, regen: 10 }, look: "A tine from the white hart's antler, pierced for a cord. Whoever wears it does not tire as other people tire, and mends a little as they walk." },
   ember: {
     id: 'ember', weight: 0, keep: 'You would sooner leave your own hand behind. It is the way home.', name: 'hearth-ember', nouns: ['ember'], kind: 'misc',
-    look: "A small horn box. Inside, on a bed of ash, a single coal from the Elder's hearth glows without ever burning down. It is warm through the horn, and it seems to lean, very slightly, toward home.",
+    look: "A little box of horn. Inside, on a bed of ash, one coal from the Elder's hearth. A coal knows its own hearth: breathe on it and it brings you back to that one. It takes one, and what one can carry. The box is warm in your hand. As far as you know, nothing has ever been made to bring you back anywhere.",
     use: [{ run: 'emberHome' }],
-    offer: { label: 'Go home by the ember', say: 'use ember', if: [{ quiet: true }, { not: { near: 'well', d: 400 } }] },
+    offer: { label: 'Breathe on the coal', say: 'use ember', if: [{ quiet: true }, { afield: true }] },
   },
   glove: { id: 'glove', weight: 0, keep: 'It was made for somebody, and you are only carrying it to him.', name: 'grey glove', nouns: ['glove'], kind: 'misc', look: "A man's glove of good grey wool, the left. Somebody knitted it with care a long time ago, and it has never been worn.", don: [{ say: 'It was knitted for one hand in particular, forty years ago, and yours is not the hand. You fold it away again.' }] },
   spear: { id: 'spear', weight: 10, name: 'boar-spear', nouns: ['spear'], kind: 'weapon', power: 12, look: "Ivar's boar-spear: an ash shaft as thick as your wrist, and a blade like a willow leaf. It has stopped things a good deal bigger than you." },
   bearcloak: { id: 'bearcloak', weight: 10, name: 'greyback cloak', nouns: ['bearcloak'], kind: 'armor', power: 35, look: "A cloak of the Greyback's hide, grey fur outward, stitched by Brekka with sinew. It turns a blade nearly as well as mail and weighs half as much. It still smells faintly of bear." },
   tonic: {
     id: 'tonic', weight: 1, name: "Runa's tonic", nouns: ['tonic'], kind: 'potion', consumed: true,
-    look: 'A thumb-sized bottle of something black, stoppered with wax. Runa says it puts back what the cold takes out.',
+    look: 'A thumb-sized bottle of something black, stoppered with wax. Runa says it puts back what the cold takes out, and that it stays put back.',
     use: [{ run: 'tonic' }, { say: 'It tastes like the bottom of a well. For a moment you can feel every one of your bones. Then they feel stronger than they did.' }],
   },
   bearskin: { id: 'bearskin', weight: 15, icon: 'pelt', name: 'white bearskin', nouns: ['bearskin'], kind: 'misc', look: 'The pelt of a snow bear, white as the drifts and heavy as a door. Worth real silver to anyone who has to sleep cold.' },
@@ -88,10 +108,6 @@ const items: Record<string, ItemDef> = {
   amulet: { id: 'amulet', weight: 0, keep: 'It went into the ice once. It is not going to be put down again until it is in his hand.', name: 'silver amulet', nouns: ['amulet'], kind: 'misc', look: 'A moonstone on a silver chain. Forty years in the ice have not dimmed it. It is faintly warm.',
     don: [{ say: 'You hold it up by the chain, and find you cannot. It was put round one neck, once, by one pair of hands, and you are only carrying it home.' }],
   },
-  crown: { id: 'crown', weight: 0, keep: 'You set it down, and find that you have picked it up again without meaning to. It is not done with you.', name: 'seven-pointed crown', nouns: ['crown'], kind: 'misc', look: 'Black iron, seven points, far heavier than it looks. It is the only thing the Barrow-King left behind. You do not feel like trying it on.',
-    // What the crown does to its wearer is the second saga's whole secret; a glimpse of it is there for anyone who asks.
-    don: [{ say: 'You lift it in both hands. It is heavier than it was a moment ago, and your fingers have gone to sleep. For one breath you are sitting in a stone seat with every fire of a village laid at your feet, and you are cold, and you have been cold for longer than there are words for. Then you are yourself again, and the crown is back in your pack. You do not remember putting it there.' }],
-  },
   // What the pack is carried in. Each lets a Thane carry more, for good.
   trappack: {
     id: 'trappack', weight: 0, carry: 20, keep: 'Brekka would know. Somehow, from two ridges off, she would know.', name: "Brekka's pack", nouns: ['pack'], kind: 'misc', icon: 'sack', don: [{ say: 'It is on your back, and has not been off it since Brekka pulled the strap tight.' }],
@@ -133,11 +149,12 @@ const enemies: Record<string, EnemyDef> = {
     death: [...robber],
   },
   wight: {
-    id: 'wight', name: 'barrow-wight', nouns: ['wight'], ai: 'wight', undead: true, hp: 34, dmg: 9, speed: 0.75,
-    spec: { skin: 'wight', hair: 'metal', hairStyle: 'crown', tunic: 'rock', legs: 'rock', boots: 'rock', cloak: 'fur', eyes: 'glow', hunch: true, armed: true, bias: -1, outline: 'glow', ragged: true },
-    look: 'It has been dead a long time and has not let that slow it down.',
-    kills: "The wight's blade is cold, and then everything is. You join the sleepers in the barrow, and are given a niche of your own.",
-    death: [{ gold: 6 }, { note: 'It crumbles, and leaves old silver behind.' }],
+    id: 'wight', name: 'dead walker', nouns: ['wight'], ai: 'wight', undead: true, hp: 34, dmg: 9, speed: 0.75,
+    hail: 'It does not answer. It was going somewhere when it caught your scent, and it will be going there again when it has done with you.',
+    spec: { skin: 'wight', hair: 'white', hairStyle: 'short', beard: true, tunic: 'rock', legs: 'rock', boots: 'rock', cloak: 'fur', eyes: 'glow', hunch: true, armed: true, bias: -1, outline: 'ice', ragged: true },
+    look: 'One of the dead, with frost in its beard. It has the walk of somebody who has been going to the same place for a long time and is no nearer. Nobody buried it: the ground was too hard for a spade.',
+    kills: 'The dead thing is cold, and then everything is. In a while you get up again, with frost in your hair, and find that you too have somewhere to be.',
+    death: [{ gold: 6 }, { note: 'It goes down and lies still. For now. There was old silver on it.' }],
   },
   deer: {
     id: 'deer', name: 'red deer', nouns: ['stag'], ai: 'prey', hp: 5, dmg: 0, speed: 2.5,
@@ -181,29 +198,14 @@ const enemies: Record<string, EnemyDef> = {
     kills: 'The chief wipes his blade on your cloak, decides he likes the cloak, and takes that as well.',
     death: [{ add: 'bandits.killed', n: 1 }, { gold: 14 }, { give: 'potion', took: 'He carried silver, and a red draught.' }],
   },
-  coldsmith: {
-    // "The smith" is Odd's word everywhere else. Down here it can only mean this one.
-    id: 'coldsmith', name: 'the Cold Smith', nouns: ['coldsmith', 'odd'], ai: 'boss',
-    hail: 'The Cold Smith does not answer. He looks at you the way he looks at the crowns on the floor: as work that came out wrong.', undead: true, reach: 30, hp: 240, dmg: 16, speed: 0.95, throws: 'frost',
-    spec: { skin: 'ice', hair: 'white', hairStyle: 'bald', beard: true, tunic: 'rock', legs: 'rock', boots: 'rock', apron: 'metal', eyes: 'glow', armed: true, outline: 'ice', size: 1.5 },
-    look: 'Half as tall again as you, and built like the anvil he works at. His apron is ring-mail and his hammer is a block of blue ice on an iron haft. Where his face should be there is frost in the shape of one. He does not look up at once. He finishes the blow he was striking first.',
-    kills: 'The Cold Smith turns you over once with his boot, the way a craftsman looks at a flawed piece, and goes back to his work.',
-    death: [
-      { set: 'smith.dead' }, { score: 20, id: 'coldsmith' },
-      { say: 'The Cold Smith stops with his hammer raised. A crack runs up him from heel to brow, and then a hundred more, and he comes apart like river ice in spring: in slabs. The hammer falls last. The hall rings with it for a long time.' },
-      { quest: 'crown', stage: 4 },
-    ],
-  },
-  king: {
-    id: 'king', name: 'the Barrow-King', nouns: ['king'], ai: 'boss',
-    hail: 'The Barrow-King turns the dark where his eyes were toward you. Nothing in it answers. Every flame in the room leans a little further his way.', undead: true, hp: 130, dmg: 12, speed: 1,
-    spec: { skin: 'wight', hair: 'gold', hairStyle: 'crown', beard: true, tunic: 'purple', legs: 'rock', boots: 'rock', cloak: 'purple', eyes: 'glow', armed: true, outline: 'glow' },
-    look: 'Tall, crowned, and four thousand years past caring. Frost falls from him as he moves. Every flame in the room leans toward him.',
-    kills: 'The Barrow-King takes the warmth out of you as easily as he took it from the village. He seats you beside his throne, where you make a handsome ornament.',
-    death: [
-      { set: 'king.dead' }, { give: 'crown' }, { score: 25, id: 'king' }, { say: 'The Barrow-King stops. Frost runs over him from the crown down, and he falls in on himself like a snowbank in a thaw, until there is nothing on the floor but a seven-pointed crown.\n\nThe braziers burn yellow. Somewhere far above, you are suddenly sure, a kettle has just begun to sing.' },
-      { quest: 'hearth', stage: 4 },
-    ],
+  // The guards of the north gate. They are not to be beaten: whatever is knocked down gets up again.
+  gateguard: {
+    id: 'gateguard', name: 'gate guard', nouns: ['guard', 'wight'], ai: 'wight', undead: true, reach: 27, hp: 90, dmg: 13, speed: 0.9,
+    hail: 'It does not answer. It looks at you the way a door looks at you. Nobody has come to relieve it, and nobody has told it that it may go.',
+    spec: { skin: 'ice', hair: 'white', hairStyle: 'short', beard: true, tunic: 'metal', legs: 'rock', boots: 'rock', cloak: 'ice', eyes: 'glow', armed: true, outline: 'ice', size: 1.15, ragged: true },
+    look: 'A guard of some kingdom that nobody has a name for any more. He is frost to the bone, and still at his post, with what is left of a spear. He has the look of a man nobody ever came to relieve.',
+    kills: 'The guard does what he was posted to do. Afterwards he goes back to his place in the row, and you are found a place at the end of it.',
+    death: [{ run: 'guardRises' }],
   },
 };
 
@@ -249,11 +251,11 @@ const quests: Record<string, QuestDef> = {
   hearth: {
     id: 'hearth', name: 'The Cold Hearth', done: 5,
     stages: {
-      1: 'Elder Marta wants the glowing barrow looked into. Its door is sealed with a rune. Fenn the hermit, by the tarn to the north-east, knows about such things.',
-      2: 'You have learned the word VETH. Speak it at the barrow door, north of the village.',
-      3: 'The barrow stands open. Whatever is drinking the village\'s warmth is somewhere below. Take a light.',
-      4: 'The Barrow-King is ended. Take a dry log to the Elder\'s hall and light her hearth.',
-      5: 'The hearth burns, and you are Thane of Hollowmere.',
+      1: "Marta Coldhand, the Elder, wants you up at her hall, on the west side of the square.",
+      2: "A girl of seven lies in the Elder's hall, under every fur in Hollowmere, with frost on her eyelashes. Marta wants a bottle of the black stuff that Runa the herb-wife makes. Runa's steading is {runa.way} of Hollowmere, out past the old watchtower: it is marked on the map. Halla at the inn has a flint.",
+      3: "You have Runa's black bottle. If the girl can swallow it, it will mend her. Take it to the Elder's hall.",
+      4: 'Marta has stopped. There is no fire in the hall to breathe in by.',
+      5: "The Elder's hearth burns, Tova is mending, and you are Thane of Hollowmere.",
     },
   },
   stores: {
@@ -264,25 +266,17 @@ const quests: Record<string, QuestDef> = {
     id: 'wolves', name: 'Wolf Winter', done: 2,
     stages: { 1: 'Toke the hunter wants three wolves killed: two in the pinewood, at least one on the ridge.', 2: 'The wood is quiet, and Toke\'s bow is yours.' },
   },
-  crown: {
-    id: 'crown', name: 'The Seven Points', done: 5,
+  north: {
+    id: 'north', name: 'Where the Wind Stops', done: 8,
     stages: {
-      1: "The crown you took from the barrow is growing colder by the day. Fenn the hermit, by the tarn, knows about such things.",
-      2: "The crown was not the Barrow-King's own: somebody made it, and put it on him. Fenn says it was done at the Frost Gate, five ridges west of Hollowmere, behind a door that must be uncovered. It is marked on the map.",
-      3: 'The Frost Gate stands open. Whoever made the crown is inside.',
-      4: 'The Cold Smith is broken. The crown must be unmade on the anvil where it was made.',
-      5: 'The crown is unmade, and the winter is only a winter. It is a tale Fenn the hermit will want for his books.',
-    },
-  },
-  rest: {
-    id: 'rest', name: 'The Long Table', done: 6,
-    stages: {
-      1: 'The winter has broken, but the dead still come down at night and stand at the edge of the fields, looking at the smoke. Fenn the hermit may know what they are waiting for.',
-      2: "The dead who walk are the Barrow-King's own people, who laid a feast against his coming home and are waiting for it yet. Fenn says a king's mound is raised over his own hall, and that a hall has more than one door. A word for hidden things would show it, at the barrow.",
-      3: "The barrow's second door stands open. A servants' stair goes down behind it, into the dark.",
-      4: "The King's people sit under the barrow at a feast that never began, with their faces to a hearth gone cold. Fire struck there will not hold; it would have to be carried in alive.",
-      5: "The hearth under the barrow is lit, and the dead sit warm at their tables, and still do not leave. Fenn spoke once of a fourth word: the sun's own name.",
-      6: 'A fire burns under the barrow, and the dead have stopped walking.',
+      1: 'There is smoke from every roof, and it is still the coldest winter anyone can remember. It is colder every day. Marta says to go down to the tarn and ask Fenn why.',
+      2: "Fenn has set you a sum: one child, one word, one room, and every fire in a valley out. North, past a gate kept by the dead, the wind stops, and every year it stops nearer. The dead cannot stand the sun's name. It is cut under the Giant's Table, far to the south, beyond the first wall, and it shows only at night. The place is marked on the map. (The word VETH, which opens and pushes, is cut in the stone on the west ridge.)",
+      3: "You have the sun's name. The gate is north: past the barrow, past the Hanging Tree, past the first wall, in the last wall you can see. It is marked on the map.",
+      4: 'The dead of the gate have gone back into their towers. The road north is open. Nobody living has gone up it in a very long time.',
+      5: "Under the snow of the old road, many winters down, there are footprints: a woman's, long in the stride, and a child's beside them. They go north, the way nobody goes. So do you.",
+      6: 'She kneels in a hollow in the snow with her hands on the drift, saying one word, without a breath between. She has been saying it for longer than Hollowmere has had a hall.',
+      7: 'The word has ended. All the snow in the sky has come down, and there is a wind. Hollowmere is a very long way south.',
+      8: 'The winter has broken.',
     },
   },
   message: {
@@ -332,6 +326,10 @@ const rules: Rule[] = [
   { on: ['light snow', 'take snow', 'drop snow', 'attack snow'], do: [{ say: 'You pack a snowball, look round for somebody to throw it at, and think better of it.' }] },
   { on: ['enter village', 'enter hall'], do: [{ say: 'It is a long walk, and nobody is going to do it for you. The map shows the way.' }] },
   { on: ['blow ember', 'pet ember', 'light ember', 'warm ember', 'open ember'], if: [{ has: 'ember' }], do: [{ run: 'emberHome' }] },
+  // The thaw comes south behind whoever ended the winter.
+  { enter: true, if: [{ flag: 'winter.broken' }, { not: { flag: 'thaw.home' } }], do: [{ run: 'thawComes' }] },
+  // Three coals from Halla's fire never get as far as the bridge.
+  { enter: true, if: [{ has: 'coals' }, { not: { at: ['village', 'inn', 'hall'] } }], do: [{ lose: 'coals' }, { say: "You unstop the horn to look. The three coals from Halla's fire are black and cold, all three. They were dead before the bridge, as she said they would be. You tip them out into the snow." }] },
   { on: ['blow', 'blow *'], do: [{ say: 'You breathe out. Your breath hangs in the air a moment, considers freezing, and drifts off.' }] },
   { on: ['temper', 'temper *'], do: [{ say: 'That is smith\'s work, and the only smith is Odd, in Hollowmere.' }] },
   // Trade at the lone steadings.
@@ -351,17 +349,20 @@ const rules: Rule[] = [
   { on: 'look self', do: [{ say: 'A wanderer with more road behind than coin ahead. Your cloak has seen better winters.' }] },
   { on: ['light torch', 'use torch'], if: [{ has: 'torch' }], do: [{ run: 'lightTorch' }] },
   { on: ['light torch', 'use torch'], do: [{ say: 'You have no torch. Halla sells them at the inn.' }] },
+  // Fire, anywhere nothing in particular is waiting to be lit.
+  { on: ['light *', 'light', 'use flint', 'use flint *'], if: [{ has: 'flint' }, { afield: false }, { not: { flag: 'hearth.lit' } }], do: [{ say: 'You strike the steel into a pinch of dry moss. It catches. Then the little flame lies down flat, as if a wind were pressing on it, though there is no wind; and it goes out, without smoking.' }] },
+  { on: ['light *', 'light', 'use flint', 'use flint *'], if: [{ has: 'flint' }], do: [{ say: 'You strike a spark, and it would take, too. But there is nothing here you want burnt, and a fire out here is a lamp in the window for everything with teeth.' }] },
   { on: ['light *', 'light'], do: [{ say: 'You have nothing to light it with, and it would not thank you.' }] },
+  { on: ['use ring', 'look ring', 'take ring'], if: [{ has: 'ring' }], do: [{ say: 'You turn the ring on your finger. It is old, and worn smooth by a good many hands.' }] },
   { on: ['dance', 'dance *'], do: [{ say: 'You dance a few steps. Nobody applauds, but nobody stops you either.' }] },
-  { on: ['sing rhyme', 'sing king', 'sing cup'], if: [{ flag: 'rhyme.heard' }], do: [{ say: 'West went the King when the snow lay deep, to wake the summer out of her sleep. Set him a cup and bank the fire: he will be home when the sun is higher. It comes out better sung than Marta said it. Most things would.' }] },
-  { on: ['sing rhyme', 'sing king', 'sing cup'], do: [{ say: 'You do not know any rhymes from these parts. Somebody in Hollowmere would.' }] },
-  { on: ['sing', 'sing *'], if: [{ flag: 'rhyme.heard' }], do: [{ say: 'You sing the one verse you know, which is the one about the King. The echo improves it slightly.' }] },
   { on: ['sing', 'sing *'], do: [{ say: 'You sing the one verse you know. The echo improves it slightly.' }] },
   { on: ['pray', 'pray *'], do: [{ say: 'You offer a few words to whoever is listening. The cold does not let up, but you feel a little better.' }] },
   { on: ['jump', 'jump *'], do: [{ say: 'You jump. You come down again. So far the saga is unmoved.' }] },
   { on: ['sleep', 'sleep *'], do: [{ say: 'Lie down here and you may not get up. Find a bed: the inn has one.' }] },
+  { on: 'wait', if: [{ flag: 'winter.broken' }], do: [{ say: 'Time passes. Somewhere, something drips.' }] },
   { on: 'wait', do: [{ say: 'Time passes. It is still cold.' }] },
   { on: ['shout', 'shout *'], do: [{ say: 'Your voice rolls off toward the mountains. Something up there may have heard it.' }] },
+  { on: ['listen', 'listen *'], if: [{ flag: 'winter.broken' }], do: [{ say: 'Wind, and under it water: dripping, running, talking to itself under the ice.' }] },
   { on: ['listen', 'listen *'], do: [{ say: 'Wind, and under it the creak of snow settling.' }] },
   { on: ['smell', 'smell *'], do: [{ say: 'Woodsmoke and pine. Cold has a smell too, you are learning.' }] },
   { on: ['sit', 'sit *'], do: [{ say: 'You sit for a moment. The cold comes up through you like a rumour, and you stand again.' }] },
@@ -369,6 +370,7 @@ const rules: Rule[] = [
   { on: ['sell', 'sell *'], do: [{ say: 'Nobody in Hollowmere has silver to spare for your things. They would rather sell you theirs.' }] },
   { on: ['chop', 'chop *'], do: [{ say: 'It does not need chopping, and would not thank you.' }] },
   { on: ['wish', 'wish *'], do: [{ say: 'You wish, briefly and hard. Nothing changes, which is the usual arrangement.' }] },
+  { on: ['warm', 'warm *'], if: [{ flag: 'winter.broken' }], do: [{ say: 'You blow on your fingers, out of habit, and find they did not need it.' }] },
   { on: ['warm', 'warm *'], do: [{ say: 'You blow on your fingers. They stay cold. Everything stays cold.' }] },
   { on: ['bye', 'bye *'], do: [{ say: 'You nod. Nods are free.' }] },
   { on: ['yes', 'no'], do: [{ say: 'Nobody asked. But your position is noted.' }] },
@@ -382,7 +384,7 @@ const rules: Rule[] = [
   { on: ['say', 'say *'], do: [{ say: 'You say it. The cold air swallows the words. (To speak to someone, TALK TO them.)' }] },
   { on: ['kiss *', 'pet sigga', 'pet elder', 'pet halla'], do: [{ say: 'You think better of it, which is the wisest thing you have done all day.' }] },
   { on: ['pet wolf', 'kiss wolf'], do: [{ say: 'It has opinions about that, and teeth to express them with.' }] },
-  { on: ['attack sigga', 'attack elder', 'attack odd', 'attack halla', 'attack fenn', 'attack toke', 'attack gorm'], do: [{ say: 'These are the people you are trying to save. Hit something that deserves it.' }] },
+  { on: ['attack sigga', 'attack elder', 'attack odd', 'attack halla', 'attack fenn', 'attack toke', 'attack gorm', 'attack girl', 'attack boy'], do: [{ say: 'These are the only people for a week in any direction who have let you in. Hit something that deserves it.' }] },
   { on: ['attack', 'attack *'], do: [{ say: 'There is nothing here that needs hitting. Give it time.' }] },
   { on: ['thank *', 'thank'], do: [{ say: 'Courtesy costs nothing, which is exactly what you can afford.' }] },
   { on: ['buy', 'buy *'], do: [{ say: 'Nobody here is selling that.' }] },
@@ -395,15 +397,12 @@ const rules: Rule[] = [
 
 // What a skald would sing of. Only the ones done are ever shown, so the list can grow without end.
 const deeds: Content['deeds'] = [
-  { text: 'Came north to Hollowmere with nothing but a road behind you.' },
+  { text: 'Came north on foot with nothing, and went down toward the one roof with smoke at it.' },
+  { if: [{ knows: 'word:iska' }], text: 'Read ISKA from the stone by the old watchtower, and held a whole sky of snow on it, for as long as one word lasts.' },
   { if: [{ flag: 'wolves.killed', min: 3 }], text: 'Quieted the pinewood, and was given a bow for it.' },
   { if: [{ quest: 'stores', is: 2 }], text: "Took back Gorm's seed grain from the robbers past the ford." },
   { if: [{ quest: 'errand', is: 2 }], text: 'Froze the tarn with a word, and gave Fenn back what the ice kept.' },
-  { if: [{ flag: 'barrow.open' }], text: 'Spoke VETH at the barrow door, and it opened.' },
-  { if: [{ flag: 'king.dead' }], text: 'Ended the Barrow-King in his own hall.' },
-  { if: [{ flag: 'hearth.lit' }], text: "Lit the Elder's hearth, and was named Thane of Hollowmere." },
-  { if: [{ flag: 'dead.rested' }], text: 'Carried fire down to nine thousand who had never had any, and told them it was day.' },
-  { if: [{ flag: 'rest.count' }], text: "Finished another man's count: nine thousand and eleven." },
+  { if: [{ flag: 'hearth.lit' }], text: "Laid a fire on the Elder's hearth and struck the spark, when she stopped; and was named Thane of Hollowmere." },
   { if: [{ flag: 'farm.stray' }], text: "Brought Gorm's fourth ewe home out of the wild." },
   { if: [{ flag: 'boy.horse' }], text: 'Carried a carved horse in from a sledge in the snow, and found it somebody to belong to.' },
   { if: [{ flag: 'bounty.n', min: 1 }], text: "Did the Elder's work in the wild. Jobs done so far: {bounty.n}." },
@@ -412,23 +411,28 @@ const deeds: Content['deeds'] = [
   { if: [{ flag: 'tonic' }], text: "Drank Runa's tonic, and kept it down." },
   { if: [{ has: 'trappack' }], text: 'Carried the hides of six wolves to Brekka, and carried them away again as a pack.' },
   { if: [{ has: 'frame' }], text: "Took up a pedlar's frame where he set it down, having further to go than he did." },
-  { if: [{ flag: 'gate.open' }], text: 'Found the door in the Frost Gate, where the west wind is born.' },
-  { if: [{ flag: 'smith.dead' }], text: 'Broke the Cold Smith at his own anvil.' },
-  { if: [{ flag: 'crown.unmade' }], text: 'Unmade the seven-pointed crown, and ended a winter four thousand years long.' },
+  { if: [{ knows: 'word:veth' }], text: 'Read VETH from the stone on the west ridge.' },
+  { if: [{ flag: 'sight.shuthouse' }], text: "Opened a dead man's door with a word, and slept a night out of the wind." },
   { if: [{ flag: 'bell.rung' }], text: 'Rang the Sunken Bell, which had waited a long time to be answered.' },
   { if: [{ knows: 'word:sol' }], text: "Waited for dark at the Giant's Table, and read what only shows then." },
+  { if: [{ flag: 'tree.cut' }], text: 'Cut down the dead under the Hanging Tree, and laid them straight.' },
   { if: [{ flag: 'tree.looted' }], text: 'Robbed the robbers under the Hanging Tree.' },
+  { if: [{ flag: 'gate.open' }], text: "Said the sun's name at the north gate, to guards nobody ever came to relieve." },
+  { if: [{ knows: 'word:orun' }], text: 'Read ORUN from a stone that nobody living had read, on the far side of a gate that an old man could not pass.' },
+  { if: [{ flag: 'coal.given' }], text: 'Held a whole sky on one word, for the space of a breath; and gave away the way home.' },
+  { if: [{ flag: 'sol.said' }], text: "Said the sun's name in the hollow, and ended a winter three hundred years long." },
+  { if: [{ flag: 'home.cup' }], text: 'Drank the cup that nobody drinks.' },
   { if: [{ flag: 'hart.killed' }], text: 'Brought down the white hart, which most hunters never so much as see.' },
   { if: [{ flag: 'deer.killed' }], text: 'Hunted your own supper, and brought it down.' },
   { if: [{ flag: 'kills', min: 1 }], text: 'Felled {kills} foes, and walked away from each.' },
 ];
 
-const roomList: RoomDef[] = [ford, village, pinewood, farm, tower, camp, ridge, barrow, tarn, hall, inn, hut, ante, sleepers, throne, tally, winterhall, frostgate, rimehall, bellmere, hangtree, dolmen];
+const roomList: RoomDef[] = [ford, village, pinewood, farm, tower, camp, ridge, barrow, tarn, hall, inn, hut, bellmere, hangtree, dolmen, northgate, oldroad, windend, hanging, hollow];
 
 export const content: Content = {
   title: "Thane's Quest",
   tagline: 'A typing adventure in the north',
-  saveVersion: 1,
+  saveVersion: 2,
   flags: { 'temper.weaponCost': 40, 'temper.armorCost': 40 },
   start: { room: 'ford', x: 160, y: 160, dir: 'up' },
   hero,
@@ -447,18 +451,21 @@ export const content: Content = {
   carry: { base: 35, stamina: 0.5 },
   music,
   cues: { title: 'valley', battle: 'battle', fallback: 'wild', night: 'night', boss: 'doom' },
-  calm: [{ flag: 'crown.unmade' }],
+  // Where the wind stops, the snow does not fall at all; and once the winter has broken it is only weather.
+  calm: [{ flag: 'winter.broken' }],
+  rest: [{ flag: 'winter.broken' }],
   text,
   hints: [
-    { if: [{ flag: 'dead.rested' }], text: 'Three sagas are behind you, and the north sleeps at night. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
-    { if: [{ flag: 'marta.thaw' }, { quest: 'rest', max: 0 }], text: 'The winter has broken, and the dead still walk at night. The Elder has noticed. She had something more to say, the last time you were by her fire.' },
-    { if: [{ flag: 'crown.unmade' }, { not: { flag: 'fenn.told' } }], text: 'The crown is unmade. Fenn the hermit, by the tarn, will want to hear all of it.' },
-    { if: [{ flag: 'crown.unmade' }], text: 'Two sagas are behind you. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
-    { if: [{ flag: 'hearth.lit' }, { has: 'crown' }, { quest: 'crown', max: 0 }], text: 'You are Thane of Hollowmere, with a dead king\'s crown in your pack that the Elder would not keep under her roof. She has work for you whenever you ask, Odd will temper your blade, and beyond the valley there are people and places you have not found yet.' },
+    { if: [{ flag: 'home.cup' }], text: 'The winter has broken, and there is a place for you at the end of the bench nearest the door. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
+    { if: [{ flag: 'winter.broken' }, { flag: 'sol.said' }, { flag: 'marta.thaw' }], text: 'The winter has broken. The Elder always has work, the smith always wants silver, and the map still has more blank on it than anything else.' },
+    { if: [{ flag: 'winter.broken' }], text: 'The winter is breaking, and the thaw goes south faster than you can walk. There is smoke at eleven roofs, a long way off, and a hall with a fire at one end and a door at the other.' },
+    { if: [{ flag: 'hearth.lit' }, { quest: 'north', max: 0 }], text: "You are Thane of Hollowmere, with a ring on your finger and a coal in a horn box. It is still colder every day. The Elder had something more to say, the last time you were by her fire." },
     { if: [{ flag: 'hearth.lit' }], text: 'You are Thane of Hollowmere. The Elder has work for you whenever you ask, Odd will temper your blade, and beyond the valley there are people and places you have not found yet.' },
-    { if: [{ flag: 'marta.met' }], text: 'The hermit, the hunter and the farmer all had something to say. So, perhaps, does whoever you have not yet spoken to.' },
+    { if: [{ flag: 'marta.met' }], text: 'Everybody in Hollowmere is in one room. Most of them have something to say, and one or two have something they want.' },
+    { text: 'There is smoke from one roof. Whoever is under it will know what has happened here.' },
   ],
   deeds,
   fallbacks,
   intro,
 };
+

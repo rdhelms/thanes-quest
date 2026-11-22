@@ -6,422 +6,379 @@ the game.
 ## The place
 
 Hollowmere is a village of eleven roofs in a frozen valley in the north. Elder Marta Coldhand has
-kept it for forty winters. North of the village stands a barrow, a burial mound four thousand
-years old.
+kept it for forty winters. North of the village stands the barrow, where Hollowmere puts its dead,
+with a great stone across its door that takes the whole village to move.
 
-The people who were in the valley before Hollowmere left a tale about the barrow, and Hollowmere
-has kept it without quite believing it. A king went into the west one bad winter to fetch the
-summer home, and has not brought it yet. He sleeps under the hill until the winter that needs
-him. There is a cradle rhyme:
+Every winter is colder than the one before. The old people say so, and the young take it for what
+old people say.
 
-> West went the King when the snow lay deep,
-> to wake the summer out of her sleep.
-> Set him a cup and bank the fire:
-> he will be home when the sun is higher.
+Three things are kept in Hollowmere, and nobody knows who for.
 
-So at every feast in Hollowmere one cup is filled and set at the end of the Elder's table nearest
-the door, and nobody drinks it. Halla fills it fresh every feast-day with the best she has, as her
-grandmother did, and what was left in it from the last feast goes back in the cask. Nobody
-remembers the King's name, or why the cup: when Marta asked her mother, she was told only that it
-was for him. Spoken in the Elder's hall, ORUN shows the board worn into a ring under it, and round
-that the fainter rings of other cups on other tables older than the hall, always in the same
-place: where somebody coming in out of the cold would sit down first. Half the old tales have him
-lost in the west and half have him asleep in the mound; Fenn spent ten years, when he was young,
-on the fact that a man cannot be both.
+- **The cup.** At the Elder's table one cup is set at the end nearest the door, and nobody drinks it
+  or sits in front of it. Halla fills it on feast-days with the best she has, as her grandmother
+  did; what was left from the last feast goes back in the cask. Marta asked the Elder before her who
+  it was for, and was not told, because that Elder did not know either. Ask in the village and
+  everybody says a different thing.
+- **The swept place.** In the barrow one place among the dead is kept swept clean, with nobody in
+  it. The Elder before Marta gave her a broom and showed it to her. Marta has swept it forty years
+  and worn out eleven brooms.
+- **The ring.** Thane is an old word: whoever the valley sent when a thing had to be gone and seen
+  to. There has not been one in Hollowmere since before the hall was built. The Elder keeps a brass
+  ring by for when there is.
 
-What happened is found out over the three sagas, and nobody in the valley knows it at the start.
-He was both. In the worst winter of his age the King walked five ridges into the west wind, with
-his whole people waiting behind him, to the Frost Gate, where the cold is made. He meant to ask
-for the summer back. But he was old, and he had been cold for five ridges, and what he said to the
-Cold Smith was: keep me warm. A smith works to order. The crown he was given drank the warmth out
-of everything near him, and never once gave him any. His people had laid a feast against his
-coming home. The fire went out as he came in at the door. He walked past his own seat and up the
-stair, and they sat on at their tables, waiting for it to take again. Those who were left raised
-the mound over hall and king together, walled up the way out, and went away.
+Beyond the valley is the wild. It belongs to nobody, and it holds trappers, reavers, beasts, and the
+dead. Out there the ground is frozen too deep for a spade, so nobody buries anybody, and the dead do
+not stay where they are put. They walk, with frost in their beards, at the pace of people who have
+been going somewhere a long time and are no nearer. They all go one way: north. Whatever catches a
+traveller's scent follows it from place to place, and gives up only at a haven (a shrine, or a
+steading where somebody lives) or at the lip of the valley, which nothing follows anybody into.
 
-Beyond the valley is the wild. It belongs to nobody, and it holds trappers, reavers, beasts, and
-the walking dead. Ruined towers stand out there, with vaults under them that somebody took pains
-to keep shut. The people of the wild say the winter is wrong. Brekka says it was never this cold
-when she was a girl, and that something has got into it. Ivar says the cold in this country comes
-out of the west, not the north, and comes harder every year.
-
-A long day's walk out, past every place with a name, the land goes up in a wall of sheer rock
-that runs right round the country, and beyond it there is another, and another. Each wall is
-crossed only at a few passes, and every pass is held: by reavers who take a toll of whatever a
-traveller carries, by a pack denned in the gap, or by the dead guards of a gate from some
-forgotten kingdom, still at their posts. Once beaten, a pass stays open. Out in the wild, whatever
-has a traveller's scent follows it from place to place, and gives up only at the valley or at a
-haven: a shrine, or a steading where somebody lives.
+A long day's walk out, past every place with a name, the land goes up in a wall of sheer rock that
+runs right round the country, and beyond it there is another. Each wall is crossed only at a few
+passes, and every pass is held, by reavers who take a toll of whatever a traveller carries or by a
+pack denned in the gap. Once beaten, a pass stays open. On its north side the second wall is the
+last: it runs on east and west without end, and has one gap, with a gate in it.
 
 Old words of power are cut into standing stones. A word cannot be taught. A person learns it by
-reading the rune on the stone that holds it. There are four:
+reading the rune on the stone that holds it, and after speaking it must wait before it will come
+again. There are four:
 
+- **ISKA** stills. A thing it holds stops where it is, as fixed as a nail, and the going that is
+  taken out of it has to be put somewhere: the warmth goes out of whatever is near, and a fire lies
+  down flat and goes out. Its stone stands by the old watchtower, a morning beyond the valley's
+  mouth.
 - **VETH** opens and pushes. Its stone stands on the west ridge.
-- **ISKA** stills and freezes. Its stone stands by the old watchtower.
-- **ORUN** uncovers what is hidden. Its rune is cut into the wall of the Barrow-King's chamber.
-- **SOL** is the sun's own name, which the dead cannot bear. Its rune is at the Giant's Table, far
-  to the south, and shows only at night.
+- **SOL** is the sun's own name, which the dead cannot stand. Its rune is under the Giant's Table,
+  far to the south beyond the first wall, and shows only at night. It is the only warm stone in the
+  country.
+- **ORUN** uncovers what is hidden. Its stone stands at the side of the old road, beyond the north
+  gate, where nobody living has read it.
 
 ## The hero
 
-The hero is a wanderer who comes north on foot with nothing. The game gives the hero no name and
-no past.
+The hero is a wanderer who comes north on foot with nothing. The game gives the hero no name and no
+past. Asked who would miss them, the hero has no answer.
 
 ## The people
 
-- **Marta Coldhand**, the Elder. She is stern, dry, and tired, and she intends to lose nobody this
-  winter.
-- **Sigga**, the baker, who meets strangers in the square.
-- **Odd**, the smith, who talks about iron and nothing else.
+- **Marta Coldhand**, the Elder: tall, thin, very straight in the back. She intends to lose nobody
+  this winter. Fenn taught her and Runa their letters, one winter when they were small, off the
+  stone by the old watchtower, because it was nearer than his hut. Runa traced the rune and it
+  tasted of nothing. Marta traced it, and that night the milk froze in the pail. She was nine, and
+  has been called Coldhand ever since, and nobody but her remembers why.
+- **Sigga**, the baker. While the fires are out she shapes eleven loaves' worth of dough every
+  morning, in case, and it freezes on the board.
+- **Odd**, the smith, who talks about iron and nothing else. **Tova**, his daughter, is seven.
 - **Halla**, who keeps the inn, the Kettle and Helm.
-- **Fenn**, the hermit by the tarn. He is very old, rude, and learned. His wife Asa fell through
-  the tarn's ice forty years ago.
-- **Toke**, the hunter in the pinewood. A wolf bit his hand and he cannot draw his bow.
+- **Fenn**, the hermit by the tarn: very old, rude, and learned. He has looked sixty years for the
+  stone that holds ORUN. His wife Asa fell through the tarn's ice forty years ago, the spring he was
+  going to go south for the sun's name.
+- **Toke**, the hunter. A wolf bit his hand and he cannot draw his bow.
 - **Gorm**, the farmer east of the village.
-- **Brekka**, a trapper, **Ivar One-Glove**, an old hunter, and **Runa**, a herb-wife. Each lives
-  alone at a steading out in the wild. Runa was born in Hollowmere, and Fenn taught her to read,
-  with the cradle rhyme chalked on his door.
+- **Runa**, a herb-wife, born in Hollowmere, whose steading is the next place down the south road
+  past the old watchtower. **Brekka**, a trapper, and **Ivar One-Glove**, an old hunter, each live
+  alone at a steading out in the wild.
 
-## The first saga: The Cold Hearth
+## The Cold Hearth
 
-Nine days before the hero arrives, every hearth in Hollowmere went out, and the barrow began to
-glow at night. Now a fire dies as soon as it is lit. The well is frozen and the forge is cold.
-Halla keeps the last fire in the village alive by feeding it day and night, and she has not slept.
-Fenn's fire still burns, because he has drawn a line at his threshold that the King's reach does
-not cross.
+From the top of the pass the hero sees a valley full of snow and smoke from one roof, and goes down
+toward it.
 
-Marta pays the hero ten silver to look into the barrow, and sends the hero to Fenn. Fenn says the
-king in the mound has woken. Every winter of Fenn's life has been harder than the one before, and
-this one, it seems, was hard enough: and the first thing the King has done, like any old man
-waking in a cold room, is reach for the fire. The
-barrow's door is sealed with a rune and answers to the word VETH.
+On midwinter night, nine days before, every hearth in the valley lay down at once and went out. A
+fire lit there now lies flat, as if a wind were on it, and dies. Only the fire at the inn is alight,
+because Halla did not let it go out: she feeds it a stick at a time and has not slept. The whole
+village is in that one room. Two nights after the fires went, robbers took Gorm's seed grain,
+because a valley with one chimney smoking looks like a valley with nobody left to mind. Odd sits on
+the step of the Elder's hall, as near as he is let, and talks about iron: a heat cannot be held,
+only worked while it is in the metal.
 
-The hero reads VETH from the stone on the west ridge and speaks it at the door, and the slab sinks
-into the earth. Under the mound there are three rooms:
+In the hall, frost has grown on the inside of the walls in long feathers that all lean toward the
+hearth. In front of the cold hearth Tova lies on a pallet under every fur in Hollowmere, with her
+mouth a little open and frost on her eyelashes, and nothing about her moves. She took the lung-cold
+at midwinter. Marta sits beside her with one hand flat on the furs, and now and then her lips move.
+A hero who sits down at the end of the bench by the door is told "Not there," and Marta could not
+say why.
 
-1. **The antechamber.** A wolf, a stag, and a crown are carved on the wall, above the words "First
-   the one who hunts. Then the one who is hunted. Last the one who is crowned, for all come to him
-   in the end." Pressing them in that order opens the way. A wrong choice is answered with a blast
-   of cold.
-2. **The Hall of Sleepers.** It is dark. The dead of forty generations lie here, and some of them
-   get up.
-3. **The Barrow-King's chamber.** All the warmth of Hollowmere has ended up in this room, and it
-   is still cold. The King is tall and crowned, and every flame leans toward him. He says nothing
-   to the hero. As he weakens he calls, and the dead answer.
+Marta asks who would miss the hero, and gets no answer, and says "Good." She cannot spare anybody
+from the village, and she can spare a stranger. She sends the hero for a bottle of the black stuff
+that Runa makes, which puts back what the cold takes out. Halla gives the hero her flint and steel,
+and a horn with three coals from her fire, which are dead before the bridge, as she said they would
+be. Out past the valley a fire lights.
 
-The hero kills the Barrow-King. He falls in on himself and leaves only a crown of black iron with
-seven points. The rune behind his seat is ORUN, which Fenn had searched for across sixty years.
-Spoken outside the barrow, ORUN shows a second, smaller doorway, walled up before the turf was
-laid. Whoever built the mound for their king built a way out as well, and then thought better of
-it.
+By the old watchtower the hero reads ISKA from the stone. Spoken there, it stops the falling snow in
+the air, each flake as fixed as a nail; a fire beside the speaker lies down and goes out, and the
+heat is drawn from the speaker's fingers. Runa fills a stone bottle and asks whether the girl is
+breathing. The hero cannot remember having seen her breathe. Runa says that Marta was always quicker
+than she was, and that the stuff will mend the girl if she can swallow it.
 
-The hero lays the crown in front of Marta. She will not light her own hearth: the hero went down
-there, so the hero lights it. The hero lays a dry log from the woodpile and strikes a spark, and
-for the first time in nine days the fire keeps burning. Marta takes the brass ring from her own
-hand, puts it on the hero's, and names the hero Thane of Hollowmere. The hall has filled quietly
-behind them, and it roars.
+Back in the hall, the hero hears the word on Marta's lips, and knows it. Marta has been holding the
+child still since midwinter, at the end of a breath, so that she should not finish dying; and the
+holding has drunk every fire in the valley. She cannot stop: if she stops, Tova breathes out, in a
+hall with no fire to breathe in by. And no fire will take while she holds.
 
-Sigga, Odd, Halla, Gorm and Toke have all come in to stand at a fire that stays lit, and each has
-a word for the new Thane. Halla, with no fire left to feed, is asleep on her feet, and nobody
-wakes her. The crown lies at the end of the long table where the hero put it down, and in a hall
-packed to the walls nobody stands within arm's reach of it.
+The hero chooses a dry log from the woodpile, splits kindling from it, and lays a fire on the cold
+hearth. Marta says it won't take. The hero holds the flint out to her: it is her hearth. She does
+not take it. She asks what happens if it doesn't catch, and the hero has no answer, and strikes the
+steel once so that she can see the spark. She says "When I stop. Not before." Then she stops. The
+cold goes out of the hall, and Tova's breath comes out of her. The hero strikes the spark, and the
+flame does not lie down. The girl's chest moves. Marta gives her the bottle, and she swallows, and
+cries.
 
-It is late before the hall empties. Marta sees the Thane to the door herself and hands over two
-things. One is a coal from the hearth in a horn box, which carries the Thane home to Hollowmere
-when it is breathed on. The other is the crown. The candle beside it went out three times that
-night, and Marta will not have it under her roof. It has lain all night beside the biggest fire in
-the north and has not warmed at all. The Thane wraps it in a cloth and carries it out.
+Marta takes the brass ring from her own finger and puts it on the hero's: Thane of Hollowmere. The
+village has come in behind them to see whether it would take. Halla, with no fire left to feed, is
+asleep on her feet.
 
-Afterward the barrow stops glowing, there is smoke from every roof, the forge is lit, and Halla
-sleeps. A bed is made up for the Thane beside the Elder's hearth.
+Late that night Marta rakes one coal out of the hearth into a little box of horn. A coal knows its
+own hearth: breathed on, it brings its carrier back to that one. It takes one, and what one can
+carry. She tells the Thane about the ring, the broom, and the swept place. "You can have the ring.
+I'll keep the broom."
 
-## The second saga: The Seven Points
+In the morning there is smoke from every roof, and a bed has been made up for the Thane beside the
+Elder's hearth. In the bed on the other side of it, Tova finds that the Thane has no name and gives
+one, several times, none of them suitable.
 
-Marta gives the Thane paid work out in the wild. When she pays for the first piece of it, the
-Thane notices that the crown, still in the pack, has grown much colder.
+## Where the Wind Stops
 
-A Thane who tries the crown on, at any time before it is unmade, is for one breath sitting in a
-stone seat with every fire of a village laid at their feet, and is cold, and has been cold for
-longer than there are words for. Then the crown is back in the pack.
+It is still the coldest winter anyone can remember, and colder every day. Marta can count: one
+hearth does not mend that. She sends the Thane to ask Fenn why. "He'll tell you it's my fault. He'll
+be half right."
 
-Fenn examines the crown and judges that it was never the King's own. It was made for a bigger head
-and cut down to fit, so somebody crowned him, four thousand years ago. The crown is not cold as
-iron is cold: it drinks. The dead come to a thing like that, wanting what is shut up in it, and
-now they are coming to the Thane. The old tales put the crowning at the Frost Gate, a pass five
-ridges west of Hollowmere. If the maker is anywhere, Fenn says, he is there, and the crown must be
-taken back to where it was made and unmade.
+Fenn is on his knees on the shore of the tarn, looking at something in the ice. He sets the Thane a
+sum: one child, one word, one room, and every fire in a valley out in a night; and every winter of
+his eighty-odd colder than the last. The answer is something bigger than a child, further off than a
+room, held for longer than anybody could who has to stop for breath. North there is a gate across a
+road, kept by men who have been dead longer than anybody remembers, and past it the wind stops. When
+Fenn was a boy it stopped a week past the gate; now it can be seen from the gate. The dead cannot
+stand the sun's name, which is under the Giant's Table, in the south, the wrong way entirely.
 
-The Frost Gate is a wall of blue ice between two shoulders of black rock, where the west wind is
-born. Two rime-walkers guard it. ORUN uncovers a doorway in the ice. Inside is the Cold Forge. The
-Cold Smith works there at an anvil of black ice. He is half as tall again as the Thane, with frost
-where his face should be. The floor is covered with the flawed crowns he has thrown away, all made
-to the measure of his own head. Three runes burn on the back wall. The Thane cannot read them:
-they do not want reading, they want obeying.
+The Thane reads SOL at the Giant's Table after dark, breathes on the coal, and is home in the hall,
+where Marta says "Wipe your feet," and Tova is learning to knit, badly, on Marta's own purple
+muffler, unravelled.
 
-As the Cold Smith weakens he strikes his anvil, and the dead step out of the ice of the pillars.
-The Thane breaks him, lays the crown on the anvil, and strikes it once with the Smith's own
-hammer. The crown does not break. It melts to water, and every flawed crown melts with it. The
-wind drops for the first time since the hero came north.
+Northward, under the Hanging Tree, reavers camp beneath a dead oak hung with ropes. The Thane cuts
+down the dead and lays them straight. Every one had been hanging with its face to the north.
 
-Then the three runes go dark, one after another, and as each one goes the Thane can read it.
-"Keep. Me. Warm." Some of the warmth the crown had been drinking for four thousand years goes into
-the Thane. At the Frost Gate the west wind has stopped.
+At the gate, two square towers stand in the gap in the last wall, and between them stand the guards
+of a kingdom nobody has a name for, frost to the bone, like men nobody came to relieve. They cannot
+be beaten: one that is knocked down gets up again. The Thane says the sun's name, and they turn
+their faces from it and go back into the dark of their towers.
 
-After that the winter is only a winter. In Hollowmere the well thaws, the eaves drip, the snow
-slides off the thatch and draws back from the doors, the snow on Gorm's field goes soft, and a
-thrush sings in the pinewood. Two children who were kept indoors all winter are let out. They
-build a figure from the last good snow, with a straight back and a scrap of purple wool at its
-neck. It is the Elder, and nobody has dared to tell her; she gave them the wool. Marta gives the Thane a purse that
-every household has put something into. Fenn laughs that it all ended as a puddle on a floor, has
-the Thane tell him the whole of it, and writes it down.
+Beyond the gate, at the side of the old road, is the stone Fenn looked sixty years for. The Thane
+reads ORUN and says it at the road. Under the snow, many winters down, there are footprints: a
+woman's, long in the stride, and a child's beside them, going north.
 
-Late that night Fenn comes to the one thing that would not sit still. A smith works to order, so
-somebody asked for that crown. He turns back to the three words and puts down his pen. "I had it
-that somebody crowned him. He asked for it himself." And then the rhyme every child in the valley
-can sing comes back to him. The King went west to wake the summer, with a whole people waiting
-behind him, and stood in front of the one thing in the world that could have given it to him; and
-he was old, and had been cold for five ridges, and what came out of his mouth was: me. "One word.
-I have read a great many tragedies. That is the shortest." Then he reasons from what the Thane
-saw: every fire in Hollowmere was in the King's chamber, and the chamber was cold, so the crown
-did not even give him that. "Four thousand years, and he was never warm once." Of the Smith he says only
-that he was at his anvil all that time, trying to get the order right.
+Further on the wind stops. Then the snow stops, and hangs in the air, a few flakes and then a whole
+sky of it, and a raven with its wings half open. A long way off are the towers and roofs of a town,
+with no smoke. Nothing burns there: sparks hang and go dark, and the coal in the horn box is dull
+and will not wake. The hanging snow does not move aside for a shoulder. VETH pushes a path through
+it. The footprints rise to the top of the snow, as sharp as if made that morning. A long way short
+of the town the small ones stop, and the large ones go on deeper.
 
-A player who speaks ORUN in the Cold Forge, once the Smith is broken, sees one thing more. Under
-the three runes is the print of one hand melted into the ice: a man's hand, with a ring on every
-finger.
+She is kneeling in a hollow, with frost over her shoulders like a fur and her hands flat on the
+drift, saying ISKA without a breath between, because the dead do not get tired and do not have to
+wait. On her hand is a brass ring like the Thane's. ORUN clears the drift: under her hands a small
+boy lies curled, with his breath hanging in front of his mouth, halfway out of him, as it has been
+for three hundred winters.
 
-The dead go on walking after the crown is unmade. Brekka says they wander now. All that winter
-they had gone one way, toward the valley, and whatever they wanted there they have stopped
-wanting.
+What the game does not say, and leaves to be worked out: she was the last Thane of Hollowmere, and
+went north up that road with her child; and the cup, the swept place and the ring have been kept
+ever since for somebody who did not come home.
 
-## The third saga: The Long Table
+The Thane can end it in two ways.
 
-The winter has broken, but the dead still come down at night. They no longer come at the village.
-They stand at the edge of Gorm's field and look at the smoke. Toke will not loose at them: he says
-it would be like shooting at rain. Marta has buried a great many people and never saw one who
-wanted to be walking, and she sends the Thane to ask Fenn what they are waiting for.
+**The sun's name.** The Thane knows what it would do before saying it, and has to mean it. She
+cannot bear it: she takes her hands from the snow, covers her face, and goes off into the white. All
+the snow in the sky comes down, the wind gets up, and the boy finishes his breath with nobody by him
+but the Thane. The winter is broken, and the Thane still has the coal. The boy can be left; or the
+Thane can lift him, breathe on the coal, and bring him home to the Elder's hearth, where Tova gives
+him her blanket and Marta gives him the swept place, and goes on sweeping the rest. The thaw is half
+a day behind anybody who comes home that way. At the feast for it, Halla moves the cup out of the
+Thane's way, as she always does. Marta hears about the ring, and knows a little more than she did
+about a broom.
 
-Fenn sees that he has had it backward. The dead who walk are not Hollowmere's: those lie in the
-Hall of Sleepers, forty generations of them. These are older. They are the Barrow-King's own
-people. Somebody set the first cup: when he went west for the summer, they laid a feast against
-his coming home, and he came home wearing the crown, and they were the first thing it drank. They
-never wanted a crown. They wanted to be warm, and they are waiting yet for what he went to fetch.
-A king's mound is raised over his own hall, and nobody carries that many dead up a
-stair, so they will be where they sat down. A hall has more than one door.
+**Her word, said with her.** The Thane kneels beside her and says ISKA with her. For the space of
+one word two people are holding him, and her lips stop. Now the whole sky hangs on the Thane's one
+word, and it is going. The coal is the Thane's way back to the hearth, the bed beside it, and a
+child who keeps offering a name; and it takes one, and what one can carry. The Thane puts the box
+into her hands. The word ends, the snow comes down, the boy's breath finishes, and in her hands the
+coal wakes. She gathers him up, breathes on it, and is gone. The sun comes up anyway. The Thane is
+left with a brass ring and a very long walk.
 
-At the barrow, ORUN shows the second door for what it is: narrow, low in the flank of the mound,
-walled up with fitted stone and turfed over. VETH throws the stones inward. Behind them a
-servants' stair goes down, worn hollow by people carrying things. Both its walls are covered with
-tally marks in one hand, which grows less steady as it goes. The count stops at nine thousand and
-eleven, with the last bar half cut, and a mason's chisel lies under it where a hand let it fall.
-ORUN shows one more thing cut there, low down: an open hand, the sign for THIS FAR, without rings.
+The thaw goes south faster than anybody can walk. The dead have stopped walking: the guards sit in a
+row inside their towers like men at the end of a long watch, the dead under the Hanging Tree sink
+into the soft snow as into a bed, and those on the roads have sat down where they were, facing
+north. At the barrow the stone has been moved and set back, and the snow is trodden by the whole
+village. ORUN shows the swept place: a woman with a brass ring, a small boy in the crook of her arm,
+and Tova's blanket over both.
 
-At the foot of the stair is the Winter Hall, a king's hall buried whole, with its tables laid
-for a homecoming. The benches are full. The King's people sit in their rows with the frost on
-them, every face turned to a great hearth that is laid with logs and stone cold, as people sit who
-are waiting to be told the feast may begin. Nothing was ever put on the platters. The high seat is
-the only empty place, with the best cup in the house set ready on its arm. He came home, and
-walked past it. ORUN shows the paths worn in the floor: thousands from the benches to the hearth
-and back, and one laid over them all, in from the great door, past the high seat without a turn,
-to the stair and up, that does not come back. They do not lift a hand to the Thane.
+In Hollowmere the well drips, snow slides off the thatch, a thrush sings, and Gorm stands in a soft
+field with a ewe leaning on his knee. Two children who were kept indoors since autumn have built the
+Elder out of the last good snow, with a straight back and a scrap of purple wool at its neck, and
+nobody has dared tell her. There is a feast in the hall. The Thane sits down, tired, at the first
+place there is: the end of the bench nearest the door. Halla's hand goes out to move the cup. "Leave
+it," says Marta. She comes the length of the hall and puts down a purse from every household, and
+the horn box. "It came back without you. Don't do that again." The Thane drinks the cup that nobody
+drinks, and Halla fills it again.
 
-Fire struck in that hearth will not hold. The cold has been in those logs four thousand years,
-and a spark is no argument against it; fire has to be brought there alive, from a hearth where one
-is burning. The word SOL, spoken to them cold, is only a blow: they turn from it. The Thane tips
-the coal from Marta's hearth onto the old logs, and it takes as the Elder's hearth took, and every
-face lifts to it. They are warm, and they still do not leave. Then the Thane says SOL quietly, as
-one tells somebody the time: the sun's own name, the thing the King went west to fetch. It is four
-thousand years late, and it is one word and a coal from somebody else's hearth, but it is what the
-tables were laid for, and it has come. It was never that they could not bear the word. They could not bear it cold. One by one
-they lay their heads on their arms, as people do at the end of a long feast when the fire is good,
-and the benches are empty.
-
-After that nothing walks at night in the north that ought to be asleep. Brekka walks her
-trap-lines by moonlight for the first time in her life. Smoke rises from the crown of the barrow.
-Marta, told where her coal went, lifts another out of her hearth into the horn box: it is only a
-coal, she has a hearthful, and that was rather the point. She will see that wood is taken up to
-the barrow, since she never yet let a fire go out that she could keep in. Fenn finds he has had
-the fourth word wrong in three books. The King went west with a kingdom behind him, he says, and
-the best he could bring them was that crown; the Thane went down a back stair with one word and a
-borrowed coal. He will be home when the sun is higher: well, it was, and somebody came. Marta
-looks down her table at the cup, and says they will go on setting it. She knows now who it is for.
-It is his: he came home to one like it, set ready on the arm of his own seat, and walked past it to
-the stair, and was cold four thousand years with it there the whole time. She has Halla fill it
-fresh every day from now on, feast or no feast, and Sigga is to sing the rhyme to the little ones
-at the next feast. A Thane who sings it in her hall hears Marta say the last line with them,
-flatly, as one reads out a bill. Sung in the Winter Hall while the dead still wait there, it is a
-tune a great many of them know.
-
-A Thane who goes back to the stair can take up the chisel and finish the half-cut bar. Nine
-thousand and eleven, and done.
+Told where his stone was, Fenn sits down: sixty years, and the one road he never went up. Of the
+woman he says only that Marta managed nine days of it, and that he knows a little about not being
+able to leave a thing where it lies.
 
 ## Side stories
 
-**A Stolen Spring.** A week before the hero came, bandits took all of Gorm's seed grain. A farm
-can lose a winter, but it cannot lose a spring. The hero takes the sack back from their camp past
-the ford. Gorm pays twenty-five silver, which is everything he has, and adds a cheese.
+**A Stolen Spring.** A farm can lose a winter, but it cannot lose a spring. The hero takes Gorm's
+seed grain back from the robbers' camp past the ford. Gorm pays twenty-five silver, which is
+everything he has, and adds a cheese.
 
 **Wolf Winter.** Toke asks the hero to kill three wolves and gives his yew bow for it. If the hero
 gives him a red draught, the bite on his hand closes, and he teaches the hero how to draw a bow.
-After the winter breaks he talks of taking the bow back, and then tells the hero to keep it.
+After the thaw he talks of taking the bow back, and then tells the hero to keep it.
 
 **What the Ice Kept.** Asa's amulet came up the winter after she drowned and froze into the thin
-middle of the tarn. Fenn has looked at it every day for forty years and cannot reach it. The hero
-hardens the ice with ISKA, or with the Frost spell, and brings it to him. Fenn says "please",
-perhaps for the first time. He holds it in both hands and says he had forgotten it was so small.
-He gives the hero the Light spell, which he does not sell and which the hero will want in the dark
-under the barrow. Afterward the amulet hangs on a nail by his window, and he no longer goes down
-to the shore in the mornings: he stays in and reads. Spoken at
-the tarn, ORUN shows a shape far down in the water that might be a woman's shawl, and the print of
-two knees worn into the ice at the shore.
+middle of the tarn. Fenn has looked at it every morning for forty years and cannot reach it. The
+hero hardens the ice with ISKA, or with the Frost spell, and brings it to him. Fenn says "please",
+perhaps for the first time, and says he had forgotten it was so small. He gives the hero the Light
+spell, which he does not sell. Afterward the amulet hangs on a nail by his window, and he no longer
+goes down to the shore in the mornings: he stays in and reads. Spoken at the tarn, ORUN shows a
+shape far down in the water that might be a woman's shawl, and the print of two knees worn into the
+ice at the shore.
 
-**Ivar and Marta.** Ivar once asked Marta to marry him. She said she would sooner marry the
-weather. A bear took his right hand, and he supposes she thinks it took all of him. He asks the
-hero to tell her he is not dead. Marta says nothing for three breaths. Then she fetches one grey
-glove, the left: she knitted him a pair forty years ago and never sent them. "Do not tell him I
-kept it." Ivar laughs until he has to sit down, puts the glove on, and gives the hero his
-boar-spear. Told that he laughed, Marta looks at the fire for some time, and says that if his
-knees ever mend there is a chair by her hearth. She does not say whose.
-Ivar says she sang the rhyme once, at a midsummer fire, before she was Elder; Marta says she does
-not sing.
+**Ivar and Marta.** Ivar once asked Marta to marry him. She said she would sooner marry the weather.
+A bear took his right hand, and he supposes she thinks it took all of him. He asks the hero to tell
+her he is not dead. Marta says nothing for three breaths. Then she fetches one grey glove, the left:
+she knitted him a pair forty years ago and never sent them. "Don't tell him I kept it." Ivar laughs
+until he has to sit down, puts the glove on, and gives the hero his boar-spear. Told that he
+laughed, Marta looks at the fire for some time, and says that if his knees ever mend there is a
+chair by her hearth. She does not say whose. Ivar says she sang once, at a midsummer fire, before
+she was Elder; Marta says she does not sing. Ivar once walked north until it got so quiet that he
+could hear his own eyelids, and saw snow that was not falling, and turned round.
 
 **The Greyback.** An old grey bear with a scarred face has robbed Brekka's trap-lines for six
 winters, and last month it ate her dog. The hero kills it in the crags near her steading. Brekka
 makes a cloak of its hide: "He kept me cold for six winters. He can keep you warm."
 
 **Brekka's pack.** Brekka thinks little of the hero's bag: they carry like somebody who means to
-come back for things, and out in the wild nobody comes back for things. For six sound wolf pelts
-she sits by her fire with an awl until the light goes, and makes a pack of wolf-hide, fur turned
-in, on a willow frame: "Six wolves carried their own winters on their backs all their lives. They
-can carry yours."
+come back for things, and out in the wild nobody comes back for things. For six sound wolf pelts she
+makes a pack of wolf-hide on a willow frame: "Six wolves carried their own winters on their backs
+all their lives. They can carry yours."
 
-**What is carried.** A Thane's pack holds only so much. Odd buys back what he made, for less than
-he sold it, and will not buy what he did not; the hatchet from the woodpile he never saw. Fenn
-takes back the books the hero has read and finds each a gap on his shelf: a book in a pack is
-only a weight, and a book on a shelf is a book. Halla keeps a chest at the foot of the inn's bed
-for lodgers' things, and nobody in Hollowmere steals from it, partly from virtue and partly
-because everybody would know by supper.
+**What is carried.** A Thane's pack holds only so much. Odd buys back what he made, for less than he
+sold it, and will not buy what he did not. Once his forge is lit he counts the price of a sword back
+into the Thane's hand. Fenn takes back the books the hero has read and finds each a gap on his
+shelf. Halla keeps a chest at the foot of the inn's bed for lodgers' things.
 
-**Runa's tonic.** Runa brews a black tonic from three frostcaps that puts back, for good, what the
-cold takes out of a person. She says the red draughts Halla sells as Fenn's are hers. Halla says
-Fenn brews them.
+**Runa's tonic.** For three frostcaps Runa brews a thumb-sized bottle of the black stuff for the
+hero's own use. She says the red draughts Halla sells as Fenn's are hers. Halla says Fenn brews
+them.
 
 **The Elder's Work.** Marta always has more work for a Thane: reavers camped too near, the dead
 walking, beasts taking sheep, and something living in old stones.
 
-**The stray.** One of Gorm's lost ewes, Bryn, went through the fence the night the grain was
-taken. She is still alive, out in the wild, and has been trying to walk home in circles. A hero
-who finds her and holds out a hand finds they have a sheep. Gorm goes down on one knee in the snow
-to her, and can count to four again.
+**The stray.** One of Gorm's lost ewes, Bryn, went through the fence the night the grain was taken.
+She is still alive, out in the wild, and has been trying to walk home in circles. A hero who finds
+her and holds out a hand finds they have a sheep. Gorm goes down on one knee in the snow to her, and
+can count to four again.
 
 **The sledge.** A loaded sledge stands frozen into a drift, with a cradle lashed on top and its
 traces cut. Under the quilt is a horse carved from pine, with one ear chewed. ORUN shows that the
 family who left it came out of the east, from somewhere that is no longer there, and walked on
-toward the valley: two large pairs of feet, and one small pair between them, still walking where
-the tracks give out. After the winter breaks, the horse can be given to the boy in the square,
-who names it Ear.
+toward the valley: two large pairs of feet, and one small pair between them. After the thaw, the
+horse can be given to the boy in the square, who names it Ear.
 
 ## Found in the wild
 
-Each of these stands once, somewhere in the country beyond the valley. None is needed for
-anything.
+Each of these stands once, somewhere in the country beyond the valley. None is needed for anything.
 
-**The cold camp.** A ring of stones with a kettle still hanging over it. Whoever lit the fire
-meant to be back before it boiled. A hero who lights it again drinks tea some winters old, and for
-as long as that takes, somebody is expected back at that fire. ORUN shows one pair of boots going
-round and round the fire, then once into the trees at a run, and not coming back.
+**The cold camp.** A ring of stones with a kettle still hanging over it. Whoever lit the fire meant
+to be back before it boiled. A hero with a flint who lights it again drinks tea some winters old.
+ORUN shows one pair of boots going round and round the fire, then once into the trees at a run, and
+not coming back.
 
-**The fingerpost.** A signpost where no roads meet. One arm says HOLLOWMERE. One says THE FERRY,
-and points east, toward the Sunken Bell. One says ELDMARK, THREE DAYS, and under it, cut later:
-NOT ANY MORE. ORUN shows a fourth arm, broken off and buried: THE KING'S ROAD. KEEP OFF IT.
+**The fingerpost.** A signpost where no roads meet. One arm says HOLLOWMERE. One says THE FERRY, and
+points east, toward the Sunken Bell. One says ELDMARK, THREE DAYS, and under it, cut later: NOT ANY
+MORE. Eldmark was a town of forty roofs that got too cold to keep; it thinned, a roof a winter,
+going south. ORUN shows a fourth arm, broken off and buried: THE GATE. NO FURTHER.
 
-**The road stone.** West of the valley stands a squared stone with a line cut down it. ORUN shows
-the road under the snow: flagged, straight, running from the barrow country to the west, exactly
-as wide as one man walking, and worn in a single line down the middle. It is the road the
-Barrow-King walked to the Frost Gate, to ask for his crown.
+**The road stone.** North of the valley stands a squared stone with a line cut down it. ORUN shows
+the old road under the snow, and on it the same footprints that lie beyond the gate: a woman's and a
+child's, going north. Here the small ones are still keeping up.
 
-**The open hand.** Far out stands a stone with an open hand cut in the side facing the valley, a
-hand with a ring on every finger. It reads: THE KING'S FIRE REACHES HERE. Under it somebody has
-cut, later and in a hurry: AND HIS COLD, FURTHER. ORUN shows the stumps of a ring of such stones,
-miles round, every one facing inward. They were not set up to keep anything out.
+**The shut house.** A house drifted to the eaves, with its door frozen into its frame. VETH opens
+it. Inside, a man sits dead in his chair by a cold hearth, with his boots set side by side by the
+door: the only one of the dead out there who is where he was left. A hero can sleep on his floor,
+out of the wind. ORUN shows a crock of seed corn under the hearthstone, and his winters cut on the
+lintel in fives, stopping at thirty-one.
 
 **The watcher.** A man of snow, built to last and mended more than once, stands facing the valley.
 ORUN shows five flat stones at his feet, each with a name and none with a date. The ground was
-frozen too deep for a spade. Somebody did what they could, and stood him over them, facing home.
+frozen too deep for a spade.
 
 **The fishing hole.** A hole in the ice with a rod still standing in it. What comes up is a boot,
-with a pike living in it, and four silver in the toe. ORUN shows the other boot on the mud below.
-A smaller pike lives in that one.
+with a pike living in it, and four silver in the toe. ORUN shows the other boot on the mud below. A
+smaller pike lives in that one.
 
-**The sleeper.** A hump of snow with a breathing-hole in it. It is a white bear, asleep, and can
-be left that way. ORUN shows the two cubs asleep against her.
+**The sleeper.** A hump of snow with a breathing-hole in it. It is a white bear, asleep, and can be
+left that way. ORUN shows the two cubs asleep against her.
 
-**The skating stake.** A pair of bone skates hangs on a stake by a mere, with BORROW THEM. HANG
-THEM BACK cut into it. A hero who skates is good at it for a while, and then sits down, as
-everybody does. ORUN shows the ice written over with skating, winter under winter, as deep as can
-be seen.
+**The skating stake.** A pair of bone skates hangs on a stake by a mere, with BORROW THEM. HANG THEM
+BACK cut into it. A hero who skates is good at it for a while, and then sits down, as everybody
+does. ORUN shows the ice written over with skating, winter under winter.
 
-**The lamp tree.** A horn lantern hangs high in a dead tree, put there to be seen by somebody
-coming home in the dark, and a hero can climb up and light it again. ORUN shows a line of
-nail-holes up the trunk: the snow came deeper every winter, and every winter somebody moved the
-lantern higher. Nobody has moved it since.
+**The lamp tree.** A horn lantern hangs high in a dead tree, put there to be seen by somebody coming
+home in the dark, and a hero can climb up and light it again. ORUN shows a line of nail-holes up the
+trunk: the snow came deeper every winter, and every winter somebody moved the lantern higher. Nobody
+has moved it since.
 
 **The wishing stones.** By a ring of stones stands a heap of small flat ones, each with a wish
 scratched on it: LESS SNOW, mostly, and A DOG, and SPRING. ANY SPRING. I AM NOT FUSSY. A hero may
-add one. Once the crown is unmade, the hero scratches THANK YOU instead. ORUN shows the whole heap:
-further down they ask for an early spring, then a mild winter, and at the very bottom, four
-thousand years down, for rain.
+add one, and it says what they all say. Once the winter has broken, the hero scratches THANK YOU
+instead. ORUN shows the whole heap: further down they ask for an early spring, then a mild winter,
+and at the very bottom, three hundred winters down, for a fine day for the wedding.
 
-**The ferry post.** A tarred post on the shore of a mere says BLOW FOR THE FERRY, and has a horn
-to blow. The ferry does not come. ORUN shows the ferry rope running away east along the bottom,
-and the ferry itself on the mud, made fast to the post by its last ferryman, ready for a crossing
-in the morning.
+**The ferry post.** A tarred post on the shore of a mere says BLOW FOR THE FERRY, and has a horn to
+blow. The ferry does not come. ORUN shows the ferry itself on the mud, made fast to the post by its
+last ferryman, ready for a crossing in the morning.
 
 **The reavers' rota.** In a reavers' camp a board keeps their duties: the watch, the wood, and the
 pot, which is NOT ULF. WHY NOT ULF, somebody has asked. YOU KNOW WHY, somebody has answered. ORUN
 shows a cooking-pot buried behind the tents, burned clean through the bottom.
 
-**The bread oven.** In a ruin where everything else has fallen stands a clay bread oven, whole,
-with a loaf in it gone to stone and kindling laid ready. A hero who lights it is warmed by it, as
-the people who lived here were every morning. ORUN shows the floors of a dozen houses round it,
-every door facing it, and a path worn from every doorstep to its mouth.
+**The bread oven.** In a ruin where everything else has fallen stands a clay bread oven, whole, with
+a loaf in it gone to stone and kindling laid ready. A hero who lights it is warmed by it. ORUN shows
+the floors of a dozen houses round it, every door facing it.
 
 **The lookout.** Iron pegs climb the face of a crag to a ledge, and from the ledge the smoke of
-Hollowmere can be seen: one thread of it while Halla keeps the last fire, smoke from all eleven
-roofs once the Elder's hearth is lit. ORUN shows the ledge scratched with rows of little roofs
-with smoke going up. Somebody who lived out there climbed up winter after winter to count the
-smoke of home. The first rows have twenty roofs and the last has eleven, and after that nobody
-came up to count.
+Hollowmere can be seen: one thread of it while Halla keeps the last fire; smoke from all eleven
+roofs once the Elder's hearth is lit; and after the thaw, eleven threads that bend, because there is
+a wind. ORUN shows the ledge scratched with rows of little roofs with smoke going up. The first rows
+have twenty roofs and the last has eleven, and after that nobody came up to count.
 
-**The door.** Far out, a door stands shut in its frame with no house round it. A hero can knock,
-and go through, and find the same snow on both sides. Notches on the post mark the heights of
-EYVIND, SIGRUN and LITTLE ODA, the last three cut on one day, deeper than the rest; nobody took the
-door. ORUN shows a fourth row on the far side of the post, low down, with a picture of a dog.
+**The door.** Far out, a door stands shut in its frame with no house round it. A hero can knock, and
+go through, and find the same snow on both sides. Notches on the post mark the heights of EYVIND,
+SIGRUN and LITTLE ODA. ORUN shows a fourth row on the far side of the post, low down, with a picture
+of a dog.
 
-**The pedlar's cairn.** Far out, a pedlar's carrying-frame of bent ash leans against a cairn.
-Burned into its crossbar: ELDMARK TO THE COAST AND BACK, FORTY WINTERS, and cut under it later:
-TAKE IT, IF YOU HAVE FURTHER TO GO THAN I DO. A hero who takes it can carry more for good. ORUN
-shows a word scratched on every stone of the cairn in the same hand, the oldest at the bottom:
-BELLS, RED CLOTH, NEEDLES, THE GOOD KETTLE, then HER CHAIR, and on the top stone, THE FRAME. I GO ON
-LIGHTER. Eldmark is the town on the fingerpost's third arm.
+**The pedlar's cairn.** Far out, a pedlar's carrying-frame leans against a cairn. Burned into its
+crossbar: ELDMARK TO THE COAST AND BACK, FORTY WINTERS, and cut under it later: TAKE IT, IF YOU HAVE
+FURTHER TO GO THAN I DO. A hero who takes it can carry more for good. ORUN shows a word scratched on
+every stone of the cairn, the oldest at the bottom: BELLS, RED CLOTH, NEEDLES, THE GOOD KETTLE, then
+HER CHAIR, and on the top stone, THE FRAME. I GO ON LIGHTER.
 
 ## Far places
 
-**The Sunken Bell**, far to the east. A great bronze bell stands frozen into a mere. Something
-that wanted a bell once stood here, a village or a ferry or a chapel, and shapes like a roof and a
-wall show under the ice. Cast into the bell's rim are the words "I called them in. I called them
-home. I was not answered." The hero hardens the ice and rings it. It gives one note that does not
-stop, and part of that note stays with the hero. Spoken there, ORUN clears the ice to the bottom:
-a street of roofs runs to the bell's foot, and further out, where the mere is deepest, a line of
-small dark shapes lies evenly spaced, as people are who cross ice roped together.
+**The Sunken Bell**, far to the east. A great bronze bell stands frozen into a mere. Cast into its
+rim are the words "I called them in. I called them home. I was not answered." The hero hardens the
+ice and rings it. It gives one note that does not stop, and part of that note stays with the hero.
+Spoken there, ORUN clears the ice to the bottom: a street of roofs runs to the bell's foot, and
+further out a line of small dark shapes lies evenly spaced, as people are who cross ice roped
+together.
 
-**The Hanging Tree**, far to the north. Reavers camp under a dead oak hung with ropes, and some of
-the loops are not empty. The hero can clear the camp, cut down the dead and lay them straight in
-the snow, and find the reavers' buried chest with ORUN.
+**The Hanging Tree**, far to the north, on the way to the gate. ORUN finds the reavers' buried chest
+between its roots.
 
-**The Giant's Table**, far to the south. Two stones the height of a house stand on a bare rise,
-with a third laid across them. A scratched line says "It shows itself when the sun is gone." At
-night a rune lights under the capstone. It is warm to the touch, and it gives the word SOL.
+**The Giant's Table**, far to the south, beyond the first wall. Two stones the height of a house
+stand on a bare rise, with a third laid across them. A scratched line says "It shows itself when the
+sun is gone."
 
-**The white hart.** A long way out there is a deer as white as the drifts. Toke saw it once at
-dusk and did not loose, and has never been sure whether that was wisdom.
+**The white hart.** A long way out there is a deer as white as the drifts. Toke saw it once at dusk
+and did not loose, and has never been sure whether that was wisdom.

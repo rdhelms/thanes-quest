@@ -72,7 +72,7 @@ export const text: Record<string, string> = {
   'rumour.bellmere': '"There is a mere, %s of here, with a bell in it. A bell! Big as a hut, stuck in the ice at a slant. Nobody put it there in my time, nor my mother\'s. I have never dared walk out to it. The ice there is not to be trusted."',
   'rumour.hangtree': '"Keep clear of the dead oak, %s of here. Reavers have made it theirs, and they have a use for its branches that I will not describe before I have eaten. They are rich, though, by what they take. Somebody ought to do something."',
   'rumour.dolmen': '"There is a great stone table on a rise, %s of here. Three stones, each bigger than my hut. I slept under it once, and woke in the night because it was light. I did not stay to see why."',
-  'rumour.frostgate': '"The wind comes from a pass, %s of here, with a wall of ice across it. I went near once. The wall was breathing. I did not go near twice."',
+  'rumour.northgate': '"There is a gate in the north wall, %s of here: two towers, and a row of men standing in the gap who have been dead since before my grandmother. They turn their heads. That was near enough for me."',
   nightSky: 'More stars than you have ever seen, hard and close, and a moon like a worn coin. On some nights a green light walks along the northern sky, and nobody in Hollowmere will say what it is.',
   homeWay: 'Hollowmere lies to the %s.',
   timeDay: 'It is day: grey-bright, and as warm as it is going to get.',
@@ -127,10 +127,11 @@ export const text: Record<string, string> = {
   deathPrompt: 'Your saga ends here. For now.',
   dark: 'It is pitch dark. Something nearby is breathing, and you hope it is you.',
   help:
-    'Arrow keys walk; so does a click or a tap on the place you want to go, and so does typing it: GO NORTH (or just N), GO TO THE INN, LEAVE. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
+    'Arrow keys walk; so does a click or a tap on the place you want to go, and so does typing it: GO NORTH (or just N), GO TO THE INN, LEAVE. Click or tap a person to talk to them, or a thing to take it or look at it. Ctrl (or Space on an empty line) swings your weapon.\n\n' +
+    'Nothing has to be typed. The numbered buttons by the picture offer what can be done here: click one, or press its number on an empty typing line.\n\n' +
     'Hold Shift to guard. Raise it when a foe shows a gold ! and the blow is turned aside, leaving them open.\n\n' +
     'Tab opens your bag: what each thing weighs, and how full your pack is. Choose a thing to drink, eat, read, use, ready, wear, drop or store it; a full pack takes nothing more. Esc opens the menu; its Settings can make fights gentler. Whatever the menu opens goes back to it when closed.\n\n' +
-    'Everything else you type: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. Name something across the picture and you walk over to it first; an arrow key stops you. SWAP changes between your last two weapons.\n\n' +
+    'Typing does all of that and more: LOOK, LOOK AT SIGN, TAKE HATCHET, TALK TO WOMAN, ASK ELDER ABOUT BARROW, READ TOME, CAST FLAME, BUY SWORD, WEAR TORC. Name something across the picture and you walk over to it first; an arrow key stops you. SWAP changes between your last two weapons.\n\n' +
     'MAP shows where you have been, and the arrow keys look about it. JOURNAL lists your tasks, SKILLS shows your character (health, skills, perks, spells), and DEEDS what you have done. EXITS lists the ways out. THINK reminds you what to do next, and what is within reach. SAVE and RESTORE do what they say.\n\n' +
     'On a touch screen: the pad walks, Hit and Guard fight, OK answers, Bag opens your bag, Menu goes back, and the buttons above the pad offer what can be done where you stand.\n\n' +
     'Enter on an empty line repeats your last command. F1 is this help, F2 turns sound on and off, F3 brings back your last line to change, F4 is the map.',
@@ -150,4 +151,5 @@ export const fallbacks: string[] = [
 ];
 
 export const intro =
-  'You came north with nothing but a road behind you. Across the river lies the village of Hollowmere, small and cold, with smoke on its roof and trouble in its bones.';
+  'There is smoke from one roof.\n\nYou see it from the top of the pass at the end of the day: a valley full of snow, a tarn frozen white, eleven roofs, and one grey thread going straight up into air too cold to bend it. You have come north on foot with nothing, and that thread is the first thing in many days that looks as if it might have room for you. You go down toward it.';
+
