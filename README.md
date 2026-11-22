@@ -4,7 +4,8 @@ An open-world action RPG inside an early typing-adventure shell. You walk a smal
 fight in real time, and do everything else by clicking, tapping or pressing a number. Or by
 typing, which does all of that and a good deal more.
 
-Everything in it is original: the world, names, characters, art, sound and text.
+Everything in it is original: the world, names, characters, art, sound and text. It is free to use,
+change and share, for anything: see [the licence](#licence).
 
 ## Run it
 
@@ -313,3 +314,8 @@ The last of those walkthroughs is a contract worth knowing about before adding t
 ends by checking that every quest is finished and every score award anywhere in the content has
 been earned. A new quest, or a new `score` effect, needs the bot in `tests/walkthrough.test.ts`
 taught to do it. Things that are only there to be found should give no score.
+
+## Licence
+
+MIT (see `LICENSE`). The code, the story, the pictures and the music are all covered by it: use
+them however you like. The one condition is that the licence text goes along with copies.
