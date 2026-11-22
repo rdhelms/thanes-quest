@@ -192,7 +192,8 @@ src/game/            the game itself, as data
 tests/               engine tests and the walkthrough bot
 tools/               QA scripts: screenshots without a browser, and measurements (see below);
                      icon.ts draws the home-screen icons
-public/              the web app manifest and home-screen icons, copied into the build as they are
+public/              the web app manifest, home-screen icons and link-preview picture (card.png,
+                     drawn by `npm run shot -- public/card.png card village --night`), copied as they are
 art-test/            the original three-style art comparison (reference only, not shipped)
 ```
 

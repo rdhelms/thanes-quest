@@ -3,6 +3,7 @@
 //   npm run shot -- out.png sheet village inn hall          a contact sheet of rooms
 //   npm run shot -- out.png sheet wild_2_1 wild_3_1 --night  the same after dark
 //   npm run shot -- out.png room camp 200 150 --cmd "look" --ticks 40
+//   npm run shot -- public/card.png card village 160 120     the 1200x630 picture shown when a link is shared
 //
 // Options: --night, --ticks N (run the game N ticks first), --cmd "line" (type a line; repeatable),
 // --flag name=value, --give item, --scale N, --keep (leave message boxes open), --score N,
@@ -13,7 +14,8 @@
 import { writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { roomOf, wildId } from '../src/engine/frontier';
-import { GLOWING, PALETTE } from '../src/engine/palette';
+import { drawText } from '../src/engine/font';
+import { GLOWING, PALETTE, UI } from '../src/engine/palette';
 import { Renderer, SH, SW } from '../src/engine/render';
 import { Shell } from '../src/engine/shell';
 import { DAY_LENGTH } from '../src/engine/sim';
@@ -145,6 +147,11 @@ function main(): void {
   }
   const [out, mode, ...names] = rest;
   const renderer = new Renderer();
+  if (mode === 'card') {
+    const shell = setup(names[0], names[1] ? Number(names[1]) : undefined, names[2] ? Number(names[2]) : undefined, o);
+    shell.sim.p.dir = 'down';
+    return card(out, frame(shell, renderer));
+  }
   const shots: Uint8Array[] = [];
   if (mode === 'room') shots.push(frame(setup(names[0], names[1] ? Number(names[1]) : undefined, names[2] ? Number(names[2]) : undefined, o), renderer));
   else for (const n of names) shots.push(frame(setup(n, undefined, undefined, o), renderer));
@@ -168,6 +175,30 @@ function main(): void {
   });
   writeFileSync(out, png(W, H, rgb));
   console.log(`${out}: ${W}x${H}, ${shots.length} screen(s)`);
+}
+
+/**
+ * The picture a link preview shows: a screen without the score line or typing line, with the
+ * game's name over the sky as on its title screen, at four pixels to one. The picture
+ * is 320x168, the same shape as a link preview's 1200x630, so a 300x158 window of it fills one.
+ */
+function card(out: string, shot: Uint8Array): void {
+  const ink = new Uint8Array(SW * SH);
+  const name = content.title.toUpperCase();
+  const nx = (SW - name.length * 16) >> 1;
+  drawText(ink, SW, nx + 2, 16, name, 1, -1, 2);
+  drawText(ink, SW, nx, 14, name, 2, -1, 2);
+  const colour = [null, PALETTE[UI.black], PALETTE[UI.gold]];
+  for (let i = 0; i < SW * SH; i++) {
+    const c = colour[ink[i]];
+    if (c) shot.set(c, i * 3);
+  }
+  const s = 4, W = 1200, H = 630, left = 10, top = 8;
+  const rgb = new Uint8Array(W * H * 3);
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) rgb.set(shot.subarray(((top + Math.floor(y / s)) * SW + left + Math.floor(x / s)) * 3, ((top + Math.floor(y / s)) * SW + left + Math.floor(x / s)) * 3 + 3), (y * W + x) * 3);
+  writeFileSync(out, png(W, H, rgb));
+  console.log(`${out}: ${W}x${H}`);
 }
 
 main();
