@@ -1,7 +1,8 @@
 # Thane's Quest
 
-An open-world action RPG inside an early typing-adventure shell. You walk a small frozen valley
-with the arrow keys, fight in real time, and do everything else by typing.
+An open-world action RPG inside an early typing-adventure shell. You walk a small frozen valley,
+fight in real time, and do everything else by clicking, tapping or pressing a number. Or by
+typing, which does all of that and a good deal more.
 
 Everything in it is original: the world, names, characters, art, sound and text.
 
@@ -14,9 +15,8 @@ npm run dev
 
 Then open the address Vite prints (normally http://localhost:5173/).
 
-A built copy is hosted at https://thanes-quest.daventry.io (and, as before, at
-https://thanes-quest.<account>.workers.dev). Saves are kept by the browser for the address
-they were made at, so a game saved at one is not seen at the other.
+A built copy is hosted at https://thanes-quest.daventry.io. Saves are kept by the browser, for
+the address they were made at.
 
 A push to `main` goes live by itself: Cloudflare runs the tests and builds it
 (`npm test && npm run build`), then deploys it (`npx wrangler deploy`). A failing test stops the
@@ -35,7 +35,14 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
 
 - **Arrow keys** walk. (The menu can switch this to tap-to-start, tap-to-stop.) A click or a tap on
   the picture walks to that spot, round whatever is in the way; on a door it goes in, and at the
-  edge of the picture it walks off into the next one.
+  edge of the picture it walks off into the next one. On somebody, it walks over and talks to
+  them; on a thing, it takes it, or looks at it; on something hostile, it strikes if it is within
+  the blow and closes with it if not. A mouse shows a hand over whatever a click would do more
+  than walk to.
+- **Nothing has to be typed.** Under the picture (or beside it, in a short window) is a row of
+  numbered buttons offering what can be done where you stand: who to talk to, what to take or try,
+  the runewords and spells you know, the map. Click one, or press its number on an empty typing
+  line (1 to 9, then 0). Bag and Menu buttons sit at the end of the row.
 - **Ctrl** swings your weapon, or looses an arrow if a bow is in hand. **Space** does the same
   when the typing line is empty.
 - **Shift** (held) raises a guard: you cannot walk, but you can turn, and blows from the front
@@ -48,7 +55,9 @@ deploy, and what is live stays. `npm run deploy` still publishes by hand, withou
   play, start again; the settings are music, sound effects, how walking works, and whether fights
   are fair or gentle). Whatever the menu opens comes back to the menu when it is closed; Resume,
   or Esc on the menu itself, goes back to the game.
-- **Everything else is typed.** Enter sends the line; Enter on an empty line repeats the last one.
+- **Typing is the richer way to play.** It reaches everything the buttons do and a great deal
+  they do not: things to ask about that no menu lists, things to try that nothing offers, and
+  most of the jokes. Enter sends the line; Enter on an empty line repeats the last one.
   Naming something across the picture (`talk to smith`, `read sign`) walks you over to it first,
   round whatever is in the way and never onto ground that would hurt you; an arrow key stops the
   walk. Looking is done from where you stand. Walking can be typed too: `go north` (or `n`) walks
@@ -99,8 +108,9 @@ perk at three levels (the character sheet, `skills`, lists what you have earned)
 line shows what is in your hands, the runewords you know, and any boon still on you (Ward, Might,
 Light).
 
-The nine hand-made outdoor screens are the valley, laid out three by three with a screen of road
-between each and the next, so the valley is five screens by five. The roads are generated, and
+Eight hand-made outdoor screens are the valley, with a screen of road between each and the
+next, so the valley is five screens by five. (The ninth, the old watchtower, stands two screens
+beyond its mouth, on the south road.) The roads are generated, and
 gentle: a path through, and its description says where it leads; by day perhaps a wolf, by night
 nothing. Walk off the valley's edge and new country is generated a screen at a time: the same
 place every time you return, and tougher the further you go. It comes in nine kinds (pinewoods,
@@ -114,13 +124,15 @@ Six screens out from the middle, past every place with a name, the land rises in
 that rings the whole country: a march. It is crossed only at two passes on each side, each held by
 reavers, a wolf pack or the dead, and nobody goes through while one of them stands. Once beaten, a
 pass stays open. There are more marches further out (rings 10, 15, 21, 28, 36 and 45), each
-tougher. `map` shows everywhere you have been, as one sheet of country with the places that have
+tougher. On its north side the second is the last: it runs on east and west without end, and has
+no passes, only a gate. `map` shows everywhere you have been, as one sheet of country with the places that have
 names of their own drawn large, where you stand framed in red, anywhere you have been sent marked
 with a gold pennant, and the walls of the marches with the gaps where passes go through; the
 arrow keys look about it. There is a day and a night, it snows, and there is music (Esc opens the menu to
 switch music or sound effects off).
 
-Finishing the first saga does not finish the game:
+The first story, The Cold Hearth, ends with a fire lit and a ring given. That does not finish
+the game:
 
 - **The forge.** With the hearth lit, Odd will temper your blade and armour, for more silver each time.
 - **The Elder's work.** Marta sends a Thane to places in the wild that want dealing with, each
@@ -139,10 +151,11 @@ Finishing the first saga does not finish the game:
 - **Night.** It comes round every few minutes, and more walks in the wild after dark. `time`
   tells the hour; the line across the top shows a sun or a moon at its left-hand end, then the
   score, the silver you carry, and health, mana and stamina.
-- **A second saga**, for anyone still carrying the Barrow-King's crown once the Elder's first
-  task is done. **And a third**, which the Elder begins when the second is over, and which has no
-  fights in it. And three places with names of their own, a long way north, east and south; one
-  of them holds a fourth runeword, for whoever is there at the right hour.
+- **A second story, Where the Wind Stops**, which the Elder begins the morning after: it is
+  still colder every day, and she can count. It goes south beyond the first wall for a word that
+  shows only at night, and then north through a gate nobody living has passed, to where the snow
+  hangs in the air. It can end in two ways. And three places with names of their own, a long way
+  north, east and south.
 - **The way home.** A new Thane is given a hearth-ember: `use ember` anywhere it is quiet.
 
 `deeds` lists what you have done so far. It only ever grows.
@@ -163,7 +176,8 @@ No runtime dependencies: TypeScript, a 320x200 indexed framebuffer drawn to a ca
 ```
 src/main.ts          browser boot: canvas, keyboard, sound, frame loop
 src/sound.ts         square-wave jingles
-src/touch.ts         on-screen controls for phones and tablets
+src/touch.ts         on-screen controls for phones and tablets; pointing at the picture, and
+                     the numbered buttons, for a desktop
 src/music.ts         synthesiser and sequencer that plays the tunes
 src/engine/          the engine; nothing in here knows about this particular game
   sim.ts             the simulation: state, the tick, rooms, movement
@@ -181,7 +195,9 @@ src/engine/          the engine; nothing in here knows about this particular gam
   types.ts           the data model
 src/game/            the game itself, as data
   content.ts         items, enemies, spells, quests, global rules; assembles everything
-  data/rooms/        the hand-made screens: the valley, its interiors, and four places far out
+  data/rooms/        the hand-made screens: the valley and the old watchtower (world.ts), their
+                     interiors (inside.ts), three landmarks far out (far.ts), and the gate in
+                     the north wall with the road beyond it (north.ts)
   data/cast.ts       characters and their dialogue
   data/vocab.ts      every word the parser knows
   data/text.ts       system messages, the help page and the opening words
@@ -282,11 +298,12 @@ npm run qa -- room room.json                # the gate a room from anywhere must
 `tests/walkthrough.test.ts`, in which a pathfinding bot plays the game using only
 keyboard-equivalent intents:
 
-- the first saga, twice, checking both runs end in identical state;
-- the first saga again with the game saved and restored every two seconds, which must change nothing;
-- the first saga with a deliberately slow hand that never guards, which must still survive;
-- everything after it (the Elder's work, the forge, all three steading quests, all three landmarks
-  and the second saga), ending with every score award the content declares having been earned;
+- the first story, twice, checking both runs end in identical state;
+- the first story again with the game saved and restored every two seconds, which must change nothing;
+- the first story with a deliberately slow hand that never guards, which must still survive;
+- everything after it (the Elder's work, the forge, all three steading quests, all three landmarks,
+  and the second story from Fenn's sum to the cup at the end of the bench), ending with every
+  score award the content declares having been earned;
 - a walk out into generated country, a fight there, and the walk back.
 
 Every generated room within seven screens of the valley, and every vault under them, is also put

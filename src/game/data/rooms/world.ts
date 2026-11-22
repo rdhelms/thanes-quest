@@ -607,7 +607,7 @@ export const ridge: RoomDef = {
   ],
   rules: [
     firstVisit('ridge'),
-    { on: ['read menhir', 'read rune', 'pet menhir', 'pet rune', 'look rune'], if: [{ near: 'stone' }, { not: { knows: 'word:veth' } }], do: [{ teach: 'word:veth' }, { run: 'study', arg: 30 }, { sound: 'word' }, { score: 10, id: 'word.veth' }, { say: 'You lay your palm on the rune. The stone hums, the wind drops, and a word is standing in your mind as if it had always been there: VETH. Open. Away. Make room.' }, { note: 'Tip: type VETH to speak the word.' }, { quest: 'hearth', stage: 2 }] },
+    { on: ['read menhir', 'read rune', 'pet menhir', 'pet rune', 'look rune'], if: [{ near: 'stone' }, { not: { knows: 'word:veth' } }], do: [{ teach: 'word:veth' }, { run: 'study', arg: 30 }, { sound: 'word' }, { score: 10, id: 'word.veth' }, { say: 'You lay your palm on the rune. The stone hums, the wind drops, and a word is standing in your mind as if it had always been there: VETH. Open. Away. Make room.' }, { note: 'Tip: type VETH to speak the word.' }] },
     { on: ['read menhir', 'read rune', 'pet menhir', 'pet rune'], if: [{ near: 'stone' }], do: [{ say: 'The rune glows faintly now. It has given you what it had.' }] },
     { on: ['read menhir', 'read rune', 'pet menhir', 'pet rune'], do: [{ say: 'You are not close enough.' }] },
     { on: 'orun', if: [{ not: { flag: 'orun.ridge' } }], do: [{ set: 'orun.ridge' }, { gold: 5 }, { run: 'study', arg: 20 }, { sound: 'take' }, { say: 'ORUN. At the foot of the standing stone the packed snow turns clear, and under it lie the things people have left here over four thousand years: beads, a bone comb, coins worn smooth as river pebbles. You take five of the coins. You leave the comb.' }] },

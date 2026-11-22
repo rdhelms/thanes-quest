@@ -127,7 +127,7 @@ const KITS: Kit[] = [
 function fights(): void {
   // The story's fights, two of the valley's roads, then the frontier at one, two, three, four
   // and seven screens beyond the valley.
-  const rooms = ['pinewood', 'ridge', 'tower', 'camp', 'sleepers', 'throne', 'frostgate', 'rimehall', 'wild_2_1', 'wild_1_-2', 'wild_3_1', 'wild_3_0', 'wild_4_1', 'wild_-4_2', 'wild_1_-5', 'wild_6_2', 'wild_-6_-3', 'wild_9_0', 'wild_0_9'];
+  const rooms = ['pinewood', 'ridge', 'tower', 'camp', 'hangtree', 'dolmen', 'northgate', 'wild_2_1', 'wild_1_-2', 'wild_3_1', 'wild_3_0', 'wild_4_1', 'wild_-4_2', 'wild_1_-5', 'wild_6_2', 'wild_-6_-3', 'wild_9_0', 'wild_0_9'];
   const row = (cells: string[]): void => console.log(cells.map((c, i) => c.padEnd(i ? 17 : 12)).join(''));
   for (const who of [NOVICE, DECENT]) {
     console.log(`\n${who === NOVICE ? 'NOVICE: slow, never guards' : 'DECENT: guards when a blow is coming'}   (wins/10, health left, seconds)`);
@@ -285,7 +285,7 @@ function phrases(): void {
     },
     {
       where: home('ivar'), by: 'ivar',
-      lines: ['ask ivar about his hand', 'ask about the glove', 'ask ivar about marta', 'ask about bears', 'ask about hunting', 'ask about the spear', 'look at spear', 'ask ivar about the village', 'ask about the cold', 'ask about brekka', 'ask about runa', 'ask about the barrow', 'ask ivar about the king', 'give glove to ivar', 'ask about his knees', 'ask about the wolves', 'ask ivar about the old days'],
+      lines: ['ask ivar about his hand', 'ask about the glove', 'ask ivar about marta', 'ask about bears', 'ask about hunting', 'ask about the spear', 'look at spear', 'ask ivar about the village', 'ask about the cold', 'ask about brekka', 'ask about runa', 'ask about the barrow', 'ask ivar about the north', 'give glove to ivar', 'ask about his knees', 'ask about the wolves', 'ask ivar about the old days'],
     },
     {
       where: home('runa'), by: 'runa', give: ['herb'],
@@ -435,7 +435,7 @@ function fuzz(ticks: number): void {
     return r < 0.85 || !def.doors?.length ? id : def.doors[0].to;
   };
   let sim = new Sim(content, { behaviours, seed: 7 });
-  const flagsToTry = ['hearth.lit', 'barrow.open', 'gate.open', 'smith.dead', 'king.dead', 'crown.unmade', 'marta.met', 'tarn.frozen', 'bell.frozen'];
+  const flagsToTry = ['hearth.lit', 'marta.stopped', 'hall.laid', 'gate.open', 'winter.broken', 'thaw.home', 'coal.given', 'sol.said', 'marta.met', 'tarn.frozen', 'bell.frozen'];
   const items = Object.keys(content.items);
   const problems = new Map<string, number>();
   const note = (what: string): void => void problems.set(what, (problems.get(what) ?? 0) + 1);
@@ -584,7 +584,7 @@ function menus(): void {
     for (const lit of [false, true]) {
       for (const m of ch.menu ?? []) {
         const sim = new Sim(content, { behaviours });
-        if (lit) Object.assign(sim.state.flags, { 'hearth.lit': true, 'quest:hearth': 5, 'quest:crown': 1 });
+        if (lit) Object.assign(sim.state.flags, { 'hearth.lit': true, 'quest:hearth': 5, 'quest:north': 1 });
         for (const id of Object.keys(content.items)) sim.give(id, 3);
         for (const w of Object.values(content.words)) sim.teach(w.id);
         sim.p.gold = 999;
