@@ -244,6 +244,7 @@ export const chars: Record<string, CharDef> = {
       ],
       barrow: [
         { if: CAME, say: `"She came by the coal, onto my hearthstone, with the boy in her arms, in the middle of supper. Tova saw the ring before I did." Marta is quiet for a while. "We took them up the next morning. All of us. The place was swept. I'd seen to that much, at least, without knowing."` },
+        { if: [{ flag: 'boy.home' }, THAW], say: `"He has the place. We took him up the next morning, all of us, under Tova's blanket; he weighed nothing." Marta looks at the fire. "It was swept for more than him. There's room beside him yet, and I sweep it. It isn't for you or me to say that nobody's coming."` },
         { if: [{ flag: 'sol.said' }, THAW], say: `"I went up and swept it, the morning the wind changed. I shall go on. It isn't for you or me to say that nobody's coming."` },
         { if: [LIT], say: `"I've swept one place in it for forty years, with nobody in it. The Elder before me swept it for fifty. She didn't know who for." Marta looks at the fire. "You can have the ring. I'll keep the broom."` },
         { say: `"Where we put our dead. I don't intend to have it opened this winter."` },
@@ -533,6 +534,7 @@ export const chars: Record<string, CharDef> = {
       },
       { if: [{ quest: 'north', is: 3 }], say: `"You have it. I can tell: you keep your mouth shut like a man carrying a full cup." Fenn does not look up. "Don't say it in here. My eyes are old. Go north and say it to people who need telling."` },
       { if: [{ quest: 'errand', is: 1 }], say: `"My amulet is still in the ice, I notice, and you are still standing here."` },
+      { if: [{ not: { flag: 'fenn.met' } }, { quest: 'errand', max: 1 }], say: `"You're in my light," says the old man, without getting up off his knees or looking round. "Fenn. Yes, the hermit. No, I'm not lonely."`, do: [{ set: 'fenn.met' }] },
       { if: [{ not: { flag: 'fenn.met' } }], say: `"Shut the door, you're letting the weather in." He does not look up. "Fenn. Yes, the hermit. No, I'm not lonely."`, do: [{ set: 'fenn.met' }] },
       { say: `"Well? I have four hundred books to get through and one lifetime, most of it used."` },
     ],
@@ -552,11 +554,13 @@ export const chars: Record<string, CharDef> = {
           say: `"Forty years ago my wife went through that ice. Her amulet came up the next winter and froze in where you can see it, right in the thin middle, and I've looked at it every day since. Nine days I have not, sitting in that inn." He does not look at you. "I can't reach it. Nothing heavier than a hare can cross there. Unless the ice were made to freeze harder; and there's a word for that, as this valley has cause to know. Bring me the amulet, and I'll give you Light. You'll want it, in the dark places."`,
           do: [{ quest: 'errand', stage: 1 }, { score: 2, id: 'errand.start' }],
         },
+        { if: [{ quest: 'errand', is: 2 }, COLD], say: `"It's only ice now. Forty years I went down to that shore every morning, to look at one bright thing I couldn't reach." Fenn turns a page. "I shall have to find something else to do with my mornings. I'm told that is what books are for."` },
         { if: [{ quest: 'errand', is: 2 }], say: `"It's only ice now. Forty years I went down to that shore every morning, to look at one bright thing I couldn't reach." Fenn turns a page. "This week I've stayed in and read. I'm told that is what books are for."` },
         { say: `"Thin in the middle. It wouldn't hold you unless something froze it harder. ISKA would, if you had it. The stone that holds ISKA stands by the old watchtower, out past the ford."` },
       ],
       amulet: [
         { if: [{ has: 'amulet' }], say: `"Give it here. Please." It is the first time you have heard him say please, and possibly the first time he has.` },
+        { if: [{ quest: 'errand', is: 2 }, COLD], say: `"In my pocket." He puts his hand over it. "Where I can't see it and can have it. After forty years of the other way about, I find I prefer it."` },
         { if: [{ quest: 'errand', is: 2 }], say: `"On the nail by the window, where the light gets at it." He does not look that way. "Asa would say it was a waste of a good necklace to hang it on a nail. She'd be right. She generally was."` },
         { say: `"Silver, with a moonstone. Hers. It's out in the middle of the tarn, where I can see it and can't have it."` },
       ],
@@ -640,6 +644,11 @@ export const chars: Record<string, CharDef> = {
     talk: [
       { if: [{ flag: 'hall.feast' }], brief: true, say: `Toke stands a little apart, as hunters do indoors, with a horn of ale in his good hand. "They'll want a speech," he says. "Don't give them one. Nobody ever went back out into a winter the better for a speech."` },
       { if: [{ flag: 'hall.thaw' }], brief: true, say: `"Walked it," says Toke, looking at your boots. "All of it. I can see by the leather." He nods, once, as he would at a clean shot.` },
+      {
+        if: [{ quest: 'wolves', is: 0 }, LIT],
+        say: `"Toke. I hunt, when I've two hands." He holds up the one in rags. "A pack came down off the ridge when the cold got bad, and one of them had this before I could draw. I can't pull a bow like this." He flexes it and winces. "Kill three of them for me and the bow's yours. It's no use to me before spring. Two in this wood, west of here, and one at least up on the ridge."`,
+        do: [{ quest: 'wolves', stage: 1 }, { score: 2, id: 'wolves.start' }],
+      },
       {
         if: [{ quest: 'wolves', is: 0 }],
         say: `"Keep your voice down. She's counting sticks." He nods at the woman by the fire, and then at his own hand. "Toke. I hunt, when I've two hands. A pack came down off the ridge when the cold got bad, and one of them had this before I could draw. I can't pull a bow like this." He flexes the rags and winces. "Kill three of them for me and the bow's yours. It's no use to me before spring. Two in the pinewood, west of the square, and one at least up on the ridge."`,
@@ -853,7 +862,7 @@ export const chars: Record<string, CharDef> = {
       ],
       elder: [
         { if: [LIT], say: `"Born two roofs from me. Quicker than me at everything, and never once enjoyed it." Runa almost smiles. "Tell her the stuff is three frostcaps a bottle and she owes me three frostcaps."` },
-        { say: `"Born two roofs from me. Quicker than me at everything, and never once enjoyed it. She'd not send to me for a headache. Whatever's in that hall, she's frightened of it." Runa looks at the pot. "Ask me about the winter Fenn taught us our letters."` },
+        { say: `"Born two roofs from me. Quicker than me at everything, and never once enjoyed it. She'd not send to me for a headache. Whatever's in that hall, she's frightened of it." Runa looks at the pot. "I've been thinking, since you came, about the winter Fenn taught us our letters."` },
       ],
       weather: [
         { if: [{ flag: 'winter.broken' }], say: `"The frostcaps will sulk. Everything else is delighted."` },
@@ -897,9 +906,14 @@ export const chars: Record<string, CharDef> = {
       { if: [{ flag: 'hall.feast' }], brief: true, say: `Gorm stands looking at the fire the way he looks at a field in a good year. "That will do," he says, to nobody in particular. "That will do."` },
       { if: [{ flag: 'hall.thaw' }], brief: true, say: `"I've a ewe leaning on my leg in a field gone soft," says Gorm, "and I left her to come and eat with you. Don't tell her."` },
       {
-        if: [{ has: 'ewe' }],
+        if: [{ has: 'ewe' }, { at: ['farm'] }],
         say: `Gorm sees her before he sees you. He does not say anything. He goes down on one knee in the snow and takes her face in both hands, and she lets him, which you would not have bet on. "Bryn," he says. "That's Bryn. She went through the fence the night they took the grain." He stands, and counts along the pen with his lips moving, and gets to four. "Four," says Gorm, to the sheep, the farm, and you. "I can count to four again." He gives you everything he has in his pockets, which is nine silver and the end of a cheese.`,
         do: [{ lose: 'ewe' }, { set: 'farm.stray' }, { gold: 9 }, { give: 'cheese' }, { sound: 'quest' }],
+      },
+      {
+        if: [{ quest: 'stores', is: 0 }, LIT],
+        say: `"They came at night, two nights after the fires went. Took the seed grain. All of it." Gorm looks at the barrel by the door, which is very empty. "One chimney smoking in a whole valley. From up on the pass it must have looked as if there was nobody left down here to mind." He breathes out. "A farm can lose a winter. It can't lose a spring. They're camped south-west, past the ford; I saw their smoke. I'm no fighter. Bring back my grain and I'll pay you everything I have, which is twenty-five silver."`,
+        do: [{ quest: 'stores', stage: 1 }, { score: 2, id: 'stores.start' }],
       },
       {
         if: [{ quest: 'stores', is: 0 }],

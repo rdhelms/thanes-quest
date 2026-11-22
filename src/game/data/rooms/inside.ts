@@ -360,6 +360,9 @@ export const inn: RoomDef = {
     { on: ['buy ale', 'drink ale', 'buy'], do: [{ say: '"No silver, no ale," says Halla, not unkindly.' }] },
     { on: ['sell venison', 'give venison', 'give venison halla'], if: [{ has: 'venison' }], do: [{ lose: 'venison' }, { gold: 4 }, { sound: 'take' }, { say: '"Venison!" Halla weighs the haunch in both hands as if it were a baby. "Four silver, and there\'ll be a proper stew tonight."' }] },
     { on: ['sell herb', 'give herb', 'give herb halla'], if: [{ has: 'herb' }], do: [{ lose: 'herb' }, { gold: 2 }, { sound: 'take' }, { say: '"Frostcaps!" Halla has two silver out before you have finished unwrapping them. "That\'s the stew saved. Bring more."' }] },
+    // While the fires are out Gorm is here, and so is where his grain comes home to.
+    { on: ['give grain', 'give grain gorm', 'give gorm grain', 'use grain', 'use grain gorm', 'drop grain'], if: [{ has: 'grain' }, { near: 'gorm' }], do: [{ cmd: 'talk to gorm' }] },
+    { on: ['give sheep', 'give sheep gorm', 'give gorm sheep', 'use sheep gorm'], if: [{ has: 'ewe' }, { near: 'gorm' }], do: [{ say: 'Gorm looks at her, and at you, and at her again, as if one of you might not be real. "Bryn," he says. "That\'s Bryn." He gets half up, and thinks of Halla, and sits down again. "Not in here. Take her up to the pen. I\'ll be along."' }] },
     { on: ['give flint halla', 'give halla flint', 'give flint'], if: [LIT, { has: 'flint' }], do: [{ say: '"Keep it," says Halla. "I never want to strike that thing again as long as I live."' }] },
     { on: ['sleep', 'sleep bed', 'buy bed', 'use bed'], if: [{ gold: 4 }], do: [{ gold: -4 }, { run: 'rest' }, { say: 'Four silver. You sleep like a felled tree, under a fur that has opinions of its own. In the morning you are whole again, and only slightly bitten.' }] },
     { on: ['sleep', 'sleep bed', 'buy bed', 'use bed'], do: [{ say: '"Four silver for the bed," says Halla. "The floor is free, and so is the door."' }] },

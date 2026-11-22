@@ -621,6 +621,9 @@ export const ridge: RoomDef = {
 
 /** The woman with the ring came home by the coal, and Hollowmere has carried her up here. */
 const CAME: Cond[] = [{ flag: 'coal.given' }, THAW];
+/** Or the boy was carried home alone, and has been given the place that was kept swept. */
+const LAID: Cond[] = [{ flag: 'boy.home' }, THAW];
+const boyLaid = <T extends { if: Cond[] }>(came: T): T => ({ ...came, if: LAID });
 
 export const barrow: RoomDef = {
   id: 'barrow',
@@ -630,6 +633,7 @@ export const barrow: RoomDef = {
   look: 'A great mound fills the north, too regular to be a hill: the barrow, where Hollowmere puts its dead. A great stone stands across its door. The snow in front of it has been trodden by one pair of boots, going up and coming back. The village lies south.',
   lookWhen: [
     { if: CAME, look: 'A great mound fills the north: the barrow, where Hollowmere puts its dead. The great stone across its door has been moved, and set back, not long ago, and the snow in front of it has been trodden into slush by a great many feet. The whole village has been up here. The village lies south.' },
+    { if: LAID, look: 'A great mound fills the north: the barrow, where Hollowmere puts its dead. The great stone across its door has been moved, and set back, not long ago, and the snow in front of it has been trodden into slush by a great many feet. The whole village has been up here. The village lies south.' },
     { if: [THAW], look: 'A great mound fills the north: the barrow, where Hollowmere puts its dead. A great stone stands across its door. The snow in front of it has gone to slush, with one pair of boot-prints in it, going up and coming back. The village lies south.' },
   ],
   scene: {
@@ -642,17 +646,17 @@ export const barrow: RoomDef = {
       { t: 'boulder', x: 40, y: 152, r: 8, seed: 113 },
       { t: 'boulder', x: 280, y: 156, r: 10, seed: 114 },
     ],
-    when: [{ if: CAME, props: [{ t: 'melt', x: 160, y: 140, w: 70, h: 30, seed: 4 }] }],
+    when: [{ if: CAME, props: [{ t: 'melt', x: 160, y: 140, w: 70, h: 30, seed: 4 }] }, { if: LAID, props: [{ t: 'melt', x: 160, y: 140, w: 70, h: 30, seed: 4 }] }],
   },
   things: [
     {
       id: 'door', nouns: ['door'], x: 160, y: 120, reach: 34, look: 'A single slab between two uprights, under a lintel as long as a boat. It takes a whole village leaning together to move it, and a whole village only comes up here for one thing.',
-      lookWhen: [{ if: CAME, look: 'The great stone has been moved, and set back, not long ago: the frost is broken all round its edge, and there are the marks of rollers in the slush.' }],
+      lookWhen: [{ if: CAME, look: 'The great stone has been moved, and set back, not long ago: the frost is broken all round its edge, and there are the marks of rollers in the slush.' }].flatMap((v) => [v, boyLaid(v)]),
     },
     { id: 'mound', nouns: ['barrow'], x: 160, y: 120, reach: 400, look: 'A barrow: a hill somebody built, to put people in. Forty generations of Hollowmere are under it, the Elder says, and room kept for the rest.' },
     {
       id: 'prints', nouns: ['tracks'], x: 162, y: 140, reach: 60, look: "One pair of boots, narrow, with a long stride for their size: up to the door and back again, not very long ago. Beside them, all the way, the snow is scuffed, as if something light had been carried bristles-down.",
-      lookWhen: [{ if: CAME, look: 'A great many feet, large and small, all of Hollowmere\'s, going up together and coming back in ones and twos. And the ruts of a sledge.' }],
+      lookWhen: [{ if: CAME, look: 'A great many feet, large and small, all of Hollowmere\'s, going up together and coming back in ones and twos. And the ruts of a sledge.' }].flatMap((v) => [v, boyLaid(v)]),
     },
     { id: 'stones', nouns: ['menhir'], x: 96, y: 138, reach: 60, look: 'Two smaller stones flank the path like door-wardens. Their runes are worn past reading.' },
     ...scenery('Clean snow, on a place where nobody comes without a reason.', 'Even the sky seems to keep its distance from this place.'),
@@ -664,6 +668,7 @@ export const barrow: RoomDef = {
       do: [{ set: 'barrow.looked' }, { sound: 'quest' }, { score: 5, id: 'barrow.looked' }, { say: 'You stand at the door and say ORUN.\n\nThe place that was kept swept is not empty any more. A woman lies in it with a brass ring on her hand, and a small boy in the crook of her arm, and over both of them a child\'s blanket you have seen before, on a pallet by the Elder\'s hearth. They look like people who have come in from a long way off, and lain down, and are not going anywhere in the morning.' }],
     },
     { on: 'orun', if: CAME, do: [{ say: 'ORUN. They are as they were: the woman with the ring, the boy in the crook of her arm, the blanket. Somebody has been up since, and swept round them.' }] },
+    { on: 'orun', if: LAID, do: [{ say: 'ORUN. The great stone goes thin as horn, and the dark behind it gives up its shapes: Hollowmere\'s dead, forty generations of them, laid in rows with their feet to the door. In the place that was kept swept lies a small boy, with a child\'s blanket over him that you have seen before, on a pallet by the Elder\'s hearth. There is room beside him, swept clean. A birch broom leans in the corner. It has been used this week.' }] },
     { on: 'orun', if: [{ flag: 'sol.said' }], do: [{ say: 'ORUN. The great stone goes thin as horn, and the dark behind it gives up its shapes: Hollowmere\'s dead, forty generations of them, laid in rows with their feet to the door. And one place among them, swept clean, with nobody in it. A birch broom leans in the corner. It has been used this week.' }] },
     { on: 'orun', do: [{ say: 'ORUN. The great stone goes thin as horn, and the dark behind it gives up its shapes: Hollowmere\'s dead, forty generations of them, laid in rows with their feet to the door. And one place among them, swept clean, with nobody in it.' }] },
     { on: 'veth', if: [{ near: 'door', d: 60 }], do: [{ say: 'VETH. The great stone rocks a finger\'s breadth in its bed, and settles back. It was set there by a whole village leaning on it together, and it wants the same again before it will move. That is rather the point of it.' }] },

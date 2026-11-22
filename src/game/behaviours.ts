@@ -80,6 +80,9 @@ export const behaviours: Record<string, Behaviour> = {
     if (!f['coal.given'] && sim.state.tick - Number(f['winter.tick'] ?? 0) < DAY_LENGTH / 2) return;
     f['thaw.home'] = true;
     f['hall.thaw'] = true;
+    // It arrives as the player does: the place is come into again, as the thaw has it, so that
+    // everybody is where the feast puts them and nothing is described that is not there.
+    sim.enterRoom(sim.state.room, sim.p.x, sim.p.y, sim.p.dir);
   },
 
   /** The coal has carried somebody, and wants time by a fire. */

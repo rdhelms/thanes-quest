@@ -68,6 +68,8 @@ export class Sim {
   /** Enables debug commands (tp, give, set). */
   dev = false;
   private scenes = new Map<string, Scene>();
+  /** The picture the player was last stood in: when it changes round them, they are stood clear of whatever arrived. */
+  private sceneWas = '';
 
   constructor(readonly content: Content, opts: { seed?: number; saved?: GameState; behaviours?: Record<string, Behaviour> } = {}) {
     if (opts.behaviours) this.behaviours = opts.behaviours;
@@ -559,6 +561,7 @@ export class Sim {
     if (dir) p.dir = dir;
     p.inside = [];
     this.settle(sc);
+    this.sceneWas = this.sceneKey(id);
     // Standing in a doorway on arrival must not send the player straight back.
     p.inside = this.standingIn();
 
@@ -638,6 +641,13 @@ export class Sim {
         }
       }
       if (p.dead) return;
+    }
+    // A room's picture can change while the player stands in it (a hearth lit, and a bed made up
+    // where there was floor). Nobody is left standing inside what arrived.
+    const picture = this.sceneKey();
+    if (picture !== this.sceneWas) {
+      this.sceneWas = picture;
+      this.settle(this.scene());
     }
     this.state.tick++;
     // Out of doors, the day's turning is worth a word.
