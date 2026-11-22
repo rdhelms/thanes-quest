@@ -1384,11 +1384,16 @@ describe('the people of the steadings', () => {
     type(sim, 'talk to ivar');
     expect(type(sim, 'ask ivar about marta').join(' ')).toContain('not dead yet');
     expect(sim.state.flags['quest:message']).toBe(1);
+    // While she is holding the child she has no time for it: the errand comes first, and her mind is on that.
     sim.state.flags['marta.met'] = true;
     sim.enterRoom('hall', 200, 124);
-    const marta = sim.rs.actors.find((a) => a.ref === 'marta')!;
-    sim.p.x = marta.x - 10;
-    sim.p.y = marta.y;
+    stand(sim, 'marta', -10);
+    expect(type(sim, 'talk to elder').join(' ')).not.toContain('grey glove');
+    expect(sim.p.inv.glove).toBeUndefined();
+    // Once the hearth is lit, the message is the first thing she hears.
+    Object.assign(sim.state.flags, { 'hearth.lit': true, 'quest:hearth': 5 });
+    sim.enterRoom('hall', 200, 124);
+    stand(sim, 'marta', -10);
     expect(type(sim, 'talk to elder')[0]).toContain('one grey glove');
     expect(sim.p.inv.glove).toBe(1);
     expect(String(sim.state.flags['goal.ivar'])).toMatch(/^wild_/);
@@ -1459,44 +1464,90 @@ describe('ways back', () => {
   });
 
   it('carries a Thane home by the hearth-ember, but not out of a fight, and not too often', () => {
-    const sim = game('wild_3_1', 160, 140);
-    sim.give('ember');
-    if (sim.rs.actors.some((a) => a.kind === 'enemy')) {
-      expect(type(sim, 'use ember')[0]).toContain('trying to kill you');
-      sim.rs.actors = [];
-    }
-    expect(type(sim, 'breathe on the ember')[0]).toContain('square at Hollowmere');
-    expect(sim.state.room).toBe('village');
+    const sim = thane('wild_3_1');
+    expect(sim.rs.actors.some((a) => combat.hostile(sim, a))).toBe(true);
+    expect(type(sim, 'use ember')[0]).toContain('trying to kill you');
+    sim.rs.actors = [];
+    // A coal knows its own hearth: it is the Elder's hearthstone it brings its carrier back to.
+    expect(type(sim, 'breathe on the ember')[0]).toContain("standing on the Elder's hearthstone");
+    expect(sim.state.room).toBe('hall');
     sim.enterRoom('wild_3_1', 160, 140);
     sim.rs.actors = [];
     expect(type(sim, 'use ember')[0]).toContain('gone grey');
     expect(sim.state.room).toBe('wild_3_1');
     sim.state.tick += 9600;
     type(sim, 'use ember');
-    expect(sim.state.room).toBe('village');
-    expect(type(sim, 'use ember')[0]).toContain('already where it wants to be');
+    expect(sim.state.room).toBe('hall');
+    for (const room of ['hall', 'village', 'inn']) {
+      sim.enterRoom(room, 160, 130);
+      expect(type(sim, 'use ember')[0], room).toContain('already where it wants to be');
+    }
+  });
+
+  it('will not wake the coal where nothing burns, until the word that is being said there has ended', () => {
+    const sim = thane('windend');
+    expect(type(sim, 'breathe on the coal')[0]).toContain('dull as an old eye');
+    expect(sim.state.room).toBe('windend');
+    expect(sim.p.inv.ember).toBe(1);
+    sim.state.flags['winter.broken'] = true;
+    type(sim, 'breathe on the coal');
+    expect(sim.state.room).toBe('hall');
   });
 
   it('says so the first time the player walks off the map', () => {
-    const sim = game('tower', 300, 140);
+    const sim = game('farm', 300, 140);
     sim.rs.actors = [];
     sim.drain();
     walk(sim, 1, 0, 12);
     // Off the edge of the valley, that is: its own roads are on everybody's map.
-    expect(sim.state.room).toBe('wild_3_2');
+    expect(sim.state.room).toBe('wild_3_0');
     expect(sim.drain().some((e) => e.t === 'note' && e.text.includes('MAP'))).toBe(true);
+    // Once is enough.
+    walk(sim, 1, 0, 200);
+    expect(sim.state.room).toBe('wild_4_0');
+    expect(sim.drain().some((e) => e.t === 'note' && e.text.includes('MAP'))).toBe(false);
   });
 });
 
 describe('a world that notices', () => {
   it('describes the village differently once the hearth is lit', () => {
     const sim = game('village', 104, 158);
-    expect(type(sim, 'look')[0]).toContain('pretending not to stare');
-    expect(type(sim, 'look at the forge')[0]).toContain('went out nine days ago');
+    expect(type(sim, 'look')[0]).toContain('eleven roofs, and smoke from one');
+    expect(type(sim, 'look at the forge')[0]).toContain('a cold forge beside it and nobody at either');
+    expect(type(sim, 'look at smith')[0]).toContain('on the step of the hall');
+    expect(type(sim, 'look at the dough')[0]).toContain('One is a good deal smaller than the rest');
     sim.state.flags['hearth.lit'] = true;
+    sim.enterRoom('village', 104, 158);
     expect(type(sim, 'look')[0]).toContain('smoke standing straight up');
     expect(type(sim, 'look at the forge')[0]).toContain('ringing');
     expect(type(sim, 'look at smith')[0]).toContain('forge-light');
+    expect(type(sim, 'look at the dough')).toEqual([content.text.notHere]);
+  });
+
+  it('keeps the whole village in the one room with a fire until the hearth is lit, and then sends everybody home', () => {
+    const folk = (sim: Sim, room: string): string[] => {
+      sim.enterRoom(room, 160, 150);
+      return sim.rs.actors.filter((a) => a.kind === 'npc').map((a) => a.ref).sort();
+    };
+    const cold = game();
+    expect(folk(cold, 'inn')).toEqual(['fenn', 'gorm', 'halla', 'toke']);
+    expect(folk(cold, 'hall')).toEqual(['marta']);
+    expect(folk(cold, 'village')).toEqual(['odd', 'sigga']);
+    for (const room of ['pinewood', 'farm', 'tarn', 'hut']) expect(folk(cold, room), room).toEqual([]);
+    expect(type(cold, 'look')[0]).toContain('gone where there is a fire');
+
+    const lit = thane('ford');
+    expect(folk(lit, 'inn')).toEqual(['halla']);
+    expect(folk(lit, 'hall')).toEqual(['marta', 'tova']);
+    expect(folk(lit, 'village')).toEqual(['odd', 'sigga']);
+    expect(folk(lit, 'pinewood')).toEqual(['toke']);
+    expect(folk(lit, 'farm')).toEqual(['gorm']);
+    // Fenn is down on the shore every morning, until he has back what he goes there to look at.
+    expect(folk(lit, 'tarn')).toEqual(['fenn']);
+    expect(folk(lit, 'hut')).toEqual([]);
+    lit.state.flags['quest:errand'] = 2;
+    expect(folk(lit, 'tarn')).toEqual([]);
+    expect(folk(lit, 'hut')).toEqual(['fenn']);
   });
 
   it('knows the time, the night sky and the way home', async () => {
@@ -1511,10 +1562,15 @@ describe('a world that notices', () => {
   });
 
   it('answers the things people ask shopkeepers', () => {
-    const sim = game('inn', 250, 118);
+    const sim = game('inn', 160, 130);
+    stand(sim, 'halla', 16);
     expect(type(sim, 'how much is the ale')[0]).toContain('Ale is a silver');
-    expect(type(sim, 'warm my hands')[0]).toContain('feeling comes back');
+    expect(type(sim, 'warm my hands')[0]).toContain('It would be taking it from the fire');
     expect(type(sim, 'heal me')[0]).toContain('red draught');
+    const lit = thane('inn', 160, 130);
+    stand(lit, 'halla', 16);
+    expect(type(lit, 'how much is the ale')[0]).toContain('Ale is a silver');
+    expect(type(lit, 'warm my hands')[0]).toContain('feeling comes back');
   });
 });
 
