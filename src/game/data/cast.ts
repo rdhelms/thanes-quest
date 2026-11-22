@@ -912,7 +912,7 @@ export const chars: Record<string, CharDef> = {
       },
       {
         if: [{ quest: 'stores', is: 0 }, LIT],
-        say: `"They came at night, two nights after the fires went. Took the seed grain. All of it." Gorm looks at the barrel by the door, which is very empty. "One chimney smoking in a whole valley. From up on the pass it must have looked as if there was nobody left down here to mind." He breathes out. "A farm can lose a winter. It can't lose a spring. They're camped south-west, past the ford; I saw their smoke. I'm no fighter. Bring back my grain and I'll pay you everything I have, which is twenty-five silver."`,
+        say: `"They came at night, two nights after the fires went. Took the seed grain. All of it." Gorm looks at the barrel by the door, which is very empty. "There was smoke from the one roof in the whole valley, then. From up on the pass it must have looked as if there was nobody left down here to mind." He breathes out. "A farm can lose a winter. It can't lose a spring. They're camped south-west, past the ford; I saw their smoke. I'm no fighter. Bring back my grain and I'll pay you everything I have, which is twenty-five silver."`,
         do: [{ quest: 'stores', stage: 1 }, { score: 2, id: 'stores.start' }],
       },
       {
