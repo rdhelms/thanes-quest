@@ -18,6 +18,39 @@ function memoryStore(): { get(k: string): string | null; set(k: string, v: strin
   return { get: (k) => m.get(k) ?? null, set: (k, v) => void m.set(k, v) };
 }
 
+/** The nearest ruined tower with a vault under it, and the vault: the only dark rooms in the country. */
+function nearestVault(guarded = true): { above: string; vault: string } {
+  for (let r = 2; r < 12; r++)
+    for (let y = -r; y <= r; y++)
+      for (let x = -r; x <= r; x++) {
+        if (Math.max(Math.abs(x), Math.abs(y)) !== r || kindAt(content, x, y) !== 'ruin') continue;
+        const door = roomOf(content, wildId(x, y))?.doors?.[0];
+        const under = door && roomOf(content, door.to);
+        if (under && (!guarded || under.spawns?.some((sp) => content.enemies[sp.kind].undead))) return { above: wildId(x, y), vault: under.id };
+      }
+  throw new Error('no vault found');
+}
+
+/** A new game in which the Elder's hearth has been lit and everybody has gone home: the stranger is Thane. */
+function thane(room: string, x = 160, y = 140): Sim {
+  const sim = game();
+  Object.assign(sim.state.flags, { 'hearth.lit': true, 'marta.met': true, 'quest:hearth': 5 });
+  sim.give('ring');
+  sim.give('ember');
+  sim.enterRoom(room, x, y);
+  sim.drain();
+  return sim;
+}
+
+/** Stand beside somebody in the room. */
+function stand(sim: Sim, who: string, dx = 12): ActorState {
+  const a = sim.rs.actors.find((k) => k.ref === who);
+  if (!a) throw new Error(`${who} is not in ${sim.state.room}`);
+  sim.p.x = a.x + dx;
+  sim.p.y = a.y;
+  return a;
+}
+
 describe('content', () => {
   it('passes validation', () => {
     expect(validate(content)).toEqual([]);
@@ -75,10 +108,10 @@ describe('simulation', () => {
     sim.p.x = 146;
     sim.p.y = 124;
     const score = sim.state.score;
-    expect(type(sim, 'take wood')[0]).toContain('You take a split log');
+    expect(type(sim, 'take wood')[0]).toContain('a log that is dry all through');
     expect(sim.p.inv.log).toBe(1);
     expect(sim.state.score).toBe(score + 1);
-    expect(type(sim, 'take wood')[0]).toContain('One log is plenty');
+    expect(type(sim, 'take wood')[0]).toContain('It is enough to lay a fire with');
     expect(sim.state.score).toBe(score + 1);
   });
 
@@ -87,10 +120,10 @@ describe('simulation', () => {
     const who = sim.rs.actors.find((a) => a.ref === 'sigga')!;
     sim.p.x = who.x - 20;
     sim.p.y = who.y;
-    expect(type(sim, 'talk to woman')[0]).toContain('I am Sigga');
-    expect(type(sim, 'talk to woman')[0]).toContain('Still here');
-    expect(type(sim, 'ask sigga about the barrow')[0]).toContain('old mound');
-    expect(type(sim, 'ask sigga about snow')[0]).toContain('I would not know');
+    expect(type(sim, 'talk to woman')[0]).toContain('I make it every morning');
+    expect(type(sim, 'talk to woman')[0]).toContain('Still out here?');
+    expect(type(sim, 'ask sigga about the barrow')[0]).toContain('The mound up north');
+    expect(type(sim, 'ask sigga about snow')[0]).toContain("I wouldn't know about that");
   });
 
   it('cannot cross the river except by the bridge', () => {
@@ -119,17 +152,32 @@ describe('simulation', () => {
     expect(Math.abs(sim.p.x - 69)).toBeLessThan(6);
   });
 
-  it('keeps a sealed door sealed until the right word is spoken', () => {
+  it('keeps a held way held until the right word is spoken', () => {
+    // The gate in the north wall: its guards stand in the gap, and nothing gets by them but the sun's name.
+    const sim = game('northgate', 160, 150);
+    sim.drain();
+    walk(sim, 0, -1, 60);
+    expect(sim.state.room).toBe('northgate');
+    expect(sim.drain().some((e) => e.t === 'note' && e.text === content.rooms.northgate.holds!.n)).toBe(true);
+    expect(type(sim, 'sol')).toEqual([content.text.wordUnknown]);
+    expect(sim.state.flags['gate.open']).toBeUndefined();
+    sim.teach('word:sol');
+    expect(type(sim, 'sol').join(' ')).toContain('They cannot bear it');
+    expect(sim.state.flags['gate.open']).toBe(true);
+    walk(sim, 0, -1, 60);
+    expect(sim.state.room).toBe('oldroad');
+  });
+
+  it('keeps the barrow shut to anybody who comes alone, whatever they say to it', () => {
     const sim = game('barrow', 160, 130);
     walk(sim, 0, -1, 30);
     expect(sim.state.room).toBe('barrow');
-    expect(type(sim, 'veth')).toEqual([content.text.wordUnknown]);
+    expect(content.rooms.barrow.doors ?? []).toEqual([]);
     sim.teach('word:veth');
-    expect(type(sim, 'veth')[0]).toContain('slides down into the earth');
-    expect(sim.state.flags['barrow.open']).toBe(true);
-    walk(sim, 0, 1, 6);
+    expect(type(sim, 'veth')[0]).toContain('settles back');
+    expect(type(sim, 'open the door')[0]).toContain('not for one person with cold hands');
     walk(sim, 0, -1, 30);
-    expect(sim.state.room).toBe('ante');
+    expect(sim.state.room).toBe('barrow');
   });
 
   it('has puzzles that can kill', () => {
@@ -342,64 +390,120 @@ describe('magic', () => {
   });
 
   it('needs light in dark places', () => {
-    const sim = game('sleepers', 60, 130);
+    // The only dark places left in the country are the vaults under the old towers.
+    const { vault } = nearestVault();
+    const sim = game(vault, 60, 126);
     sim.rs.actors = [];
     expect(sim.isDark()).toBe(true);
     expect(type(sim, 'look')).toEqual([content.text.dark]);
     sim.teach('light');
     type(sim, 'cast light');
     expect(sim.isDark()).toBe(false);
-    expect(type(sim, 'look')).toEqual([content.rooms.sleepers.look]);
+    expect(type(sim, 'look')).toEqual([roomOf(content, vault)!.look]);
   });
 });
 
-describe("the King's cup", () => {
+describe("the cup at the end of the Elder's table", () => {
   /** The Elder's hall, standing by the cup, with the story told as far as `flags` say. */
   const hall = (...flags: string[]): Sim => {
-    const sim = game('hall', 84, 140);
+    const sim = game();
     for (const f of flags) sim.state.flags[f] = true;
+    sim.state.flags['quest:north'] = flags.includes('winter.broken') ? 7 : 0;
+    sim.enterRoom('hall', 84, 150);
+    sim.drain();
     return sim;
   };
-  const SAGAS = [[], ['hearth.lit', 'king.dead'], ['hearth.lit', 'king.dead', 'crown.unmade'], ['hearth.lit', 'king.dead', 'crown.unmade', 'fenn.told', 'dead.rested', 'marta.rest', 'fenn.rest']];
+  const LIT = ['hearth.lit'];
+  /** The feast for the thaw, with the Thane come home the long way after giving the coal away. */
+  const FEAST = [...LIT, 'winter.broken', 'coal.given', 'thaw.home', 'hall.thaw'];
+  const DRUNK = [...FEAST, 'home.sat', 'home.cup', 'home.done', 'marta.thaw'];
+  const STORY = [[], LIT, FEAST, DRUNK];
 
-  it('is a thing on the table, and what it means changes as the sagas are told', () => {
-    const looks = SAGAS.map((f) => type(hall(...f), 'look at the cup')[0]);
-    expect(looks[0]).toContain('nobody in Hollowmere can tell you why');
-    expect(looks[2]).toContain('what the King asked for');
-    expect(looks[3]).toContain('filled fresh');
-    expect(new Set(looks).size).toBe(3);
-    // Nobody drinks from it, and what Marta says about that is the last thing to change.
-    expect(type(hall(), 'drink from the cup')[0]).toContain('not for anybody');
-    expect(type(hall(...SAGAS[1]), 'take the mug')[0]).toContain('Not even you');
-    expect(type(hall(...SAGAS[3]), "drink the king's cup")[0]).toContain('It is his');
+  it('is a thing on the table, and what it means changes as the story is told', () => {
+    const looks = STORY.map((f) => type(hall(...f), 'look at the cup')[0]);
+    expect(looks[0]).toContain('its ale frozen solid in it');
+    expect(looks[1]).toContain('a different answer from each, and a look');
+    expect(looks[2]).toContain('The cup that nobody drinks');
+    expect(looks[3]).toContain('It is yours');
+    expect(new Set(looks).size).toBe(4);
+    // Nobody drinks from it, or sits in front of it, and what Marta says about that is the last thing to change.
+    expect(type(hall(), 'drink from the cup')[0]).toContain("It's not for anybody");
+    expect(type(hall(...LIT), 'take the mug')[0]).toContain("for whoever it's for");
+    for (const f of [[], LIT]) expect(type(hall(...f), 'sit on the bench')[0]).toContain('"Not there," says Marta.');
+    expect(type(hall(...DRUNK), 'drink the cup')[0]).toContain('somebody has filled it');
+    expect(type(hall(...DRUNK), 'look at the bench')[0]).toContain('It is your place');
   });
 
-  it('shows ORUN where it has always stood, and the rhyme is sung in the hall at the end', () => {
+  it('is drunk once, by whoever sits down tired at the end of the bench nearest the door', () => {
+    const sim = hall(...FEAST);
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(7);
+    const gold = sim.p.gold;
+    // Sitting down comes first, and is where Marta says what she has to say.
+    const sat = type(sim, 'sit down').join(' ');
+    expect(sat).toContain('"Leave it," says Marta.');
+    expect(sat).toContain('It came back without you');
+    expect(sim.p.inv.ember).toBe(1);
+    expect(sim.p.gold).toBe(gold + 80);
+    expect(sim.state.flags['home.cup']).toBeUndefined();
+    sim.drain();
+    sim.step([{ t: 'say', line: 'drink the cup' }]);
+    const won = sim.drain().find((e) => e.t === 'won');
+    expect(won && won.t === 'won' && won.text).toContain('Then Halla fills it again.');
+    expect(sim.state.flags['home.cup']).toBe(true);
+    expect(sim.state.flags['quest:north']).toBe(content.quests.north.done);
+    expect(sim.p.gold).toBe(gold + 80);
+    // The feast ends when the Thane makes for the door; and the cup stays theirs.
+    [sim.p.x, sim.p.y] = [60, 122];
+    walk(sim, 0, -1, 9);
+    expect(sim.state.flags['hall.thaw']).toBe(false);
+    sim.enterRoom('hall', 160, 130);
+    expect(sim.rs.actors.map((a) => a.ref).sort()).toEqual(['marta', 'tova']);
+    stand(sim, 'marta');
+    expect(type(sim, 'ask the elder about the cup')[0]).toContain('Yours');
+  });
+
+  it('is moved out of the way, as it always is, of a Thane who ended the winter the other way', () => {
+    const sim = hall(...LIT, 'winter.broken', 'sol.said', 'thaw.home', 'hall.thaw');
+    sim.drain();
+    sim.step([{ t: 'say', line: 'sit down' }]);
+    const won = sim.drain().find((e) => e.t === 'won');
+    expect(won && won.t === 'won' && won.text).toContain('moves it out of your way');
+    expect(sim.state.flags['quest:north']).toBe(content.quests.north.done);
+    expect(sim.state.flags['home.cup']).toBeUndefined();
+    expect(type(sim, 'drink the cup')[0]).toContain('"Not that one," says Marta');
+    sim.state.flags['hall.thaw'] = false;
+    expect(type(sim, 'sit down')[0]).toContain("a hand's breadth out of your reach");
+  });
+
+  it('shows ORUN where it has always stood', () => {
     const sim = hall();
     sim.teach('word:orun');
-    expect(type(sim, 'orun')[0]).toContain('nearest the door');
-    const end = hall(...SAGAS[3]);
-    expect(type(end, 'sing the rhyme')[0]).toContain('do not know any rhymes');
-    [end.p.x, end.p.y] = [206, 120];
-    expect(type(end, 'ask elder about the king')[0]).toContain('The cup stays');
-    end.state.flags['rhyme.heard'] = true;
-    expect(type(end, 'sing the rhyme')[0]).toContain('says the last line with you');
-    expect(type(game('ford'), 'sing the rhyme')[0]).toContain('do not know any rhymes');
-    // Nobody speaks of what they have not yet been told: the third saga is over before Marta hears of it.
-    const unheard = hall('hearth.lit', 'king.dead', 'crown.unmade', 'dead.rested');
-    expect(type(unheard, 'drink the cup')[0]).toContain('Not even you');
+    expect(type(sim, 'orun')[0]).toContain('at the end nearest the door');
   });
 
-  it('can be asked about, and so can the rhyme, of everybody in Hollowmere', () => {
-    const at: Record<string, [string, number, number]> = { sigga: ['village', 236, 154], odd: ['village', 124, 154], elder: ['hall', 222, 120], halla: ['inn', 250, 114], fenn: ['hut', 196, 124], toke: ['pinewood', 276, 142], gorm: ['farm', 168, 142] };
-    for (const [who, [room, x, y]] of Object.entries(at))
-      for (const what of ['the cup', 'the rhyme', 'the king', 'the crown']) {
-        const said = type(game(room, x + 14, y), `ask ${who} about ${what}`)[0] ?? '';
-        expect(said, `${who} on ${what}`).not.toMatch(/no use for the word|would not know|I talk about iron|I hunt,|only know sheep|questions that help|past what I know|beneath my notice/);
-      }
-    // His wife has a name, and the Frost Gate is a place.
-    expect(type(game('hut', 210, 124), 'ask fenn about asa')[0]).toContain('She laughed');
-    expect(type(game('hut', 210, 124), 'ask fenn about the frost gate')[0]).toContain('west wind');
+  it('can be asked about of everybody in Hollowmere, and everybody says a different thing', () => {
+    // Where each of them is to be found once the fires are lit, and the two who are only out after the thaw.
+    const at: Record<string, string> = { sigga: 'village', odd: 'village', elder: 'hall', tova: 'hall', halla: 'inn', fenn: 'tarn', toke: 'pinewood', gorm: 'farm', girl: 'village' };
+    const answers = new Set<string>();
+    for (const [who, room] of Object.entries(at)) {
+      const sim = thane('ford');
+      if (who === 'girl') sim.state.flags['thaw.home'] = true;
+      sim.enterRoom(room, 160, 150);
+      sim.rs.actors = sim.rs.actors.filter((a) => a.kind === 'npc');
+      stand(sim, who === 'elder' ? 'marta' : who);
+      const said = type(sim, `ask ${who} about the cup`)[0] ?? '';
+      const shrugs = [content.chars[who === 'elder' ? 'marta' : who].shrug].flat().map((t) => (typeof t === 'string' ? t : t.say));
+      expect(said, who).not.toBe('');
+      expect(shrugs, `${who} on the cup`).not.toContain(said);
+      expect(said, who).not.toContain('no use for the word');
+      answers.add(said);
+    }
+    expect(answers.size).toBe(Object.keys(at).length);
+    // Fenn's wife has a name, and the gate in the north is a place.
+    const sim = thane('tarn');
+    stand(sim, 'fenn');
+    expect(type(sim, 'ask fenn about asa')[0]).toContain('She laughed');
+    expect(type(sim, 'ask fenn about the gate')[0]).toContain('a row of dead men');
   });
 });
 
@@ -407,8 +511,8 @@ describe('things found in QA', () => {
   it('splits long messages across boxes that each fit', () => {
     const shell = new Shell(content, memoryStore(), false, behaviours);
     shell.modals = [];
-    // The longest thing anybody is told at once: the end of the first saga, at the hall door.
-    const end = content.rooms.hall.rules!.find((r) => r.zone === 'leaving')!.do.find((e) => 'say' in e) as { say: string };
+    // One of the longest things anybody is told at once: what Marta says at the hall door, the night the hearth is lit.
+    const end = content.rooms.hall.rules!.find((r) => r.zone === 'leaving' && r.do.some((e) => 'give' in e && e.give === 'ember'))!.do.find((e) => 'say' in e) as { say: string };
     shell.message(end.say);
     expect(shell.modals.length).toBeGreaterThan(1);
     for (const m of shell.modals) {
@@ -418,7 +522,7 @@ describe('things found in QA', () => {
     const boxes = shell.modals.flatMap((m) => (m.k === 'msg' ? [m] : []));
     expect(boxes[0].more).toBe(true);
     expect(boxes[boxes.length - 1].more).toBe(false);
-    expect(boxes.map((m) => m.text).join(' ')).toContain('THANE');
+    expect(boxes.map((m) => m.text).join(' ').replace(/\s+/g, ' ')).toContain("I'll keep the broom");
   });
 
   it('says so when the person you name is somewhere else', () => {
@@ -429,14 +533,16 @@ describe('things found in QA', () => {
     sim.p.x = who.x - 20;
     sim.p.y = who.y;
     expect(type(sim, 'ask about the elder')[0]).toContain('Marta Coldhand');
-    expect(type(sim, 'talk to the woman')[0]).toContain('Sigga');
+    sim.drain();
+    sim.step([{ t: 'say', line: 'talk to the woman' }]);
+    expect(sim.drain().find((e) => e.t === 'say')).toMatchObject({ who: 'Sigga' });
   });
 
   it('lets a runeword be spoken as well as typed bare', () => {
     for (const line of ['say veth', 'shout VETH!', 'speak veth']) {
       const sim = game('barrow', 160, 126);
       sim.teach('word:veth');
-      expect(type(sim, line)[0], line).toContain('slides down into the earth');
+      expect(type(sim, line)[0], line).toContain('VETH. The great stone rocks');
     }
   });
 
@@ -455,7 +561,9 @@ describe('things found in QA', () => {
     expect(type(game('barrow', 160, 130), 'n')).toEqual([content.text.noWay.replace('%s', 'north')]);
     const exits = type(sim, 'exits')[0];
     expect(exits).toContain(`North: ${road('wild_0_1')}, the road to Hollowmere.`);
-    expect(exits).toContain(`East: ${road('wild_1_2')}, the road to the old watchtower.`);
+    expect(exits).toContain(`West: ${road('wild_-1_2')}, the road to the bandit camp.`);
+    // South is out of the valley: no road of Hollowmere's, and nothing said of where it leads.
+    expect(exits).toContain(`South: ${road('wild_0_3')}.`);
     // Outside, leaving is a matter of which way; under a roof, it is the door.
     expect(type(game('ford'), 'leave')[0]).toContain('North:');
     const hall = game('hall', 160, 130);
@@ -465,26 +573,32 @@ describe('things found in QA', () => {
 
   it('reminds the player what to do next', () => {
     const sim = game();
-    expect(type(sim, 'think')).toEqual([content.text.noHint]);
+    // Before anybody has asked anything, there is still the smoke to go by.
+    expect(type(sim, 'think')).toEqual(['There is smoke from one roof. Whoever is under it will know what has happened here.']);
     sim.setQuest('hearth', 1);
     sim.drain();
-    expect(type(sim, 'hint')[0]).toContain('The Cold Hearth: Elder Marta wants');
+    expect(type(sim, 'hint')[0]).toContain('The Cold Hearth: Marta Coldhand, the Elder, wants you up at her hall');
+    // A game with nothing to suggest says so.
+    const bare = structuredClone(content);
+    bare.hints = [];
+    expect(type(new Sim(bare, { behaviours }), 'think')).toEqual([content.text.noHint]);
   });
 
   it('understands the phrasings players actually try', () => {
-    const lines: [string, string, string][] = [
-      ['ante', 'push the wolf carving', 'You are not close enough.'],
-      ['inn', 'buy healing potion', 'six silver'],
-      ['inn', 'rent room', 'Four silver'],
-      ['hut', 'ask fenn about magic', 'two kinds'],
-      ['village', 'unequip', 'already empty'],
-      ['village', 'sell hatchet', 'silver to spare'],
+    const lines: [string, string, string, string?][] = [
+      ['ridge', 'touch the standing stone', 'You are not close enough.'],
+      ['barrow', 'push the door', 'not for one person with cold hands'],
+      ['inn', 'buy healing potion', 'six silver', 'halla'],
+      ['inn', 'rent room', 'Four silver', 'halla'],
+      ['inn', 'ask fenn about magic', 'two kinds', 'fenn'],
+      ['village', 'unequip', 'already empty', 'sigga'],
+      ['village', 'sell hatchet', 'silver to spare', 'sigga'],
       ['tarn', 'freeze lake', 'With what?'],
     ];
-    for (const [room, line, expected] of lines) {
-      const sim = game(room, 160, 130);
-      const who = sim.rs.actors.find((a) => a.kind === 'npc');
-      if (who) Object.assign(sim.p, { x: who.x - 16, y: who.y + 4 });
+    for (const [room, line, expected, who] of lines) {
+      const sim = game(room, 160, 160);
+      sim.rs.actors = sim.rs.actors.filter((a) => a.kind === 'npc');
+      if (who) stand(sim, who, -16);
       expect(type(sim, line).join(' '), `${room}: ${line}`).toContain(expected);
     }
   });
@@ -540,20 +654,21 @@ describe('conversation, hints and first run', () => {
   it('runs a conversation as a menu of things to say', () => {
     const shell = new Shell(content, memoryStore(), false, behaviours);
     shell.modals = [];
-    shell.sim.enterRoom('village', 104, 156);
+    // Odd is on the step of the hall, as near his daughter as he is let.
+    shell.sim.enterRoom('village', 104, 130);
     shell.sim.drain();
     shell.submit('talk to smith');
     shell.tick();
     const first = shell.modal;
     if (first?.k !== 'msg') throw new Error('expected speech');
     expect(first.who).toBe('Odd the smith');
-    expect(first.text).toContain('Forge is dead');
-    shell.keyDown('Enter');
+    expect(first.text).toContain('Forge is cold');
+    while (shell.modal?.k === 'msg') shell.keyDown('Enter');
     shell.tick();
     const menu = shell.modal;
     if (menu?.k !== 'list') throw new Error('expected the conversation menu');
     expect(menu.title).toBe('Odd the smith');
-    expect(menu.items).toEqual(['Buy the iron sword (25 silver)', 'Buy the round shield (15 silver)', 'Buy the mail shirt (45 silver)', 'The dead forge', 'The barrow', 'Farewell']);
+    expect(menu.items).toEqual(['Buy the iron sword (25 silver)', 'Buy the round shield (15 silver)', 'Buy the mail shirt (45 silver)', 'His girl', 'The cold forge', 'Farewell']);
 
     // Buying from the menu works, and the bought thing leaves the menu.
     shell.sim.p.gold = 30;
@@ -571,6 +686,10 @@ describe('conversation, hints and first run', () => {
     expect(shell.modal).toBeUndefined();
   });
 
+  // GAME: src/game/data/cast.ts, Runa's `elder` topic (the line said before the hearth is lit) ends
+  // with her telling the player what to type: "Ask me about the winter Fenn taught us our letters."
+  // Nobody in the game is supposed to know they are in one (see the header of cast.ts); the menu row
+  // 'The winter Fenn taught her letters' already offers the topic. The line wants rewording there.
   it('keeps instructions out of mouths', () => {
     const spoken: string[] = [];
     const collect = (t: unknown): void => {
@@ -2692,7 +2811,9 @@ describe('the conversation menu', () => {
   const choose = (shell: Shell, label: string): void => {
     const m = menu(shell);
     const want = m.items.findIndex((it) => it.startsWith(label));
-    while (m.sel !== want) shell.keyDown('ArrowDown');
+    if (want < 0) throw new Error(`no "${label}" among: ${m.items.join(' / ')}`);
+    for (let i = 0; i <= m.items.length && m.sel !== want; i++) shell.keyDown('ArrowDown');
+    if (m.sel !== want) throw new Error(`the cursor never reached "${label}": it stands on "${m.items[m.sel]}"`);
     shell.keyDown('Enter');
     shell.tick();
   };
@@ -2886,7 +3007,8 @@ describe('found by playing on past the first saga', () => {
     typed(shell, 'talk to odd');
     const m = shell.modal;
     if (m?.k !== 'list') throw new Error('expected a menu');
-    while (!m.items[m.sel].startsWith('Sell a wolf pelt')) shell.keyDown('ArrowDown');
+    for (let i = 0; i <= m.items.length && !m.items[m.sel].startsWith('Sell a wolf pelt'); i++) shell.keyDown('ArrowDown');
+    expect(m.items[m.sel]).toContain('Sell a wolf pelt');
     shell.keyDown('Enter');
     const said: string[] = [];
     for (let i = 0; i < 200 && shell.sim.p.inv.pelt; i++) {
