@@ -575,17 +575,8 @@ function longTable(sc: Scene, p: P): void {
       }
     sc.put(kx - 7, ky - 3, R.metal, 0.6, y);
     sc.put(kx - 8, ky - 3, R.metal, 0.4, y);
-    // At the far end, alone: the crown, and the candle that keeps going out beside it.
-    const [cx, cy] = at(0.08, 0.5);
-    for (let k = 0; k < 9; k++) {
-      sc.put(cx + k, cy, R.stone, 0.14, y);
-      sc.put(cx + k, cy - 1, R.stone, 0.26, y);
-      if (k % 4 === 0 || k === 2 || k === 6) sc.put(cx + k, cy - 2, R.stone, 0.22, y);
-      if (k % 4 === 0) sc.put(cx + k, cy - 3, R.stone, 0.18, y);
-    }
-    sc.put(cx + 8, cy - 3, R.ice, 0.8, y);
-    sc.put(cx, cy - 1, R.ice, 0.55, y);
-    candle(cx + 15, cy - 1, false);
+    // At the far end, with a clear space round it: one cup, set apart from the rest.
+    mug(...at(0.08, 0.5), R.leather);
   }
   sc.blockRect(x - hw - 1, y - 6, x + hw + 6, y + 1);
 }

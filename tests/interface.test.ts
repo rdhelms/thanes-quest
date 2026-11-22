@@ -405,3 +405,244 @@ describe('the line across the top', () => {
     expect(ink(203, 206)).toBe(0);
   });
 });
+
+describe('playing without typing', () => {
+  /** The line the shell last sent as if typed: F3 brings it back to the typing line. */
+  function lastLine(shell: Shell): string {
+    shell.keyDown('F3');
+    const line = shell.input;
+    shell.input = '';
+    return line;
+  }
+
+  /** A game in the village with every spell and runeword known, and nobody else about unless wanted. */
+  function learned(alone = true): Shell {
+    const shell = playing('village', 160, 150);
+    for (const id of Object.keys(content.spells)) shell.sim.teach(id);
+    for (const w of Object.values(content.words)) shell.sim.teach(w.id);
+    if (alone) shell.sim.rs.actors = [];
+    return shell;
+  }
+
+  it('runs the offer of that number from a digit key, on an empty line with nothing open', () => {
+    const offers = learned().suggest();
+    expect(offers.length).toBeGreaterThanOrEqual(10);
+    // 1 to 9 are the first nine, and 0 is the tenth.
+    for (const [key, i] of [['1', 0], ['4', 3], ['9', 8], ['0', 9]] as const) {
+      const s = learned();
+      s.keyDown(key);
+      expect(s.input, key).toBe('');
+      expect(lastLine(s), key).toBe(offers[i].line);
+    }
+    // And it does what typing the line does.
+    const [a, b] = [learned(), learned()];
+    const look = offers.findIndex((o) => o.line === 'look');
+    a.keyDown(String((look + 1) % 10));
+    b.submit('look');
+    const said = settle(a);
+    expect(said).toEqual(settle(b));
+    expect(said.length).toBeGreaterThan(0);
+  });
+
+  it('leaves digits to be typed further along a line, and never starts a line with one', () => {
+    const shell = learned();
+    for (const ch of 'drop 3') shell.keyDown(ch);
+    expect(shell.input).toBe('drop 3');
+    expect(lastLine(shell)).toBe('');
+    // A number with no offer behind it does nothing at all.
+    const few = playing('village', 160, 150);
+    few.sim.rs.actors = [];
+    expect(few.suggest().length).toBeLessThan(9);
+    few.keyDown('9');
+    expect(few.input).toBe('');
+    expect(lastLine(few)).toBe('');
+    // Where the offers are shown without numbers (a touch screen), digits are only digits.
+    const plain = learned();
+    plain.digits = false;
+    plain.keyDown('1');
+    expect(plain.input).toBe('1');
+  });
+
+  it('gives a digit to whatever box is open, not to the offers behind it', () => {
+    const shell = learned();
+    shell.keyDown('Tab');
+    const bag = list(shell);
+    shell.keyDown('1');
+    expect(shell.modal).toBe(bag);
+    shell.keyDown('Escape');
+    shell.tick();
+    expect(shell.modal).toBeUndefined();
+    expect(lastLine(shell)).toBe('');
+    // A message is waiting to be read: nothing is offered, and a digit runs nothing.
+    shell.message('Wait.');
+    expect(shell.suggest()).toEqual([]);
+    shell.keyDown('1');
+    expect(lastLine(shell)).toBe('');
+  });
+
+  it('offers what belongs to the spot first, then the runewords, then the rest', () => {
+    const shell = learned(false);
+    const sim = shell.sim;
+    // Beside somebody, with something lying in reach, hurt, and a draught in the pack.
+    const who = sim.rs.actors.find((a) => a.kind === 'npc' && content.chars[a.ref])!;
+    sim.p.x = who.x - 16;
+    sim.p.y = who.y;
+    sim.putDown('cheese', 1, sim.p.x - 10, sim.p.y);
+    sim.give('potion');
+    sim.p.hp = 5;
+    const lines = shell.suggest().map((s) => s.line);
+    const at = (line: string): number => lines.indexOf(line);
+    const words = Object.values(content.words).map((w) => w.verb);
+    const spells = Object.keys(content.spells).map((id) => `cast ${id}`);
+    expect(lines[0]).toBe(`talk to ${content.chars[who.ref].nouns[0]}`);
+    expect(at('take cheese')).toBeGreaterThan(0);
+    for (const w of words) expect(at(w), w).toBeGreaterThan(at('take cheese'));
+    for (const w of words) expect(at(w), w).toBeLessThan(at('look'));
+    for (const rest of ['map', 'drink potion', ...spells]) expect(at(rest), rest).toBeGreaterThan(at('look'));
+    // A word that cannot be spoken again yet is not offered.
+    sim.p.cd[Object.values(content.words)[0].id] = 40;
+    expect(shell.suggest().map((s) => s.line)).not.toContain(words[0]);
+  });
+
+  it('never offers more than will fit, and it is spells that go unshown, not runewords', () => {
+    // A game with more spells than anybody could want.
+    const many = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`extra${i}`, { ...Object.values(content.spells)[0], id: `extra${i}`, name: `Extra ${i}` }]));
+    const shell = new Shell({ ...content, spells: { ...content.spells, ...many } }, memoryStore(), false, behaviours);
+    shell.modals = [];
+    shell.sim.enterRoom('village', 160, 150);
+    shell.tick();
+    shell.modals = [];
+    for (const id of Object.keys(many)) shell.sim.teach(id);
+    for (const w of Object.values(content.words)) shell.sim.teach(w.id);
+    const offers = shell.suggest();
+    expect(offers.length).toBe(16);
+    const lines = offers.map((s) => s.line);
+    for (const w of Object.values(content.words)) expect(lines).toContain(w.verb);
+    expect(lines).toContain('look');
+    expect(new Set(lines).size).toBe(lines.length);
+    for (const o of offers) expect(Object.keys(o).sort()).toEqual(['label', 'line']);
+  });
+
+  it('walks over and talks to somebody who is clicked on, as typing it would', () => {
+    const fresh = (): Shell => playing('village', 160, 150);
+    const [a, b] = [fresh(), fresh()];
+    // Whoever is furthest off: there must be a walk in it.
+    const far = (s: Shell) => s.sim.rs.actors.filter((k) => k.kind === 'npc' && content.chars[k.ref]).sort((p, q) => Math.abs(q.x - s.sim.p.x) - Math.abs(p.x - s.sim.p.x))[0];
+    const who = far(a);
+    const def = content.chars[who.ref];
+    expect(a.sim.within(who.x, who.y, 48)).toBe(false);
+    // Anywhere on the figure will do: the middle of it, here.
+    const [x, y] = [Math.round(who.x), Math.round(who.y) - 18];
+    expect(a.aim(x, y)).toBe(`Talk to ${def.name}`);
+    a.point(x, y);
+    a.tick();
+    expect(a.busy).toBe(true);
+    b.submit(`talk to ${def.nouns[0]}`);
+    const said = settle(a);
+    expect(said).toEqual(settle(b));
+    expect(said.length).toBeGreaterThan(0);
+    expect(a.sim.within(who.x, who.y, 60)).toBe(true);
+    expect([a.sim.p.x, a.sim.p.y]).toEqual([b.sim.p.x, b.sim.p.y]);
+    expect(a.modal?.k).toBe(b.modal?.k);
+    // Nothing was typed, and nothing is left for Enter to repeat.
+    expect(a.input).toBe('');
+    expect(lastLine(a)).toBe('');
+  });
+
+  it('walks over and takes a thing that is clicked on', () => {
+    const shell = playing('village', 60, 160);
+    const sim = shell.sim;
+    sim.rs.actors = [];
+    sim.putDown('cheese', 1, 230, 160);
+    const pile = sim.things().find((t) => t.take === 'cheese')!;
+    expect(sim.within(pile.x, pile.y, pile.reach ?? 30)).toBe(false);
+    expect(shell.aim(pile.x, pile.y - 3)).toMatch(/^Take the /);
+    shell.point(pile.x, pile.y - 3);
+    shell.tick();
+    expect(shell.busy).toBe(true);
+    const said = settle(shell);
+    expect(sim.p.inv.cheese).toBe(1);
+    expect(sim.things().some((t) => t.take === 'cheese')).toBe(false);
+    expect(said.length).toBeGreaterThan(0);
+    expect(sim.within(pile.x, pile.y, pile.reach ?? 30)).toBe(true);
+  });
+
+  it('walks over and looks at any other thing that is clicked on, and then offers what can be tried', () => {
+    const shell = playing('ford', 60, 160);
+    const sim = shell.sim;
+    sim.rs.actors = [];
+    // Something that is not to be taken, with something to try, clear of any door.
+    const thing = sim.things().find((t) => !t.take && t.try?.length && shell.aim(t.x, t.y - 4)?.startsWith('Look at the '))!;
+    expect(thing).toBeDefined();
+    const noun = shell.aim(thing.x, thing.y - 4)!.slice('Look at the '.length);
+    expect(sim.within(thing.x, thing.y, thing.reach ?? 30)).toBe(false);
+    shell.point(thing.x, thing.y - 4);
+    shell.tick();
+    expect(shell.busy).toBe(true);
+    const said = settle(shell);
+    expect(sim.within(thing.x, thing.y, thing.reach ?? 30)).toBe(true);
+    const typed = playing('ford', 60, 160);
+    typed.submit(`look at ${noun}`);
+    expect(said).toEqual(settle(typed));
+    expect(said.length).toBeGreaterThan(0);
+    expect(shell.suggest().map((s) => s.line)).toContain(thing.try![0]);
+  });
+
+  it('only walks when the click is on bare ground, far scenery, a door, or the edge of the picture', () => {
+    const shell = playing('village', 160, 150);
+    const sim = shell.sim;
+    sim.rs.actors = [];
+    // Scenery that can be seen from anywhere has a place in the picture only to hang its words on.
+    for (const t of sim.things().filter((k) => (k.reach ?? 30) > 100)) expect(shell.aim(t.x, t.y - 2)?.endsWith(` ${t.nouns[0]}`) ?? false, t.id).toBe(false);
+    // A door is gone through, as it always was, whatever stands by it.
+    const door = sim.room.doors![0];
+    const [dx, dy] = [Math.round((door.x0 + door.x1) / 2), Math.round((door.y0 + door.y1) / 2)];
+    expect(shell.aim(dx, dy - 10)).toBeNull();
+    shell.point(dx, dy - 10);
+    shell.tick();
+    expect(shell.busy).toBe(false);
+    for (let i = 0; i < 400 && sim.state.room === 'village'; i++) shell.modal ? shell.keyDown('Enter') : shell.tick();
+    expect(sim.state.room).toBe(door.to);
+    // And the top edge of the picture is the way north.
+    const out = playing('ford', 160, 150);
+    const north = out.sim.room.exits!.n;
+    expect(out.aim(160, 20)).toBeNull();
+    out.point(160, 20);
+    for (let i = 0; i < 400 && out.sim.state.room === 'ford'; i++) out.modal ? out.keyDown('Enter') : out.tick();
+    expect(north).toBeDefined();
+    expect(out.sim.state.room).toBe(north);
+  });
+
+  it('strikes up no conversation with something that means harm: a click closes with it, then strikes', () => {
+    const shell = playing('village', 100, 150);
+    const sim = shell.sim;
+    sim.rs.actors = [];
+    sim.spawn('wolf', 220, 150);
+    const wolf = sim.rs.actors[0];
+    expect(shell.aim(Math.round(wolf.x), Math.round(wolf.y) - 8)).toMatch(/^Fight the /);
+    shell.point(Math.round(wolf.x), Math.round(wolf.y) - 8);
+    shell.tick();
+    // A walk, and no line sent on the player's behalf.
+    expect(shell.heading).not.toBeNull();
+    expect(shell.busy).toBe(false);
+    // Face to face, the same click is a swing.
+    wolf.x = sim.p.x + 14;
+    wolf.y = sim.p.y;
+    sim.p.dir = 'right';
+    shell.point(Math.round(wolf.x), Math.round(wolf.y) - 8);
+    shell.tick();
+    expect(sim.p.act).toBe('swing');
+  });
+
+  it('points at nothing while a box is open', () => {
+    const shell = playing('village', 160, 150);
+    const who = shell.sim.rs.actors.find((a) => a.kind === 'npc')!;
+    shell.keyDown('Tab');
+    expect(shell.aim(Math.round(who.x), Math.round(who.y) - 18)).toBeNull();
+    shell.point(Math.round(who.x), Math.round(who.y) - 18);
+    shell.keyDown('Escape');
+    shell.tick();
+    expect(shell.busy).toBe(false);
+    expect(shell.heading).toBeNull();
+  });
+});

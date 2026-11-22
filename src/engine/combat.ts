@@ -82,7 +82,7 @@ export function hitEnemy(sim: Sim, a: ActorState, dmg: number, skill: string, kx
   a.hp -= dmg;
   a.ai.flash = 4;
   // The living stagger and lose their swing, but not twice running: having just recovered, a foe
-  // keeps its feet for a moment. The dead barely notice blows, and the Barrow-King not at all.
+  // keeps its feet for a moment. The dead barely notice blows, and a great foe not at all.
   if (def.ai === 'wight') {
     a.ai.stun = Math.max(a.ai.stun ?? 0, 2);
     knock(sim, a, kx * 0.4, ky * 0.4);
