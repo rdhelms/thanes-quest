@@ -76,13 +76,10 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.fight();
   bot.walkTo(152, 132, 12);
   expect(bot.say('touch the rune')).toContain('VETH');
-  // South-west: Gorm's grain.
-  bot.travel('camp');
-  bot.fight();
-  bot.walkTo(56, 162, 14);
-  expect(bot.say('open chest')).toContain('seed grain');
-
-  // Over the bridge, where the coals die; and on to the old watchtower, where a fire lights.
+  // Back through the village (the short way south runs through the robbers' camp, which wants a
+  // word first), over the bridge, where the coals die, and on to the old watchtower, where a fire lights.
+  bot.travel('village');
+  bot.travel('ford');
   bot.travel('tower');
   expect(has('coals')).toBe(false);
   expect(said()).toContain('black and cold');
@@ -103,6 +100,12 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   expect(has('bottle')).toBe(true);
   expect(bot.say('ask runa about the stone')).toContain('milk froze');
   expect(sim.state.flags[questKey('hearth')]).toBe(3);
+
+  // Back by the robbers' camp, with a word now that stops three of them where they stand: Gorm's grain.
+  bot.travel('camp');
+  bot.fight();
+  bot.walkTo(56, 162, 14);
+  expect(bot.say('open chest')).toContain('seed grain');
 
   // Home by the tarn: freeze it, and take what the ice kept.
   bot.travel('tarn');
