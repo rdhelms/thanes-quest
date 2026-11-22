@@ -3296,8 +3296,12 @@ describe('news that keeps', () => {
 
 describe('small things found by playing', () => {
   it('lets the grain be handed over as well as talked over, and the cheese is a cheese', () => {
-    const shell = playing('farm', 30, 150);
-    Object.assign(shell.sim.state.flags, { 'gorm.met': true, 'quest:stores': 1 });
+    // At his farm, where he is once the fires are lit.
+    const shell = playing();
+    Object.assign(shell.sim.state.flags, { 'hearth.lit': true, 'marta.met': true, 'quest:hearth': 5, 'gorm.met': true, 'quest:stores': 1 });
+    shell.sim.enterRoom('farm', 30, 150);
+    shell.tick();
+    shell.modals = [];
     shell.sim.give('grain');
     const gold = shell.sim.p.gold;
     expect(typed(shell, 'give grain to gorm').join(' ')).toContain('adds a cheese');
@@ -3308,24 +3312,53 @@ describe('small things found by playing', () => {
     expect(shell.sim.p.inv.cheese).toBeUndefined();
   });
 
-  it('answers a crown or an amulet being tried on', () => {
+  // GAME: while the fires are out Gorm is at the inn, which is where his grain is most likely to be
+  // brought back to him (the walkthrough does). Talking to him there works. Handing the sack over
+  // does not: GIVE GRAIN TO GORM, standing beside him, answers "Nobody here wants it." The rules that
+  // make handing over the same as talking are the farm's alone (src/game/data/rooms/world.ts,
+  // `farm.rules`: `on: ['give grain', ...]`, and `['give sheep', ...]` for the stray ewe); the inn
+  // (rooms/inside.ts, `inn.rules`) has none, so the line falls through to the game's last `give *`
+  // rule (src/game/content.ts). Fenn's rules were moved to wherever he is (`fennRules`); Gorm's, and
+  // Toke's for the red draught (`pinewood.rules`: `on: ['give potion toke', ...]`), were not.
+  it('lets the grain be handed over wherever Gorm is, which until the hearth is lit is the inn', () => {
+    const sim = game('inn', 160, 130);
+    Object.assign(sim.state.flags, { 'gorm.met': true, 'quest:stores': 1 });
+    sim.give('grain');
+    stand(sim, 'gorm');
+    const gold = sim.p.gold;
+    expect(type(sim, 'give grain to gorm').join(' ')).toContain('adds a cheese');
+    expect(sim.p.gold).toBe(gold + 25);
+    expect(sim.state.flags['quest:stores']).toBe(2);
+  });
+
+  it('answers a ring or an amulet being tried on', () => {
     const sim = game('village');
-    sim.give('crown');
+    sim.give('ring');
     sim.give('amulet');
-    expect(type(sim, 'wear crown')[0]).toContain('you are cold');
-    expect(sim.p.inv.crown).toBe(1);
+    sim.give('hatchet');
+    expect(type(sim, 'wear ring')[0]).toContain('where Marta put it');
+    expect(sim.p.inv.ring).toBe(1);
     expect(type(sim, 'wear amulet')[0]).toContain('only carrying it home');
     expect(type(sim, 'wear hatchet')[0]).not.toContain('ridiculous');
   });
 
   it('lets Fenn stop looking at the ice once he has the amulet back', () => {
-    const sim = game('hut', 190, 126);
-    sim.state.flags['fenn.met'] = true;
+    // Once the fires are lit he is down on the shore every morning, as he has been for forty years.
+    const sim = thane('tarn', 220, 150);
+    Object.assign(sim.state.flags, { 'fenn.met': true, 'quest:errand': 1 });
     sim.give('amulet');
+    stand(sim, 'fenn');
+    expect(type(sim, 'look at fenn')[0]).toContain('on his knees on the shore');
     expect(type(sim, 'ask fenn about the amulet')[0]).toContain('Please');
     expect(type(sim, 'give amulet to fenn')[0]).toContain('forgotten it was so small');
-    expect(type(sim, 'ask fenn about the tarn')[0]).toContain('It is only ice now');
-    expect(type(sim, 'ask fenn about the amulet')[0]).toContain('shelf by the window');
+    // He does not stay to look at ice with nothing in it.
+    expect(sim.rs.actors.some((a) => a.ref === 'fenn')).toBe(false);
+    expect(type(sim, 'look')[0]).toContain('the print of two knees in the snow at the edge of the ice, and nobody in it');
+    sim.enterRoom('hut', 190, 126);
+    stand(sim, 'fenn');
+    expect(type(sim, 'look')[0]).toContain('hangs a moonstone on a silver chain');
+    expect(type(sim, 'ask fenn about the tarn')[0]).toContain("It's only ice now");
+    expect(type(sim, 'ask fenn about the amulet')[0]).toContain('On the nail by the window');
   });
 
   it('says "an iron torc"', () => {
@@ -3334,7 +3367,7 @@ describe('small things found by playing', () => {
   });
 });
 
-describe('found by playing on past the first saga', () => {
+describe('found by playing on past the cold hearth', () => {
   it('lets a menu row walk the last step, when talking distance is not trading distance', () => {
     const shell = playing('village', 160, 160);
     shell.sim.state.flags['odd.met'] = true;
@@ -3361,56 +3394,104 @@ describe('found by playing on past the first saga', () => {
 
   it('knows a plain plural, and does not mistake other words for one', () => {
     const p = new Parser(content.vocab);
-    expect(p.parse('look at the crowns')).toEqual({ ok: true, verb: 'look', nouns: ['crown'] });
+    expect(p.parse('look at the rings')).toEqual({ ok: true, verb: 'look', nouns: ['ring'] });
+    expect(p.parse('look at the ravens')).toEqual({ ok: true, verb: 'look', nouns: ['raven'] });
     expect(p.parse('look at the grass')).toMatchObject({ ok: false });
   });
 
-  it('lets the Cold Smith be named, spoken to and offered his own work', () => {
-    const sim = game('rimehall', 60, 126);
-    sim.give('crown');
-    expect(type(sim, 'look at the smith')[0]).toContain('Half as tall again');
-    expect(type(sim, 'talk to the smith')[0]).toContain('work that came out wrong');
-    expect(type(sim, 'give crown to smith')[0]).toContain('He wants it right');
-    expect(type(sim, 'look at crowns')[0]).toContain('heaped like kindling');
-    expect(type(sim, 'look at hammer')[0]).toContain('strong enough to swing it');
+  it('lets the dead of the gate be named, looked at and spoken to, and answers for the woman in the hollow', () => {
+    const sim = game('northgate', 160, 150);
+    expect(type(sim, 'look at the guard')[0]).toContain('frost to the bone, and still at his post');
+    expect(type(sim, 'look at the spearmen')[0]).toContain('nobody ever came to relieve');
+    expect(type(sim, 'talk to the guards')[0]).toContain('the way a door looks at you');
+    expect(type(sim, 'look at the towers')[0]).toContain('forgot to send word');
+    // "The woman" is the baker in the square; in the hollow it can only be one person.
+    const home = game('village', 220, 156);
+    expect(type(home, 'look at the woman')[0]).toContain('three shawls');
+    const hollow = game('hollow', 160, 140);
+    expect(type(hollow, 'look at the woman')[0]).toContain('Frost has grown over her shoulders like a fur');
+    expect(type(hollow, 'talk to the woman')[0]).toContain('She does not hear you');
+    expect(type(hollow, 'push the woman')).toEqual(['No.']);
+    expect(type(hollow, 'look at the ring')[0]).toContain('You look at your own hand');
     // In the square, the smith is still Odd.
-    const home = game('village', 130, 156);
     expect(type(home, 'look at the smith')[0]).toContain('leather apron');
   });
 
   it('greets a Thane it has not met as a Thane, not as it would have nine days before', () => {
-    const sim = game('village', 130, 156);
-    sim.state.flags['hearth.lit'] = true;
-    expect(type(sim, 'talk to odd')[0]).toContain('which is roaring');
-    const inn = game('inn', 236, 133);
-    inn.state.flags['hearth.lit'] = true;
-    expect(type(inn, 'talk to halla')[0]).toContain("lit Marta's hearth");
-    expect(inn.p.inv.potion).toBe(1);
+    const first = (who: string, room: string): { sim: Sim; said: string } => {
+      const sim = thane(room, 160, 150);
+      sim.rs.actors = sim.rs.actors.filter((a) => a.kind === 'npc');
+      stand(sim, who);
+      return { sim, said: type(sim, `talk to ${who}`).join(' ') };
+    };
+    const sigga = first('sigga', 'village');
+    expect(sigga.said).toContain('"Thane." She tries the word for size');
+    expect(sigga.said).not.toContain('Kettle and Helm');
+    // Odd counts the price of a sword back into the hand that lit his forge.
+    const odd = first('odd', 'village');
+    expect(odd.said).toContain('Forge is lit');
+    expect(odd.said).not.toContain('Forge is cold');
+    expect(odd.sim.p.gold).toBe(25);
+    expect(type(odd.sim, 'talk to odd').join(' ')).not.toContain('twenty-five silver into your hand');
+    expect(odd.sim.p.gold).toBe(25);
+    const halla = first('halla', 'inn');
+    expect(halla.said).toContain('In, in, and shut the door behind you');
+    expect(halla.said).not.toContain("Don't stand in its light");
   });
 
-  it('has Halla point the way to the three steadings, truthfully, once there is a fire to gossip by', () => {
-    const sim = game('inn', 236, 133);
+  // GAME: three people who can be met for the first time after the hearth is lit still say what they
+  // would have said in the inn nine days into the cold. None of them has to be spoken to before the
+  // hearth is lit (only Halla has, for the flint), so each of these can be the first thing they say:
+  //  - Toke, in the pinewood (src/game/data/cast.ts, `toke.talk`, the `{ quest: 'wolves', is: 0 }`
+  //    line): "Keep your voice down. She's counting sticks." He nods at the woman by the fire.
+  //  - Fenn, on his knees on the shore of the tarn (`fenn.talk`, the last `{ not: { flag: 'fenn.met' } }`
+  //    line, written for his hut): "Shut the door, you're letting the weather in."
+  //  - Gorm, at his farm with smoke at its roof (`gorm.talk`, `{ quest: 'stores', is: 0 }`): he "does
+  //    not lift his head far out of his hands", and says "One chimney smoking in a whole valley".
+  // Each wants a version for after, as Sigga, Odd and Halla have.
+  it('greets a Thane it has not met where it now is, not where it was sitting in the inn', () => {
+    const first = (who: string, room: string): string => {
+      const sim = thane(room, 160, 150);
+      sim.rs.actors = sim.rs.actors.filter((a) => a.kind === 'npc');
+      stand(sim, who);
+      return type(sim, `talk to ${who}`).join(' ');
+    };
+    expect.soft(first('toke', 'pinewood'), 'Toke, in the pinewood').not.toContain('the woman by the fire');
+    expect.soft(first('fenn', 'tarn'), 'Fenn, out on the shore').not.toContain('Shut the door');
+    expect.soft(first('gorm', 'farm'), "Gorm, at his farm with smoke at its roof").not.toContain('One chimney smoking');
+  });
+
+  it('has Halla say who is to be found out in the wild, truthfully, once there is a fire to gossip by', () => {
+    const sim = game('inn', 160, 130);
     sim.state.flags['halla.met'] = true;
-    expect(type(sim, 'ask halla about work')[0]).toContain('big trouble');
-    sim.state.flags['hearth.lit'] = true;
-    const said = type(sim, 'ask halla about work')[0];
-    expect(said).toContain('Brekka the trapper, north beyond the barrow');
-    for (const who of ['brekka', 'ivar', 'runa']) expect(sim.state.flags[`goal.${who}`], who).toBeTruthy();
-    // What she says of where they live has to stay true of where the country puts them.
+    stand(sim, 'halla', 14);
+    expect(type(sim, 'ask halla about work')[0]).toContain('She found you, then');
+    expect(Object.keys(sim.state.flags).filter((k) => k.startsWith('goal.'))).toEqual([]);
+    const lit = thane('inn', 160, 130);
+    lit.state.flags['halla.met'] = true;
+    stand(lit, 'halla', 14);
+    const said = type(lit, 'ask halla about work')[0];
+    expect(said).toContain('Brekka the trapper. Old Ivar One-Glove');
+    for (const who of ['brekka', 'ivar']) expect(lit.state.flags[`goal.${who}`], who).toBe(wildId(...homes(content)[who]));
+    // What is said in the valley of where Runa lives ("out past the old watchtower", "the next place
+    // down the south road") has to stay true of where the country puts her.
     const at = homes(content);
-    expect(at.brekka[1] < 0 && Math.abs(at.brekka[0]) <= 1).toBe(true);
-    expect(at.ivar[0] < 0 && at.ivar[1] < 0).toBe(true);
-    expect(at.runa[0] > 0 && at.runa[1] > 0).toBe(true);
+    const tower = content.frontier!.grid.tower;
+    expect(at.runa).toEqual([tower[0], tower[1] + 1]);
+    expect(Object.keys(at).sort()).toEqual(['brekka', 'ivar', 'runa']);
   });
 
   it('lets Marta be asked about Ivar, before and after', () => {
     const sim = game('hall', 200, 122);
     sim.state.flags['marta.met'] = true;
     expect(type(sim, 'ask elder about ivar')[0]).toContain('a bear had him');
+    expect(type(sim, 'ask elder about sheep')[0]).toContain('a child to keep');
     sim.state.flags['quest:message'] = 3;
-    expect(type(sim, 'ask elder about ivar')[0]).toContain('there is a chair by this hearth');
+    expect(type(sim, 'ask elder about ivar')[0]).toContain("there's a chair by this hearth");
     sim.state.flags['hearth.lit'] = true;
     expect(type(sim, 'ask elder about sheep')[0]).toContain('a village to keep');
+    // Ivar says she sang once. She says otherwise.
+    expect(type(sim, 'ask elder about the rhyme')[0]).toContain("I don't sing");
   });
 
   it('shows what is under the ice at the Sunken Bell to whoever asks with the right word', () => {
