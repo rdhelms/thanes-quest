@@ -161,7 +161,9 @@ down the dead and lays them straight. Every one had been hanging with its face t
 At the gate, two square towers stand in the gap in the last wall, and between them stand the guards
 of a kingdom nobody has a name for, frost to the bone, like men nobody came to relieve. They cannot
 be beaten: one that is knocked down gets up again. The Thane says the sun's name, and they turn
-their faces from it and go back into the dark of their towers.
+their faces from it and go back into the dark of their towers. (From a stranger the word only turns
+them: they turn back, and stand where they stood, and the nearest looks at the speaker's bare hand.
+They stand aside for the brass ring.)
 
 Beyond the gate, at the side of the old road, is the stone Fenn looked sixty years for. The Thane
 reads ORUN and says it at the road. Under the snow, many winters down, there are footprints: a

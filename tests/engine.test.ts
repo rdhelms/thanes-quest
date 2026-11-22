@@ -153,7 +153,7 @@ describe('simulation', () => {
   });
 
   it('keeps a held way held until the right word is spoken', () => {
-    // The gate in the north wall: its guards stand in the gap, and nothing gets by them but the sun's name.
+    // The gate in the north wall: its guards stand in the gap, and nothing gets by them but the sun's name from a Thane.
     const sim = game('northgate', 160, 150);
     sim.drain();
     walk(sim, 0, -1, 60);
@@ -161,8 +161,15 @@ describe('simulation', () => {
     expect(sim.drain().some((e) => e.t === 'note' && e.text === content.rooms.northgate.holds!.n)).toBe(true);
     expect(type(sim, 'sol')).toEqual([content.text.wordUnknown]);
     expect(sim.state.flags['gate.open']).toBeUndefined();
+    // The word alone turns them, and they turn back: it is the ring they stand aside for.
     sim.teach('word:sol');
-    expect(type(sim, 'sol').join(' ')).toContain('They cannot bear it');
+    expect(type(sim, 'sol').join(' ')).toContain('they turn them back');
+    expect(sim.state.flags['gate.open']).toBeUndefined();
+    walk(sim, 0, -1, 60);
+    expect(sim.state.room).toBe('northgate');
+    sim.give('ring');
+    sim.p.cd = {};
+    expect(type(sim, 'sol').join(' ')).toContain('the road between is open');
     expect(sim.state.flags['gate.open']).toBe(true);
     walk(sim, 0, -1, 60);
     expect(sim.state.room).toBe('oldroad');
@@ -2402,42 +2409,32 @@ describe('doing things out of order', () => {
     expect(type(unsent, 'journal')).toEqual([]);
   });
 
-  // GAME: nothing stops a stranger from ending the winter before the Elder's hearth is lit. The
-  // Giant's Table (src/game/data/rooms/far.ts, `dolmen`), the gate (rooms/north.ts, `northgate`: its
-  // SOL rule asks only for the word) and the hollow ask for nothing the first part of the story
-  // gives. Somebody who walks south for SOL and then north, with VETH from the ridge, can say the
-  // sun's name in the hollow with no ring and no coal; and then:
-  //  - the hollow's opening words (north.ts, `hollow`, the first `enter` rule) have them look at a
-  //    brass ring on their own hand, which they were never given;
-  //  - the ending (north.ts, `hollow`, the `on: 'sol'` rule) says "In your pack the horn box has
-  //    gone warm", and there is no box;
-  //  - the thaw comes home (src/game/behaviours.ts, `thawComes`) and sets `hall.thaw` while the
-  //    hearth is still cold: the Elder's hall (rooms/inside.ts, `hall.npcs`) then holds two Martas,
-  //    one by the pallet (`if: [COLD]`) and one at the table (`if: [{ flag: 'hall.thaw' }]`), with a
-  //    feast going on round a child who is still being held at the end of a breath; and sitting
-  //    down finishes 'Where the Wind Stops' for a "Thane" nobody ever named one.
-  // The first part needs to come first (the gate, say, opening only to somebody with the ring), or
-  // every one of these needs a version for a hero without it.
-  it('does not let the winter be ended round a hearth that is still cold, or else tells that story straight', () => {
+  it('does not let the winter be ended round a hearth that is still cold: the gate stands aside only for the ring', () => {
+    // A stranger with every word and no ring: the sun's name turns the guards, and they turn back.
     const sim = game();
-    for (const w of ['veth', 'sol']) sim.teach(`word:${w}`);
+    for (const w of ['veth', 'iska', 'orun', 'sol']) sim.teach(`word:${w}`);
+    sim.enterRoom('northgate', 160, 150);
     sim.drain();
-    sim.enterRoom('hollow', 160, 150);
-    const arriving = says(sim.drain()).join(' ');
     expect(sim.p.inv.ring).toBeUndefined();
-    expect.soft(arriving, 'a hero with no ring').not.toContain('You look at your own hand');
-    type(sim, 'sol');
+    const said = type(sim, 'sol').join(' ');
+    expect(said).toContain('they turn them back');
+    expect(said).toContain('There is nothing on it');
+    expect(sim.state.flags['gate.open']).toBeUndefined();
+    expect(sim.rs.actors.filter((a) => a.ref === 'gateguard').length).toBe(4);
+    // And nobody walks through them.
+    [sim.p.x, sim.p.y] = [160, sim.scene().walkTop + 6];
+    walk(sim, 0, -1, 40);
+    expect(sim.state.room).toBe('northgate');
+    // Nor is there any other way to what lies beyond: each place north of the gate opens only onto the next.
+    const north = ['oldroad', 'windend', 'hanging', 'hollow'];
+    for (const id of north) expect(Object.values(roomOf(content, id)!.exits ?? {}).every((to) => to === 'northgate' || north.includes(to)), id).toBe(true);
+    for (const room of Object.values(content.rooms)) if (room.id !== 'northgate' && !north.includes(room.id)) expect(Object.values(room.exits ?? {}).some((to) => north.includes(to)), room.id).toBe(false);
+    // The same word from somebody wearing the ring, and they go.
+    sim.give('ring');
     sim.p.cd = {};
-    const ending = type(sim, 'sol').join(' ');
-    expect(sim.p.inv.ember).toBeUndefined();
-    expect.soft(ending, 'a hero with no coal').not.toContain('horn box');
-    if (sim.state.flags['winter.broken']) {
-      sim.state.tick += DAY_LENGTH;
-      sim.enterRoom('village', 160, 150);
-      sim.enterRoom('hall', 60, 112);
-      expect.soft(sim.rs.actors.filter((a) => a.ref === 'marta').length, 'Elders in the hall').toBe(1);
-      expect.soft(sim.state.flags['hall.thaw'] && !sim.state.flags['hearth.lit'], 'a feast round a cold hearth').toBeFalsy();
-    }
+    expect(type(sim, 'sol').join(' ')).toContain('the road between is open');
+    expect(sim.state.flags['gate.open']).toBe(true);
+    expect(sim.rs.actors.filter((a) => a.ref === 'gateguard').length).toBe(0);
   });
 
   it('keeps the Greyback out of his lair until somebody has cause to hunt him, and after he is dead', async () => {

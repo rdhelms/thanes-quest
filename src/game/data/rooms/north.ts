@@ -80,6 +80,14 @@ export const northgate: RoomDef = {
       do: [{ set: 'gate.met' }, { say: 'The gate is where Fenn said it would be: two square towers in a gap in the last wall you can see, and between them, in a row, the guards of some kingdom that nobody has a name for any more. They are frost to the bone, and still at their posts, like men nobody ever came to relieve.\n\nWhen you come up the road they turn their heads all together to look at you, and lift what is left of their spears.' }],
     },
     { enter: true, if: [{ flag: 'gate.open' }], do: [{ show: 'watch' }] },
+    // The sun's name turns them; it does not relieve them. They stand aside for the ring.
+    {
+      on: 'sol', if: [{ not: { flag: 'gate.open' } }, { not: { has: 'ring' } }],
+      do: [
+        { set: 'gate.asked' },
+        { say: 'You say the sun\'s name.\n\nThey cannot bear it. They turn their faces from it, all together. And when the word has gone out of the air they turn them back, and are standing where they stood. Somebody posted them here, and a word is not that somebody.\n\nThe nearest of them is looking at your hand. There is nothing on it.' },
+      ],
+    },
     {
       on: 'sol', if: [{ not: { flag: 'gate.open' } }],
       do: [
