@@ -356,6 +356,16 @@ export function roadOf(c: Content, X: number, Y: number): { ways: Side[]; says: 
     const hand = handAt(c, X + dx, Y + dy);
     return hand ? [`${called(hand)} ${COMPASS(dx, dy)}`] : [];
   });
+  // With no place beside it or off a corner (a corner of the valley that has nothing in it), the
+  // path still leads somewhere: to whatever lies next along it, a road's length further on.
+  if (!round.length) {
+    const on: [Side, string][] = [];
+    for (const way of ['n', 's', 'e', 'w'] as Side[]) {
+      const hand = handAt(c, X + 2 * STEP[way][0], Y + 2 * STEP[way][1]);
+      if (hand && f.gates[hand]?.includes(BACK[way])) on.push([way, hand]);
+    }
+    if (on.length) return { ways: ['n', 's', 'e', 'w'], says: f.text.road.replace('%s', listed(on.map(([way, id]) => `${WAY[way]} to ${called(id)}`))) };
+  }
   const says = f.text.crossroads.replace('%s', listed(round.map((p, i) => (i ? p : p.replace(/ (\S+)$/, ' lies $1')))));
   return { ways: ['n', 's', 'e', 'w'], says: says.replace(/(^|\. )([a-z])/g, (_, a: string, b: string) => a + b.toUpperCase()) };
 }

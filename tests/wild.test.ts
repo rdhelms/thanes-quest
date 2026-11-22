@@ -76,18 +76,25 @@ describe('the wild remembers', () => {
   it('gives up at the edge of the valley, and at any haven', () => {
     // A cell just outside the valley, with a valley road beside it.
     let from = '';
-    let side: 'e' | 'w' = 'w';
+    let side: 'n' | 's' | 'e' | 'w' = 'w';
     for (const [x, y] of cells(3)) {
       const def = roomOf(content, wildId(x, y));
-      for (const s of ['e', 'w'] as const) {
+      for (const s of ['e', 'w', 'n', 's'] as const) {
         const to = def?.exits?.[s];
         if (to && roomOf(content, to)?.haven && def!.spawns?.some((k) => k.kind === 'wolf' && !k.when)) [from, side] = [def!.id, s];
       }
       if (from) break;
     }
     expect(from).not.toBe('');
-    const sim = chased(from, side === 'w' ? 12 : 306);
-    walk(sim, side === 'w' ? -1 : 1, 0, 14);
+    // At that edge, with one wolf a little way behind and nothing else about.
+    const top = roomOf(content, from)!.scene.walkTop;
+    const [px, py] = side === 'w' ? [12, 140] : side === 'e' ? [306, 140] : side === 'n' ? [160, top + 6] : [160, 162];
+    const sim = game(from, px, py);
+    const wolf = sim.rs.actors.find((a) => a.ref === 'wolf')!;
+    sim.rs.actors = [wolf];
+    [wolf.x, wolf.y] = side === 'w' ? [px + 40, py] : side === 'e' ? [px - 40, py] : side === 'n' ? [sim.p.x, sim.p.y + 20] : [sim.p.x, sim.p.y - 20];
+    const [dx, dy] = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] }[side];
+    walk(sim, dx, dy, 30);
     expect(sim.state.room).not.toBe(from);
     expect(foes(sim).filter((a) => (a.ai.lag ?? 0) > 0)).toEqual([]);
     expect(sim.state.rooms[from].dead).toEqual([]);
@@ -106,8 +113,13 @@ describe('the marches', () => {
           // Every way out of the ring is walled or a pass; every way round it is open.
           if (ring(x + STEP[side][0], y + STEP[side][1]) > r) expect(e).not.toBe('open');
           else expect(e).toBe('open');
+          // The gate in the north wall is made by hand, and is its own way through.
+          const here = roomOf(content, wildId(x, y));
+          if (!here) {
+            expect(Object.entries(f.grid).find(([, at]) => at[0] === x && at[1] === y)?.[0]).toBe('northgate');
+            continue;
+          }
           // A wall has no exit through it; a pass has one.
-          const here = roomOf(content, wildId(x, y))!;
           if (e === 'wall') expect(here.exits?.[side]).toBeUndefined();
           if (e === 'pass') expect(here.exits?.[side]).toBeDefined();
         }
@@ -116,7 +128,9 @@ describe('the marches', () => {
   it('has passes on every side of every march, each held by something that does not come back', () => {
     for (const r of rings.slice(0, 3)) {
       const passes = cells(r).filter(([x, y]) => isPass(content, x, y));
-      expect(passes.length).toBe(4 * f.marches!.passes);
+      // The north wall has no passes at all: only its gate.
+      expect(passes.length).toBe((r === f.northWall ? 3 : 4) * f.marches!.passes);
+      if (r === f.northWall) expect(passes.filter(([, y]) => y === -r)).toEqual([]);
       for (const [x, y] of passes) {
         expect(kindAt(content, x, y)).toBe('pass');
         const def = roomOf(content, wildId(x, y))!;
@@ -149,8 +163,24 @@ describe('the marches', () => {
     expect(foes(sim).filter((a) => !a.id.includes(':night'))).toEqual([]);
   });
 
-  it('leaves every place with a name inside the first march', () => {
-    for (const [name, [x, y]] of Object.entries(f.grid)) expect(ring(x, y), name).toBeLessThan(rings[0]);
+  it('keeps everything the first story needs inside the first march, and the rest where the second says it is', () => {
+    const north = ['northgate', 'oldroad', 'windend', 'hanging', 'hollow'];
+    for (const [name, [x, y]] of Object.entries(f.grid)) if (name !== 'dolmen' && !north.includes(name)) expect(ring(x, y), name).toBeLessThan(rings[0]);
+    // The Giant's Table is in the south, beyond the first wall and short of the second.
+    const [dx, dy] = f.grid.dolmen;
+    expect(dy).toBeGreaterThan(rings[0]);
+    expect(ring(dx, dy)).toBeLessThan(rings[1]);
+    // The gate stands in the north wall, which is the last; and the road beyond it runs straight north, one screen after another.
+    expect(f.northWall).toBe(rings[1]);
+    expect(f.grid.northgate).toEqual([0, -f.northWall!]);
+    north.forEach((id, i) => expect(f.grid[id], id).toEqual([0, -f.northWall! - i]));
+    north.slice(0, -1).forEach((id, i) => expect(roomOf(content, id)!.exits?.n, id).toBe(north[i + 1]));
+    // Nothing else lies north of that wall, and nothing but the gate leads through it.
+    for (let x = -14; x <= 14; x++) {
+      if (x) expect(edgeOf(content, x, -f.northWall!, 'n'), `${x}`).toBe('wall');
+      expect(roomOf(content, wildId(x, -f.northWall!))?.exits?.n, `${x}`).toBeUndefined();
+    }
+    for (const id of north.slice(1)) expect(Object.values(roomOf(content, id)!.exits ?? {}).every((to) => north.includes(to)), id).toBe(true);
   });
 });
 
@@ -168,9 +198,10 @@ describe('quiet country', () => {
   it('plays the quiet music where nothing lives', () => {
     let quiet = 0;
     for (const [x, y] of cells(4)) {
-      const def = roomOf(content, wildId(x, y))!;
+      // (The old watchtower stands in this ring, and is not generated.)
+      const def = roomOf(content, wildId(x, y));
       const k = kindAt(content, x, y);
-      if (k === 'shrine' || k === 'steading' || k === 'pass') continue;
+      if (!def || k === 'shrine' || k === 'steading' || k === 'pass') continue;
       if (lived(def.id)) expect(def.music).toBe(f.music);
       else (expect(def.music).toBe(f.quiet!.music), quiet++);
     }

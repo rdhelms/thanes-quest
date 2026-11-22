@@ -6,7 +6,7 @@ import { content } from '../src/game/content';
 import { Bot, game, type } from './helpers';
 
 /**
- * The valley: nine hand-made places with a screen of road between each and the next. The roads
+ * The valley: eight hand-made places with a screen of road between each and the next. The roads
  * are generated, and gentle; the country beyond them starts as hard as it always did.
  */
 const f = content.frontier!;
@@ -23,9 +23,11 @@ const hostile = (kind: string): boolean => content.enemies[kind]?.ai !== 'prey';
 const haunt = new Set((f.haunts ?? []).map((h) => h.kind));
 
 describe('the valley', () => {
-  it('is nine places, five screens by five, with a road between every two', () => {
-    expect(places.length).toBe(9);
-    expect(roads.length).toBe(16);
+  it('is eight places, five screens by five, with a road between every two', () => {
+    // The south-east corner has nothing in it but road: the old watchtower stands out beyond the valley's mouth.
+    expect(places.length).toBe(8);
+    expect(roads.length).toBe(17);
+    expect(f.grid.tower[1]).toBeGreaterThan(reach);
     // No place touches another: every way out of each is onto a road or the country beyond.
     for (const [id] of places)
       for (const to of Object.values(roomOf(content, id)!.exits ?? {})) expect(f.grid[to], `${id} -> ${to}`).toBeUndefined();
@@ -61,7 +63,7 @@ describe('the valley', () => {
       walked.push(bot.sim.state.room);
       bot.travel('village');
     }
-    expect(walked.length).toBe(8);
+    expect(walked.length).toBe(7);
     // Never from one place straight into the next: there was always a road between.
     expect(Object.keys(bot.sim.state.flags).filter((k) => k.startsWith('seen.wild_')).length).toBeGreaterThanOrEqual(8);
   }, 60000);
@@ -104,13 +106,21 @@ describe('the valley', () => {
       if (beside.length) {
         for (const [side, at] of beside) expect(def.look, id).toContain(`${WORD[side]} to ${f.valley!.called[at]}`);
       } else {
-        // A crossing: the four places round it, each named with the way it lies.
-        for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          const at = placeAt(x + dx, y + dy)!;
+        // A crossing: the places round it, each named with the way it lies.
+        const round = ([[-1, -1], [1, -1], [1, 1], [-1, 1]] as const).flatMap(([dx, dy]) => (placeAt(x + dx, y + dy) ? [[dx, dy, placeAt(x + dx, y + dy)!] as const] : []));
+        for (const [dx, dy, at] of round) {
           const way = `${dy < 0 ? 'north' : 'south'}-${dx < 0 ? 'west' : 'east'}`;
           expect(def.look.toLowerCase(), id).toMatch(new RegExp(`${f.valley!.called[at].toLowerCase()}( lies)? ${way}`));
         }
+        // The empty corner of the valley has no place off any corner of it: its path says where it leads on to.
+        if (!round.length) {
+          const on = (Object.keys(SIDES) as (keyof typeof SIDES)[]).flatMap((side) => (placeAt(x + 2 * SIDES[side][0], y + 2 * SIDES[side][1]) ? [[side, placeAt(x + 2 * SIDES[side][0], y + 2 * SIDES[side][1])!] as const] : []));
+          expect(on.length, id).toBeGreaterThan(0);
+          for (const [side, at] of on) expect(def.look, id).toContain(`${WORD[side]} to ${f.valley!.called[at]}`);
+        }
       }
+      // Whatever it says, it says something: never a sentence with nothing in it.
+      expect(def.look, id).not.toMatch(/\. \.|  /);
       // Looking at the path says the same.
       const sim = game(id, 160, 140);
       sim.rs.actors = [];

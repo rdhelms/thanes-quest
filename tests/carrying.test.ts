@@ -44,7 +44,7 @@ describe('weight', () => {
       expect(it.weight, it.id).toBeGreaterThanOrEqual(0);
       if (it.keep) expect(it.weight, it.id).toBe(0);
     }
-    for (const id of ['ember', 'crown', 'amulet', 'glove', 'grain', 'log', 'ewe', 'toyhorse']) expect(content.items[id].keep, id).toBeTruthy();
+    for (const id of ['ember', 'ring', 'bottle', 'flint', 'amulet', 'glove', 'grain', 'log', 'ewe', 'toyhorse']) expect(content.items[id].keep, id).toBeTruthy();
     const sim = game();
     sim.p.gold = 5000;
     expect(sim.load()).toBe(0);
@@ -68,9 +68,9 @@ describe('weight', () => {
   it('is told by WEIGH, of a thing or of the whole pack', () => {
     const sim = game();
     sim.give('pelt', 2);
-    sim.give('crown');
+    sim.give('ring');
     expect(type(sim, 'weigh pelts')[0]).toContain('6 in all');
-    expect(type(sim, 'weigh the crown')[0]).toContain('would not put it down');
+    expect(type(sim, 'weigh the ring')[0]).toContain('would not put it down');
     expect(type(sim, 'weigh my pack')[0]).toBe(`Your pack holds 6 of the ${sim.limit()} it will carry.`);
     expect(type(sim, 'how heavy is my bag')[0]).toContain('Your pack holds 6');
   });
@@ -153,7 +153,7 @@ describe('the limit', () => {
     fill(sim);
     sim.p.gold = 100;
     const said = type(sim, 'buy mail');
-    expect(said[0]).toContain('I do not sell mules');
+    expect(said[0]).toContain("I don't sell mules");
     expect(sim.p.gold).toBe(100);
     expect(sim.p.inv.mail).toBeUndefined();
     // A blade bought goes into the hand, so it always fits: the one it replaces is what goes in the pack.
@@ -162,7 +162,7 @@ describe('the limit', () => {
     const inn = by('inn', 'halla');
     fill(inn);
     inn.p.gold = 20;
-    expect(type(inn, 'buy potion')[0]).toContain('You will rattle');
+    expect(type(inn, 'buy potion')[0]).toContain("You'll rattle");
     expect(inn.p.gold).toBe(20);
   });
 
@@ -225,7 +225,7 @@ describe('putting things down', () => {
 
   it('never puts down what a story needs', () => {
     const sim = game();
-    for (const id of ['ember', 'crown', 'amulet', 'glove', 'grain', 'ewe', 'toyhorse', 'log']) {
+    for (const id of ['ember', 'ring', 'bottle', 'flint', 'amulet', 'glove', 'grain', 'ewe', 'toyhorse', 'log']) {
       sim.give(id);
       const noun = content.items[id].nouns[0];
       expect(type(sim, `drop ${noun}`)[0], id).toBeTruthy();
@@ -297,14 +297,14 @@ describe('the chest at the inn', () => {
     expect(type(back, 'take two pelts from the chest')[0]).toBe('Taken: 2 wolf pelts.');
     expect(type(back, 'take the sword')[0]).toBe('Taken: an iron sword.');
     expect(back.p.weapon).toBe('sword');
-    expect(type(back, 'take the crown from the chest')[0]).toBe(content.text.notStored);
+    expect(type(back, 'take the ring from the chest')[0]).toBe(content.text.notStored);
     expect(storedRows(back).map((r) => `${r.id}:${r.n}`)).toEqual(['hatchet:1', 'pelt:3']);
   });
 
   it('will not take what a story needs, and gives back only what will fit', () => {
     const sim = atChest();
-    sim.give('crown');
-    expect(type(sim, 'put crown in chest')[0]).toContain('not done with you');
+    sim.give('ring');
+    expect(type(sim, 'put the ring in the chest')[0]).toContain('does not come off');
     sim.give('pelt', 4);
     type(sim, 'put pelts in chest');
     fill(sim);
@@ -388,7 +388,7 @@ describe('what a story needs', () => {
   it('can always be taken, however full the pack', () => {
     const sim = game('tarn');
     fill(sim);
-    for (const id of ['ember', 'crown', 'amulet', 'glove', 'grain', 'ewe', 'toyhorse', 'log', 'trappack', 'frame']) {
+    for (const id of ['ember', 'ring', 'bottle', 'flint', 'amulet', 'glove', 'grain', 'ewe', 'toyhorse', 'log', 'trappack', 'frame']) {
       expect(sim.fits(id), id).toBe(true);
       sim.give(id);
       expect(sim.p.inv[id], id).toBe(1);
@@ -430,7 +430,8 @@ describe('a game saved before packs had limits', () => {
 
 describe('things to do with what is carried', () => {
   it('Fenn shelves the books that have been read, and asks for the others to be read first', () => {
-    const sim = by('hut', 'fenn');
+    // While the fires are out he is at the inn with everybody else, and his books with him.
+    const sim = by('inn', 'fenn');
     sim.give('tomeFlame');
     sim.give('tomeFrost');
     type(sim, 'read tome');
