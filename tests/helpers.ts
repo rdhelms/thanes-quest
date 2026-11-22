@@ -44,6 +44,8 @@ export class Bot {
   reloadEvery = 0;
   /** Ticks of dithering after each swing, to stand in for a player who is not quick. */
   sloth = 0;
+  /** Kinds of creature not to be fought: some things are to be told, not beaten. */
+  truce = new Set<string>();
   private dither = 0;
   constructor(readonly sim: Sim) {}
 
@@ -214,7 +216,7 @@ export class Bot {
 
   private foes(): ActorState[] {
     // Game that only runs away is not worth the chase.
-    return this.sim.rs.actors.filter((a) => a.kind === 'enemy' && a.act !== 'dead' && this.sim.content.enemies[a.ref]?.ai !== 'prey');
+    return this.sim.rs.actors.filter((a) => a.kind === 'enemy' && a.act !== 'dead' && this.sim.content.enemies[a.ref]?.ai !== 'prey' && !this.truce.has(a.ref));
   }
 
   /** Fight until nothing in the room is left standing. */

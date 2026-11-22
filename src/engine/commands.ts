@@ -767,6 +767,9 @@ export function command(sim: Sim, line: string, afoot = false): void {
   const words = Object.values(sim.content.words);
   const word = words.find((w) => w.verb === verb) ?? (SPEAKING.includes(verb) && nouns.length === 1 ? words.find((w) => w.verb === nouns[0]) : undefined);
   if (word) {
+    // What saying it here would mean can be weighed before it is said: a room may answer the
+    // thought of it ("say sol"), and then the word stays unspoken and costs nothing.
+    if (sim.p.words.includes(word.id) && fire(sim, sim.room.rules, 'say', [word.verb])) return;
     if (invoke(sim, word)) fire(sim, sim.room.rules, word.verb, []) || sim.note(`${word.verb.toUpperCase()}!`);
     return;
   }

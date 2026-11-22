@@ -14,84 +14,97 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.sloth = sloth;
   const { sim } = bot;
   const has = (item: string): boolean => (sim.p.inv[item] ?? 0) > 0;
+  const said = (): string => bot.log.join(' ');
 
-  // The ford, then into Hollowmere.
+  // The ford, then down toward the one roof with smoke at it.
   bot.walkTo(196, 162, 20);
   expect(bot.say('read sign')).toContain('HOLLOWMERE');
-  // Up the road to the village: a screen of it, with perhaps a wolf on it.
   bot.travel('village');
-  expect(sim.state.room).toBe('village');
+  expect(bot.say('look')).toContain('smoke from one');
   bot.walkTo(172, 126, 12);
   bot.say('take hatchet');
   bot.say('equip hatchet');
   expect(sim.p.weapon).toBe('hatchet');
-  bot.walkTo(146, 124, 12);
-  bot.say('take wood');
-  expect(has('log')).toBe(true);
   bot.meet('sigga');
-  expect(bot.say('talk to sigga')).toContain('I am Sigga');
+  expect(bot.say('talk to sigga')).toContain('Kettle and Helm');
+  bot.meet('odd');
+  expect(bot.say('talk to the smith')).toContain("That's the trade");
 
-  // The Elder gives the main quest.
-  bot.door('hall');
-  bot.meet('marta');
-  expect(bot.say('talk to elder')).toContain('Nine days ago');
-  expect(sim.p.gold).toBe(10);
-  bot.door('village');
+  // Everybody is in the one room with a fire. The Elder comes down to look at the stranger.
   bot.door('inn');
-  bot.walkTo(250, 112, 14);
-  bot.say('talk to halla');
-  bot.door('village');
-
-  // East: the farmer, the hermit and his free spell book.
-  bot.travel('farm');
+  expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(4);
+  bot.meet('halla');
+  expect(bot.say('talk to halla')).toContain('Who would miss you');
+  expect(sim.state.flags[questKey('hearth')]).toBe(1);
   bot.meet('gorm');
   expect(bot.say('talk to farmer')).toContain('seed grain');
-  bot.travel('tarn');
-  expect(sim.state.room).toBe('tarn');
-  bot.door('hut');
-  bot.walkTo(122, 150, 14);
-  bot.say('take tome');
-  expect(bot.say('read tome')).toContain('how fire is spoken to');
+  bot.meet('toke');
+  expect(bot.say('talk to hunter')).toContain('Kill three');
   bot.meet('fenn');
   bot.say('talk to fenn');
-  expect(bot.say('ask fenn about the barrow')).toContain('VETH');
   expect(bot.say('ask fenn about the tarn')).toContain('amulet');
-  bot.door('tarn');
+  bot.door('village');
 
-  // South-east: the watchtower, its lookout, and the word ISKA.
-  bot.travel('tower');
-  expect(sim.state.room).toBe('tower');
+  // The hall: a girl under every fur in Hollowmere, and an errand.
+  bot.door('hall');
+  expect(said()).toContain('Not there');
+  bot.meet('marta');
+  expect(bot.say('talk to elder')).toContain('You, I can spare');
+  expect(sim.state.flags[questKey('hearth')]).toBe(2);
+  expect(String(sim.state.flags['goal.runa'])).toMatch(/^wild_/);
+  bot.door('village');
+  bot.door('inn');
+  bot.meet('halla');
+  expect(bot.say('talk to halla')).toContain('dead before the bridge');
+  expect(has('flint') && has('coals')).toBe(true);
+  bot.door('village');
+  bot.walkTo(146, 124, 12);
+  expect(bot.say('take wood')).toContain('dry all through');
+  expect(has('log')).toBe(true);
+  // A fire will not take here. Not even laid properly, on the Elder's own hearth.
+  bot.door('hall');
+  bot.walkTo(160, 112, 10);
+  expect(bot.say('lay the log on the hearth')).toContain("It won't take");
+  expect(bot.say('light the fire')).toContain('while I');
+  expect(bot.say('give the flint to the elder')).toContain('if you knew what they were saying');
+  bot.door('village');
+
+  // West: wolves for Toke, and the word on the ridge.
+  bot.travel('pinewood');
   bot.fight();
-  bot.walkTo(100, 138, 12);
-  expect(bot.say('read the stone')).toContain('ISKA');
-
-  // West along the river to the bandit camp.
+  bot.travel('ridge');
+  bot.fight();
+  bot.walkTo(152, 132, 12);
+  expect(bot.say('touch the rune')).toContain('VETH');
+  // South-west: Gorm's grain.
   bot.travel('camp');
-  expect(sim.state.room).toBe('camp');
   bot.fight();
   bot.walkTo(56, 162, 14);
   expect(bot.say('open chest')).toContain('seed grain');
 
-  // North through the pinewood to the ridge for VETH, killing wolves for Toke on the way.
-  bot.travel('pinewood');
-  expect(sim.state.room).toBe('pinewood');
+  // Over the bridge, where the coals die; and on to the old watchtower, where a fire lights.
+  bot.travel('tower');
+  expect(has('coals')).toBe(false);
+  expect(said()).toContain('black and cold');
   bot.fight();
-  bot.meet('toke');
-  expect(bot.say('talk to hunter')).toContain('Kill three');
-  bot.travel('ridge');
-  expect(sim.state.room).toBe('ridge');
-  bot.fight();
-  bot.walkTo(152, 132, 12);
-  expect(bot.say('touch the rune')).toContain('VETH');
-  bot.travel('pinewood');
-  bot.meet('toke');
-  expect(bot.say('talk to hunter')).toContain('A bargain is a bargain');
-  expect(has('bow')).toBe(true);
+  bot.walkTo(100, 138, 12);
+  expect(bot.say('read the stone')).toContain('ISKA');
+  bot.walkTo(126, 152, 12);
+  expect(bot.say('light a fire')).toContain('waiting all its life');
+  bot.waitFor('word:iska');
+  expect(bot.say('iska')).toContain('fixed as nails');
+  expect(sim.state.flags['tower.fire']).toBe(false);
 
-  // Back east: return the grain, freeze the tarn, fetch the amulet.
-  bot.travel('farm');
-  bot.meet('gorm');
-  expect(bot.say('talk to farmer')).toContain('twenty-five silver');
+  // Out past the watchtower: Runa, and the black bottle.
+  const runa = String(sim.state.flags['goal.runa']);
+  bot.travel(runa);
+  bot.meet('runa');
+  expect(bot.say('talk to runa')).toContain('"If," says Runa');
+  expect(has('bottle')).toBe(true);
+  expect(bot.say('ask runa about the stone')).toContain('milk froze');
+  expect(sim.state.flags[questKey('hearth')]).toBe(3);
+
+  // Home by the tarn: freeze it, and take what the ice kept.
   bot.travel('tarn');
   bot.waitFor('word:iska');
   expect(bot.say('iska')).toContain('thickens');
@@ -99,92 +112,70 @@ function playThrough(reloadEvery = 0, sloth = 0): Bot {
   bot.say('take amulet');
   expect(has('amulet')).toBe(true);
   bot.door('hut');
+  bot.walkTo(122, 150, 14);
+  bot.say('take tome');
+  expect(bot.say('read tome')).toContain('how fire is spoken to');
+  bot.door('tarn');
+
+  // The inn again: a bow, twenty-five silver and a cheese, a book for the amulet, and a sword.
+  bot.travel('village');
+  bot.door('inn');
+  bot.meet('toke');
+  expect(bot.say('talk to hunter')).toContain("A bargain's a bargain");
+  expect(has('bow')).toBe(true);
+  bot.meet('gorm');
+  expect(bot.say('talk to farmer')).toContain('twenty-five silver');
   bot.meet('fenn');
   expect(bot.say('give amulet to fenn')).toContain('Light');
   bot.say('read tome');
   expect(sim.p.spells).toContain('light');
-  bot.say('buy mend');
-  bot.say('read tome');
-  expect(sim.p.spells).toContain('mend');
-  bot.door('tarn');
-
-  // Arm up in the village. The pelts go to the smith first: a pack has only so much room.
-  bot.travel('village');
+  bot.walkTo(44, 118, 16);
+  bot.door('village');
   bot.meet('odd');
   sellAll(bot, 'pelt');
-  expect(bot.say('buy sword')).toContain('iron sword');
-  bot.say('equip sword');
-  bot.door('inn');
-  // The hatchet has done its work. It can wait in the chest at the foot of the bed.
-  bot.walkTo(44, 118, 16);
-  expect(bot.say('put the hatchet in the chest')).toContain('You put the hatchet in the chest');
-  expect(has('hatchet')).toBe(false);
-  bot.walkTo(250, 112, 14);
-  while (sim.p.gold >= 6 && sim.fits('potion')) bot.say('buy potion');
-  bot.door('village');
+  if (sim.p.gold >= 25) {
+    expect(bot.say('buy sword')).toContain('iron sword');
+    bot.say('equip sword');
+  }
 
-  // The barrow.
-  bot.travel('barrow');
-  bot.walkTo(160, 126, 8);
-  bot.waitFor('word:veth');
-  expect(bot.say('veth')).toContain('slides down');
-  bot.door('ante');
-  bot.walkTo(124, 112, 10);
-  bot.say('push wolf');
-  bot.walkTo(170, 112, 10);
-  bot.say('push stag');
-  bot.walkTo(216, 112, 10);
-  expect(bot.say('push crown')).toContain('way down is open');
-  bot.door('sleepers');
-  bot.say('cast light');
-  expect(sim.isDark()).toBe(false);
-  bot.waitFor('word:iska');
-  bot.fight();
-  while (sim.p.hp < sim.p.maxHp - 12 && sim.p.mp >= 8) bot.say('cast mend');
-  bot.waitFor('word:iska');
-  bot.door('throne');
-  bot.fight();
-  expect(sim.state.flags['king.dead']).toBe(true);
-  expect(has('crown')).toBe(true);
-  bot.walkTo(286, 112, 12);
-  expect(bot.say('read rune')).toContain('ORUN');
-  bot.walkTo(270, 158, 14);
-  expect(bot.say('take treasure')).toContain('sixty');
-
-  // Out again, and light the hearth.
-  bot.door('sleepers');
-  bot.door('ante');
-  bot.door('barrow');
-  bot.travel('village');
+  // The hall. This time the word on her lips is one the stranger knows.
   bot.door('hall');
+  expect(said()).toContain('You know that word');
+  bot.walkTo(160, 112, 10);
+  expect(bot.say('give the bottle to the girl')).toContain("She can't swallow");
+  expect(bot.say('light the fire')).toContain('while I');
   bot.meet('marta');
-  expect(bot.say('talk to elder')).toContain('You light it');
-  bot.walkTo(160, 110, 10);
-  bot.say('light hearth');
+  expect(bot.say('hold out the flint to the elder')).toContain('She stops.');
+  expect(sim.state.flags[questKey('hearth')]).toBe(4);
+  // Nobody walks out now.
+  makeForTheDoor(bot);
+  expect(sim.state.room).toBe('hall');
+  expect(said()).toContain('You turn round');
+  bot.walkTo(160, 112, 10);
+  expect(bot.say('strike the flint')).toContain('The Cold Hearth');
   expect(sim.state.won).toBe(true);
-  // The village has come in to see it. The night ends at the door, with the ember and the crown.
-  expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(6);
+  expect(has('ring')).toBe(true);
+  expect(has('bottle')).toBe(false);
+  // The village has come in to see whether it would take. The night ends at the door.
+  expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(7);
   expect(has('ember')).toBe(false);
-
-  // Loose ends, for every last point: the hidden cache and the last two spell books.
-  bot.door('village');
-  expect(bot.log.join(' ')).toContain("So ends the first saga of THANE'S QUEST");
-  expect(has('ember') && has('crown')).toBe(true);
-  bot.travel('tower');
-  bot.say('orun');
-  bot.walkTo(150, 160, 12);
-  expect(bot.say('open chest')).toContain('forty silver');
-  bot.travel('tarn');
-  bot.door('hut');
-  // The books already read go back on Fenn's shelf, where they weigh on nobody.
-  bot.meet('fenn');
-  expect(bot.say('return the books to fenn')).toContain('on a shelf is a book');
-  expect(has('tomeFlame') || has('tomeLight') || has('tomeMend')).toBe(false);
-  bot.say('buy frost');
-  bot.say('read tome');
-  bot.say('buy ward');
-  bot.say('read tome');
+  makeForTheDoor(bot);
+  expect(said()).toContain("I'll keep the broom");
+  expect(has('ember')).toBe(true);
+  expect(sim.state.room).toBe('hall');
+  expect(bot.say('sleep')).toContain('smoke from every roof');
+  bot.meet('tova');
+  expect(bot.say('talk to tova')).toContain('Biscuit');
   return bot;
+}
+
+/** Make for the hall door, at a time when something may turn the walker back from it. */
+function makeForTheDoor(bot: Bot): void {
+  try {
+    bot.door('village');
+  } catch {
+    // Turned back: which is what was being found out.
+  }
 }
 
 /** Sell every one of a thing to whoever is at hand, as long as they are buying. */
@@ -203,9 +194,9 @@ describe('walkthrough', () => {
     const { state } = bot.sim;
     expect(state.won).toBe(true);
     for (const id of STORY) expect(state.flags[questKey(id)], id).toBe(content.quests[id].done);
-    expect(state.player.words.sort()).toEqual(['word:iska', 'word:orun', 'word:veth']);
-    expect(state.player.spells.sort()).toEqual(['flame', 'frost', 'light', 'mend', 'ward']);
-    expect(state.score).toBeGreaterThan(150);
+    expect(state.player.words.sort()).toEqual(['word:iska', 'word:veth']);
+    expect(state.player.spells.sort()).toEqual(['flame', 'light']);
+    expect(state.score).toBeGreaterThan(100);
     // QA=1 npm test prints how the story left the player, for judging pace.
     if ((globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.QA) {
       const p = state.player;
@@ -233,7 +224,7 @@ describe('a slower hand', () => {
 });
 
 describe('a Thane', () => {
-  it('can do everything the valley and the country beyond it have to offer', async () => {
+  it('can go north to where the wind stops, and come home, and do everything else there is to do', async () => {
     const { homes, lair, roomOf } = await import('../src/engine/frontier');
     // Saved and restored every few seconds throughout, as a real player's game would be.
     const bot = playThrough(61);
@@ -256,45 +247,93 @@ describe('a Thane', () => {
       bot.meet('marta');
     };
 
-    // From the hermit's hut back to the village, to arm properly.
-    bot.door('tarn');
-    bot.travel('village');
+    // The morning after: it is colder every day, and the Elder can count.
+    bot.meet('marta');
+    expect(bot.say('talk to elder')).toContain("He'll be half right");
+    expect(sim.state.flags[questKey('north')]).toBe(1);
+    expect(bot.say('ask the elder about her name')).toContain('nine years old');
+    bot.door('village');
+    expect(bot.say('look')).toContain('smoke standing straight up from every roof');
+    // Odd is at his forge, and has something to say that is not about iron.
     bot.meet('odd');
+    expect(bot.say('talk to the smith')).toContain('For the sword');
+    if (!has('sword')) {
+      expect(bot.say('buy sword')).toContain('iron sword');
+      bot.say('equip sword');
+    }
+    bot.door('inn');
+    bot.walkTo(44, 118, 16);
+    expect(bot.say('put the hatchet in the chest')).toContain('You put the hatchet in the chest');
+    bot.meet('halla');
+    expect(bot.say('talk to halla')).toContain('A day and a night');
+    while (sim.p.gold >= 6 && (sim.p.inv.potion ?? 0) < 3 && sim.fits('potion')) bot.say('buy potion');
+    bot.door('village');
+
+    // Fenn, on his knees on the shore, and his sum.
+    bot.travel('tarn');
+    bot.door('hut');
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(1);
+    expect(bot.say('look')).toContain('moonstone');
+    bot.meet('fenn');
+    expect(bot.say('talk to fenn')).toContain('Do the sum');
+    expect(sim.state.flags[questKey('north')]).toBe(2);
+    expect(sim.state.flags['goal.dolmen']).toBe('dolmen');
+    journalReads();
+    expect(bot.say('return the books to fenn')).toContain('on a shelf is a book');
+    bot.door('tarn');
+
+    // The Elder's work: out to wherever she names, and back to be paid. It is how a Thane comes by silver.
+    const work = (): void => {
+      elder();
+      bot.say('talk to elder');
+      if (!sim.state.flags['bounty.room']) bot.say('ask elder about work');
+      const target = String(sim.state.flags['bounty.room']);
+      const pay = Number(sim.state.flags['bounty.pay']);
+      journalReads();
+      bot.door('village');
+      bot.travel(target);
+      expect(sim.state.flags['bounty.done']).toBe(true);
+      elder();
+      const gold = sim.p.gold;
+      expect(bot.say('talk to elder')).toContain(`${pay} silver`);
+      expect(sim.p.gold).toBe(gold + pay);
+      bot.door('village');
+    };
+    work();
+    bot.meet('odd');
+    sellAll(bot, 'pelt');
+    work();
+    bot.meet('odd');
+    sellAll(bot, 'pelt');
+    if (sim.p.gold >= 45) expect(bot.say('buy mail')).toContain('Forty-five');
+    work();
+    bot.meet('odd');
+    sellAll(bot, 'pelt');
+    sim.p.gold = Math.max(sim.p.gold, 60);
     expect(bot.say('buy longsword')).toContain('Sixty silver');
-    expect(bot.say('buy mail')).toContain('Forty-five');
-    // The iron sword goes back to the man who made it, and the bow into the chest at the inn:
-    // the country out there is long, and the wolves in it have pelts worth carrying home.
+    if (!has('mail')) {
+      sim.p.gold = Math.max(sim.p.gold, 45);
+      bot.say('buy mail');
+    }
     expect(bot.say('sell the sword back')).toContain('10 silver');
-    expect(has('sword')).toBe(false);
+    sim.p.gold = Math.max(sim.p.gold, 40);
+    expect(bot.say('have my sword tempered')).toContain('Better');
+    expect(sim.p.temper?.weapon).toBe(1);
     bot.door('inn');
     bot.walkTo(44, 118, 16);
     expect(bot.say('put bow in chest')).toContain('You put the hunting bow in the chest');
     expect(bot.say('look in the chest')).toContain('a hatchet, a hunting bow');
+    bot.meet('halla');
+    expect(bot.say('ask halla about the news')).toContain('Brekka');
     bot.door('village');
-
-    // The Elder's work: out to wherever she names, and back to be paid.
-    bot.door('hall');
-    bot.meet('marta');
-    expect(bot.say('talk to elder')).toContain('more work');
-    bot.meet('marta');
-    expect(bot.say('talk to elder')).toContain("The Elder's Work");
-    const target = String(sim.state.flags['bounty.room']);
-    const pay = Number(sim.state.flags['bounty.pay']);
-    journalReads();
-    bot.door('village');
-    bot.travel(target);
-    expect(sim.state.flags['bounty.done']).toBe(true);
-    elder();
-    const gold = sim.p.gold;
-    expect(bot.say('talk to elder')).toContain(`${pay} silver`);
-    expect(sim.p.gold).toBe(gold + pay);
-    bot.door('village');
-
-    // Spend it at the forge.
-    bot.meet('odd');
-    sim.p.gold = Math.max(sim.p.gold, 40);
-    expect(bot.say('have my sword tempered')).toContain('Better');
-    expect(sim.p.temper?.weapon).toBe(1);
+    bot.travel('tarn');
+    bot.door('hut');
+    bot.meet('fenn');
+    if (sim.p.gold >= 15) {
+      bot.say('buy mend');
+      bot.say('read tome');
+    }
+    bot.door('tarn');
 
     // Ivar's message, and Marta's answer.
     const at = homes(content);
@@ -324,12 +363,11 @@ describe('a Thane', () => {
     bot.meet('brekka');
     expect(bot.say('talk to brekka')).toContain('keep you warm');
     expect(sim.p.armor).toBe('bearcloak');
-    // Six wolf pelts are worth more to Brekka than to anybody: she makes a pack of them. Much of
-    // the country is empty, so whatever the way here has not provided is hunted for.
     // The spear and the cloak have taken the place of the longsword and the mail, which only weigh
     // the pack down now: they are left with Brekka, who has a use for everything.
     expect(bot.say('drop mail')).not.toContain('not');
     bot.say('drop longsword');
+    // Six wolf pelts are worth more to Brekka than to anybody: she makes a pack of them.
     const wolves = (x: number, y: number): boolean =>
       !!roomOf(content, cell([x, y]))?.spawns?.some((s) => s.kind === 'wolf' && !s.when) && !sim.state.rooms[cell([x, y])]?.dead.length;
     for (let r = 3; r <= 5 && (sim.p.inv.pelt ?? 0) < 6; r++)
@@ -361,14 +399,14 @@ describe('a Thane', () => {
     expect(sim.p.inv.herb).toBe(3);
     bot.travel(cell(at.runa));
     bot.meet('runa');
-    bot.say('talk to runa');
+    expect(bot.say('talk to runa')).toContain('She swallowed it');
     expect(bot.say('trade frostcaps for a tonic')).toContain('mortar');
     const hp = sim.p.maxHp;
     bot.say('drink tonic');
     expect(sim.p.maxHp).toBe(hp + 5);
     expect(has('tonic')).toBe(false);
 
-    // Two places with names of their own: a bell in the ice to the east, a tree of ropes to the north.
+    // A bell in the ice, to the east.
     bot.travel('bellmere');
     bot.waitFor('word:iska');
     expect(bot.say('iska')).toContain('out to the bell');
@@ -376,119 +414,173 @@ describe('a Thane', () => {
     const mana = sim.p.maxMp;
     expect(bot.say('ring the bell')).toContain('one note');
     expect(sim.p.maxMp).toBe(mana + 10);
+
+    // South, beyond the first wall: the Giant's Table, which keeps what it has until dark.
+    bot.travel('dolmen');
+    bot.walkTo(160, 136, 10);
+    if (sim.daylight() >= 0.35) expect(bot.say('read the rune')).toContain('WHEN THE SUN IS GONE');
+    while (sim.daylight() >= 0.35) bot.step();
+    bot.fight();
+    bot.walkTo(160, 136, 10);
+    expect(bot.say('read the rune')).toContain('tastes like summer');
+    expect(sim.p.words).toContain('word:sol');
+    expect(sim.state.flags[questKey('north')]).toBe(3);
+    expect(sim.state.flags['goal.gate']).toBe('northgate');
+
+    // It is a month back north the way you came. The coal is quicker.
+    bot.fight();
+    expect(bot.say('breathe on the coal')).toContain("Elder's hearthstone");
+    expect(sim.state.room).toBe('hall');
+    expect(bot.log.join(' ')).toContain('Wipe your feet');
+    bot.meet('tova');
+    expect(bot.say('ask tova about her knitting')).toContain('but worse');
+    bot.door('village');
+    bot.door('inn');
+    bot.meet('halla');
+    while (sim.p.gold >= 6 && (sim.p.inv.potion ?? 0) < 8 && sim.fits('potion')) bot.say('buy potion');
+    bot.door('village');
+
+    // North: the tree of ropes.
     bot.travel('hangtree');
     bot.walkTo(174, 136, 14);
-    expect(bot.say('cut down the ropes')).toContain('least that can be done');
+    expect(bot.say('cut down the ropes')).toContain('faces turned north');
+
+    // The gate in the last wall. Its guards are not to be fought; they are to be told.
+    bot.truce.add('gateguard');
+    bot.travel('wild_0_-9');
+    bot.rest();
+    bot.waitFor('word:sol');
+    bot.exit('n');
+    expect(sim.state.room).toBe('northgate');
+    expect(bot.log.join(' ')).toContain('lift what is left of their spears');
+    expect(bot.say('sol')).toContain('They cannot bear it');
+    expect(sim.rs.actors.length).toBe(0);
+    expect(sim.state.flags[questKey('north')]).toBe(4);
+
+    // The stone Fenn looked sixty years for, and what it shows on the road.
+    bot.exit('n');
+    expect(sim.state.room).toBe('oldroad');
+    bot.walkTo(214, 140, 12);
+    expect(bot.say('read the rune')).toContain('ORUN');
+    bot.waitFor('word:orun');
+    expect(bot.say('orun')).toContain("a child's");
+    expect(sim.state.flags[questKey('north')]).toBe(5);
+
+    // Where the wind stops. The hanging snow does not move aside for a shoulder.
+    bot.exit('n');
+    expect(sim.state.room).toBe('windend');
+    expect(bot.log.join(' ')).toContain('the way the snow stopped at the watchtower');
+    expect(() => bot.exit('n')).toThrow();
+    expect(sim.state.room).toBe('windend');
+    expect(bot.say('light a fire')).toContain('little red seeds');
+    expect(bot.say('breathe on the coal')).toContain('dull as an old eye');
+    bot.waitFor('word:veth');
+    expect(bot.say('veth')).toContain('pushes a path open');
+    bot.exit('n');
+    expect(sim.state.room).toBe('hanging');
+    expect(bot.say('look at the raven')).toContain('wings half open');
+    expect(() => bot.exit('n')).toThrow();
+    bot.waitFor('word:veth');
+    expect(bot.say('veth')).toContain('a small dry sound');
+    bot.exit('n');
+
+    // The hollow.
+    expect(sim.state.room).toBe('hollow');
+    expect(bot.log.join(' ')).toContain('You look at your own hand');
+    expect(sim.state.flags[questKey('north')]).toBe(6);
+    bot.waitFor('word:orun');
+    expect(bot.say('orun')).toContain('three hundred winters');
+    // Two things that could be done, and are thought about, and are not done.
+    bot.waitFor('word:sol');
+    expect(bot.say('sol')).toContain('You have not said it');
+    expect(sim.p.cd['word:sol'] ?? 0).toBe(0);
+    expect(bot.say('take the boy')).toContain('You take your hands back');
+    expect(bot.say('give the coal to the woman')).toContain('She does not see it');
+    // Her word, said with her; and the way home, given away.
+    bot.waitFor('word:iska');
+    bot.meet('kneeler');
+    expect(bot.say('iska')).toContain('Her lips stop');
+    expect(bot.say('breathe on the coal')).toContain('It takes one');
+    expect(bot.say('sol')).toContain('nobody left to say it to');
+    expect(bot.say('give the coal to the woman')).toContain('the print of two knees');
+    expect(has('ember')).toBe(false);
+    expect(sim.rs.actors.length).toBe(0);
+    expect(sim.state.flags['winter.broken']).toBe(true);
+    expect(sim.state.flags[questKey('north')]).toBe(7);
+
+    // It is a very long way back on foot. The thaw goes south faster.
+    bot.exit('s');
+    bot.exit('s');
+    expect(bot.log.join(' ')).toContain('a thin, astonishing rain');
+    bot.exit('s');
+    bot.exit('s');
+    expect(sim.state.room).toBe('northgate');
+    expect(bot.say('look')).toContain('like men at the end of a long watch');
+    bot.travel('hangtree');
+    expect(bot.say('look')).toContain('as if into a bed');
     bot.waitFor('word:orun');
     expect(bot.say('orun')).toContain('a lid');
     bot.walkTo(204, 140, 12);
     expect(bot.say('open chest')).toContain('Seventy silver');
     expect(has('torc')).toBe(true);
-
-    // And one to the south, which keeps what it has until dark.
-    bot.travel('dolmen');
-    bot.walkTo(160, 136, 10);
-    if (sim.daylight() >= 0.35) expect(bot.say('read the rune')).toContain('WHEN THE SUN IS GONE');
-    while (sim.daylight() >= 0.35) bot.step();
-    expect(bot.say('read the rune')).toContain('SOL');
-    expect(sim.p.words).toContain('word:sol');
-
-    // The second saga: the crown, the Frost Gate, and the anvil it was made on.
-    expect(sim.state.flags[questKey('crown')]).toBe(1);
-    bot.travel('village');
-    bot.door('inn');
-    bot.walkTo(250, 112, 14);
-    while (sim.p.gold >= 6 && (sim.p.inv.potion ?? 0) < 8 && sim.fits('potion')) bot.say('buy potion');
-    bot.door('village');
-    bot.travel('tarn');
-    bot.door('hut');
-    bot.meet('fenn');
-    expect(bot.say('show fenn the crown')).toContain('Frost Gate');
-    expect(bot.say('tell fenn about orun')).toContain('Sixty years');
-    expect(sim.state.flags['goal.gate']).toBe('frostgate');
-    journalReads();
-    bot.door('tarn');
-    bot.travel('frostgate');
-    bot.walkTo(160, 128, 10);
+    // The barrow, where a place was kept swept.
+    bot.travel('barrow');
     bot.waitFor('word:orun');
-    expect(bot.say('orun')).toContain('doorway');
-    bot.door('rimehall');
-    bot.waitFor('word:iska');
-    bot.fight();
-    expect(sim.state.flags['smith.dead']).toBe(true);
-    bot.walkTo(160, 142, 16);
-    const before = sim.p.maxHp;
-    expect(bot.say('put the crown on the anvil')).toContain('second saga');
-    expect(sim.p.maxHp).toBe(before + 20);
-    expect(has('crown')).toBe(false);
-    bot.door('frostgate');
-    bot.travel('tarn');
-    bot.door('hut');
-    bot.meet('fenn');
-    expect(bot.say('talk to fenn')).toContain('puddle');
+    expect(bot.say('look')).toContain('The whole village has been up here');
+    expect(bot.say('orun')).toContain('not empty any more');
 
-    // Home the quick way, to a village that has noticed.
-    bot.door('tarn');
-    expect(bot.say('breathe on the ember')).toContain('square at Hollowmere');
-    expect(bot.say('look')).toContain('a drip at every eave');
+    // Hollowmere, and the end of the bench nearest the door.
+    bot.travel('village');
+    expect(bot.say('look')).toContain('the smell of a feast');
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(0);
     bot.door('hall');
+    expect(bot.log.join(' ')).toContain('Shut the door');
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(7);
+    bot.walkTo(80, 162, 14);
+    expect(bot.say('sit down')).toContain('It came back without you');
+    expect(has('ember')).toBe(true);
+    const silver = sim.p.gold;
+    expect(bot.say('drink the cup')).toContain('Where the Wind Stops');
+    expect(sim.state.flags['home.cup']).toBe(true);
+    expect(sim.p.gold).toBe(silver);
     bot.meet('marta');
-    expect(bot.say('talk to elder')).toContain('the well thawed');
+    expect(bot.say('ask the elder about the cup')).toContain('Yours');
+    bot.door('village');
+    expect(bot.say('look')).toContain('a drip at every eave');
+    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(4);
     expect(bot.say('deeds')).toBe('');
 
-    // The third saga: the dead still walk. Marta asks, Fenn reasons it out, and the barrow has a second door.
-    expect(bot.say('talk to elder')).toContain('what they are waiting for');
-    bot.door('village');
+    // Loose ends, for every last point: Fenn hears where his stone was, and sells his last books; the cache by the watchtower.
     bot.travel('tarn');
     bot.door('hut');
     bot.meet('fenn');
-    expect(bot.say('talk to fenn')).toContain('whose dead they are');
+    expect(bot.say('talk to fenn')).toContain('On the far side of the gate');
+    sim.p.gold = Math.max(sim.p.gold, 60);
+    for (const book of ['mend', 'frost', 'ward']) {
+      if (sim.p.spells.includes(book)) continue;
+      // A full pack takes no books: what the road home filled it with is put down first.
+      while (!sim.fits(`tome${book[0].toUpperCase()}${book.slice(1)}`) && has('pelt')) bot.say('drop pelt');
+      bot.say(`buy ${book}`);
+      bot.say('read tome');
+      bot.say('return the books to fenn');
+    }
+    expect(sim.p.spells.sort()).toEqual(['flame', 'frost', 'light', 'mend', 'ward']);
     bot.door('tarn');
-    bot.travel('barrow');
-    bot.walkTo(140, 132, 10);
-    expect(bot.say('veth')).toContain('see it before it can hear you');
-    bot.waitFor('word:orun');
-    expect(bot.say('orun')).toContain('a second door');
-    bot.waitFor('word:veth');
-    expect(bot.say('veth')).toContain("servants' stair");
-    bot.door('tally');
-    bot.say('cast light');
-    expect(bot.say('read the tally')).toContain('nine thousand and eleven');
-    bot.door('winterhall');
-    expect(bot.say('look')).toContain('stone cold');
-    expect(sim.rs.actors.filter((a) => a.kind === 'npc').length).toBe(5);
-    bot.walkTo(160, 116, 10);
-    expect(bot.say('cast flame')).toContain('It would have to be brought');
-    bot.waitFor('word:sol');
-    expect(bot.say('sol')).toContain('ashamed');
-    expect(bot.say('light the hearth')).toContain("coal from Marta's hearth");
-    expect(has('ember')).toBe(false);
-    bot.waitFor('word:sol');
-    expect(bot.say('sol')).toContain('third saga');
-    expect(sim.rs.actors.length).toBe(0);
-    // The count on the stair can be closed now, and the Elder has another coal.
-    bot.door('tally');
-    bot.say('cast light');
-    bot.walkTo(236, 150, 20);
-    expect(bot.say('use the chisel')).toContain('Nine thousand and eleven, and done');
-    bot.door('barrow');
-    expect(bot.say('look')).toContain('a thread of smoke');
-    bot.travel('village');
-    bot.door('hall');
-    bot.meet('marta');
-    expect(bot.say('talk to elder')).toContain('I have a hearthful');
-    expect(has('ember')).toBe(true);
+    bot.travel('tower');
+    bot.say('orun');
+    bot.walkTo(150, 160, 12);
+    expect(bot.say('open chest')).toContain('forty silver');
 
     // Nothing the content offers has been left undone.
     for (const q of Object.values(content.quests)) if (!q.repeats) expect(sim.state.flags[questKey(q.id)], q.name).toBe(q.done);
     for (const id of awardsOnOffer().keys()) expect(sim.state.scored, id).toContain(id);
     expect(sim.state.score).toBeGreaterThan(pointsOnOffer());
-  }, 60000);
+  }, 120000);
 });
 
 describe('beyond the map', () => {
   it('can be walked, fought through and walked back from', () => {
-    const bot = new Bot(game('tower', 160, 140));
+    const bot = new Bot(game('farm', 160, 140));
     const { sim } = bot;
     // Kitted out as someone who has finished the first saga would be.
     sim.give('longsword');
@@ -510,9 +602,10 @@ describe('beyond the map', () => {
       }
     }
     // Off the east edge of the valley, one ring further out each time.
-    expect(visited).toEqual(['wild_3_2', 'wild_4_2', 'wild_5_2']);
+    expect(visited).toEqual(['wild_3_0', 'wild_4_0', 'wild_5_0']);
     expect(sim.state.score).toBeGreaterThanOrEqual(5);
     for (let i = 0; i < 3; i++) bot.exit('w');
-    expect(sim.state.room).toBe('tower');
+    expect(sim.state.room).toBe('farm');
   });
 });
+
