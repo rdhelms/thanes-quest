@@ -92,6 +92,10 @@ export type Cond =
   | { night: boolean }
   /** True when nothing hostile is left alive in the room (or, with false, when something is). */
   | { quiet: boolean }
+  /** True while the player is in one of these rooms. */
+  | { at: string[] }
+  /** True out beyond the valley (or, with false, inside it, indoors included). */
+  | { afield: boolean }
   | { not: Cond }
   | { any: Cond[] };
 
@@ -240,6 +244,8 @@ export interface RoomDef {
   mark?: string;
   /** Nothing hunting the player follows them in here. */
   haven?: boolean;
+  /** Snow hangs in the air here instead of falling, this many flakes of it, until the weather breaks (Content.calm). */
+  hung?: number;
   /**
    * Sides that are held: nobody leaves this way while anything hostile that belongs to the room
    * is still standing in it. Each is what is said to someone who tries.
@@ -438,6 +444,8 @@ export interface FrontierDef {
   under: string;
   /** How common each kind of country is, as weights. */
   odds: Record<string, number>;
+  /** Cells whose kind of country is settled by hand, not by the dice: "x,y" to a kind (a steading somebody is to live at, say). */
+  kinds?: Record<string, string>;
   /**
    * The valley: the middle of the map, where the hand-made places stand with a screen of road
    * between each and the next. Cells this close that are not hand-made are "valley" country:
@@ -459,6 +467,16 @@ export interface FrontierDef {
   life: Record<string, string[][]>;
   /** Characters who live at lone steadings: one each, at the steadings nearest home, in this order. */
   folk: string[];
+  /**
+   * Folk who live out past a hand-made place instead: each at the steading nearest that place
+   * that lies further from home than it does. By character, the place's id.
+   */
+  folkPast?: Record<string, string>;
+  /**
+   * A march whose north side runs on east and west without end, and has no passes: nothing north
+   * of that ring is reached except through a hand-made place that leads there.
+   */
+  northWall?: number;
   /**
    * Creatures with a lair of their own: each is found in the country of the given kind nearest to
    * where one of the folk lives, while its conditions hold.
@@ -517,6 +535,10 @@ export interface FrontierDef {
     followed?: string;
     /** Said when the player gets into a haven with something still close behind. */
     shaken?: string;
+    /** Where the dead walked, once they walk no longer (Content.rest): what is seen there, and how it looks. */
+    deadRestSeen?: string;
+    deadRest?: string;
+    deadRestNouns?: string[];
     /** The vaults under ruined towers. */
     crypt: BiomeText;
     /** The roads between the places of the valley. */
@@ -622,6 +644,8 @@ export interface Content {
   cues: { title: string; battle: string; fallback: string; night?: string; boss?: string };
   /** When these hold the air is still: snow no longer drives sideways out in the wild, and little falls in the hand-made rooms. */
   calm?: Cond[];
+  /** When these hold the dead walk no longer: nothing undead is met anywhere, by day or by night. */
+  rest?: Cond[];
   /** What THINK says when no task is open: the first whose conditions hold. */
   hints?: { if?: Cond[]; text: string }[];
   /** Things worth having done, listed (once done) by the DEEDS command. {flag.name} is filled in. */
@@ -795,3 +819,4 @@ export type SimEvent =
    * door (`door`, its place in the room's list) to go through it, or to an edge to walk off it.
    */
   | { t: 'walk'; x: number; y: number; door?: number; side?: 'n' | 's' | 'e' | 'w' };
+

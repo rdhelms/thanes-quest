@@ -18,6 +18,12 @@ function sky(sc: Scene, hz: number): void {
   }
 }
 
+/** A sky with no weather in it at all: white, and even, from top to bottom. */
+function whiteout(sc: Scene, hz: number): void {
+  for (let y = 0; y < hz + 8; y++)
+    for (let x = 0; x < PW; x++) sc.put(x, y, R.snow, 0.5 + 0.34 * clamp(y / hz) + (fbm(x * 0.02 + 3.1, y * 0.05, 23, 2) - 0.5) * 0.08);
+}
+
 function mountains(sc: Scene, o: { base: number; height: number; seed: number; far: boolean }): void {
   const ridge = (x: number): number => {
     const a = 1 - Math.abs(2 * vnoise(x * 0.011, 0.5, o.seed) - 1);
@@ -236,6 +242,7 @@ const hz = (def: SceneDef): number => def.horizon ?? 70;
 /** Layer painters by type name. A room's data picks from these. */
 export const LAYERS: Record<string, (sc: Scene, l: LayerDef, def: SceneDef) => void> = {
   sky: (sc, l, def) => sky(sc, num(l, 'horizon', hz(def))),
+  whiteout: (sc, l, def) => whiteout(sc, num(l, 'horizon', hz(def))),
   mountains: (sc, l, def) =>
     mountains(sc, { base: num(l, 'base', hz(def) + 3), height: num(l, 'height', 50), seed: num(l, 'seed', 1), far: l.far === true }),
   treeline: (sc, l, def) =>
@@ -249,3 +256,4 @@ export const LAYERS: Record<string, (sc: Scene, l: LayerDef, def: SceneDef) => v
   river: (sc, l) => river(sc, num(l, 'y', 120), num(l, 'w', 12), num(l, 'seed', 1)),
   interior: (sc, l) => interior(sc, num(l, 'floor', 96), typeof l.wall === 'string' ? l.wall : 'log'),
 };
+

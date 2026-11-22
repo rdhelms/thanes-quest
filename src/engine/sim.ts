@@ -4,7 +4,7 @@
 import { buildScene } from './build';
 import { hasPerk, hostile, playerAttack, swingHit, updateCombat } from './combat';
 import { command } from './commands';
-import { parseWild, roomOf } from './frontier';
+import { cellOf, depthOf, parseWild, roomOf } from './frontier';
 import { Parser } from './parser';
 import { all, questKey, run } from './rules';
 import { PH, PW, type Scene } from './scene';
@@ -414,7 +414,7 @@ export class Sim {
 
   spawn(kind: string, x: number, y: number, level = 0): void {
     const def = this.content.enemies[kind];
-    if (!def) return;
+    if (!def || (def.undead && this.atRest())) return;
     // Never inside anything: a creature called up into a pile of treasure would stand there for ever.
     [x, y] = nearestGround(this.scene(), x, y, 12);
     const a = this.makeActor(`dyn:${this.state.tick}:${this.rs.actors.length}`, 'enemy', kind, x, y, 'down', Math.round(def.hp * (1 + 0.25 * level)));
@@ -544,7 +544,7 @@ export class Sim {
         rs.dead = rs.dead.filter((d) => d !== s.id);
         delete rs.deadAt![s.id];
       }
-      if (!e || rs.dead.includes(s.id) || !all(this, s.if)) continue;
+      if (!e || rs.dead.includes(s.id) || !all(this, s.if) || (e.undead && this.atRest())) continue;
       // Some things keep to the dark.
       if ((s.when === 'night' && this.daylight() > 0.35) || (s.when === 'day' && this.daylight() < 0.5)) continue;
       const [sx, sy] = nearestGround(sc, s.x, s.y, 12);
@@ -568,7 +568,19 @@ export class Sim {
     // A place that was only pointed out (marked under its own name) is no longer a mark once found.
     if (this.state.flags[`goal.${id}`] === id) this.state.flags[`goal.${id}`] = false;
     if (this.isDark()) this.say(this.text('dark'));
-    for (const r of def.rules ?? []) if (r.enter && all(this, r.if)) run(this, r.do);
+    // The room's own rules for arriving, then the game's.
+    for (const r of [...(def.rules ?? []), ...this.content.rules]) if (r.enter && this.state.room === id && all(this, r.if)) run(this, r.do);
+  }
+
+  /** Is the player out beyond the valley? Indoors counts as wherever the door leads out. */
+  afield(): boolean {
+    const at = cellOf(this.content, this.state.room);
+    return !!at && depthOf(this.content, at[0], at[1]) > 0;
+  }
+
+  /** Have the dead stopped walking? */
+  atRest(): boolean {
+    return !!this.content.rest && all(this, this.content.rest);
   }
 
   private footBlocked(sc: Scene, x: number, y: number): boolean {
@@ -878,3 +890,4 @@ export class Sim {
     } else if (d.locked) this.say(d.locked);
   }
 }
+

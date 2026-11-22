@@ -36,6 +36,40 @@
       body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
       canvas { image-rendering: pixelated; display: block; touch-action: none; }
 
+      /* With a keyboard and a mouse: what can be done here, as numbered buttons under the picture
+         (or beside it, in a window too short for both), with the bag and the menu at the end. The
+         script gives it a fixed size, so nothing shifts as the buttons come and go. */
+      #bar {
+        display: flex; flex: none; gap: 6px; align-items: flex-start; box-sizing: border-box;
+        font: 13px/1 system-ui, sans-serif; -webkit-user-select: none; user-select: none;
+      }
+      .touch #bar { display: none; }
+      #offers {
+        display: flex; flex: 1 1 0; flex-wrap: wrap; align-content: flex-start; gap: 6px; min-width: 0; min-height: 0; max-height: 100%;
+        overflow-y: auto; scrollbar-width: none; scroll-snap-type: y proximity;
+      }
+      #offers::-webkit-scrollbar { display: none; }
+      #offers button { scroll-snap-align: start; }
+      #keys { display: flex; flex: none; gap: 6px; }
+      #bar button {
+        flex: none; box-sizing: border-box; height: 28px; max-width: 100%; padding: 0 10px; font: inherit; color: #e8e8e8; background: #23262e;
+        border: 1px solid #474d5d; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+      }
+      #bar button:hover { background: #2e3442; border-color: #6c8ad0; }
+      #bar button:active { background: #3c59a8; border-color: #6c8ad0; }
+      #bar kbd { margin-right: 7px; font: 600 11px/1 ui-monospace, Menlo, monospace; color: #e8c15a; }
+      #keys button { color: #b9bdc8; }
+      #keys kbd { color: #8d919c; }
+      .beside body { flex-direction: row; }
+      .beside #bar { flex-direction: column; align-items: stretch; }
+      .beside #offers { flex-direction: column; flex-wrap: nowrap; }
+      .beside #offers button { text-align: left; }
+      .beside #keys { flex-wrap: wrap; }
+      .beside #keys button { flex: 1 1 0; }
+      .beside #keys #more { flex-basis: 100%; }
+      /* A column cut short fades out at its foot, to say there is more. */
+      .beside .over #offers { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent); }
+
       /* Touch controls: hidden unless the device has no keyboard to speak of. */
       #ui { display: none; }
       .touch body { justify-content: flex-start; padding-top: max(6px, env(safe-area-inset-top)); box-sizing: border-box; }
@@ -150,6 +184,14 @@
   </head>
   <body>
     <canvas id="screen"></canvas>
+    <div id="bar">
+      <div id="offers" aria-label="What can be done here"></div>
+      <div id="keys">
+        <button type="button" id="more" hidden>More &#9662;</button>
+        <button type="button" data-key="Tab"><kbd>Tab</kbd>Bag</button>
+        <button type="button" data-key="Escape"><kbd>Esc</kbd>Menu</button>
+      </div>
+    </div>
     <div id="panel" aria-live="polite"></div>
     <div id="ui">
       <div id="chips"></div>
@@ -171,3 +213,4 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+

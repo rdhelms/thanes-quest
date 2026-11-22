@@ -5,7 +5,7 @@
 
 import { buildScene } from './build';
 import { mix, stream } from './noise';
-import type { Content, DoorDef, Effect, LayerDef, NpcDef, PropDef, RoomDef, Rule, SightDef, SpawnDef, ThingDef } from './types';
+import type { Content, DoorDef, Effect, LayerDef, LookWhen, NpcDef, PropDef, RoomDef, Rule, SightDef, SpawnDef, ThingDef } from './types';
 import { blockedEdges, canReach, reachable } from './walk';
 
 type Biome = 'pines' | 'open' | 'mere' | 'ruin' | 'camp' | 'crags' | 'deadwood' | 'shrine' | 'steading' | 'valley' | 'pass';
@@ -177,6 +177,8 @@ export function isPass(c: Content, X: number, Y: number): boolean {
   const r = ringOf(X, Y);
   const side = outward(X, Y);
   if (!f?.marches || !side || marchOf(c, r) < 0 || handAt(c, X, Y)) return false;
+  // The north wall has no passes: the only way through it is a place made by hand.
+  if (side === 'n' && f.northWall === r) return false;
   const along = side === 'e' || side === 'w' ? Y : X;
   const span = 2 * r - 1;
   const n = Math.max(1, f.marches.passes);
@@ -194,6 +196,9 @@ export function isPass(c: Content, X: number, Y: number): boolean {
  */
 export function edgeOf(c: Content, X: number, Y: number, side: Side): 'open' | 'wall' | 'pass' {
   const [nx, ny] = [X + STEP[side][0], Y + STEP[side][1]];
+  // The north wall runs on past the corners of its ring, east and west, without end.
+  const wall = c.frontier?.northWall;
+  if (wall !== undefined && (side === 'n' || side === 's') && Math.min(Y, ny) === -wall - 1) return 'wall';
   const [r1, r2] = [ringOf(X, Y), ringOf(nx, ny)];
   if (Math.abs(r1 - r2) !== 1 || marchOf(c, Math.min(r1, r2)) < 0) return 'open';
   const [ix, iy, out] = r1 < r2 ? [X, Y, side] : [nx, ny, BACK[side]];
@@ -207,6 +212,8 @@ export function kindAt(c: Content, X: number, Y: number): string | null {
   // Between the places of the valley there is only the valley's own country: roads.
   if (f.valley && !depthOf(c, X, Y)) return 'valley';
   if (isPass(c, X, Y)) return 'pass';
+  const set = f.kinds?.[`${X},${Y}`];
+  if (set) return set;
   let roll = (mix(X, Y, f.seed) / 4294967296) * Object.values(f.odds).reduce((n, v) => n + v, 0);
   for (const [biome, weight] of Object.entries(f.odds)) if ((roll -= weight) < 0) return biome;
   return Object.keys(f.odds)[0];
@@ -220,11 +227,23 @@ export function homes(c: Content): Record<string, [number, number]> {
   if (found) return found;
   homeCache.set(c, (found = {}));
   const folk = c.frontier?.folk ?? [];
+  const past = c.frontier?.folkPast ?? {};
+  const taken = new Set<string>();
+  // First those who live out past some place with a name: the nearest steading beyond it.
+  for (const who of folk) {
+    const from = past[who] ? c.frontier?.grid[past[who]] : undefined;
+    if (!from) continue;
+    const at = findNear(c, from[0], from[1], ['steading'], 8, 0, (x, y) => Math.hypot(x, y) > Math.hypot(from[0], from[1]) && !taken.has(wildId(x, y)));
+    if (!at) continue;
+    found[who] = [at.x, at.y];
+    taken.add(wildId(at.x, at.y));
+  }
+  const rest = folk.filter((who) => !found[who]);
   let n = 0;
-  for (let r = 1; r <= 16 && n < folk.length; r++)
-    for (let dy = -r; dy <= r && n < folk.length; dy++)
-      for (let dx = -r; dx <= r && n < folk.length; dx++)
-        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && kindAt(c, dx, dy) === 'steading') found[folk[n++]] = [dx, dy];
+  for (let r = 1; r <= 16 && n < rest.length; r++)
+    for (let dy = -r; dy <= r && n < rest.length; dy++)
+      for (let dx = -r; dx <= r && n < rest.length; dx++)
+        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && kindAt(c, dx, dy) === 'steading' && !taken.has(wildId(dx, dy))) found[rest[n++]] = [dx, dy];
   return found;
 }
 
@@ -696,6 +715,14 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
     }
   }
 
+  // Where the dead walked by day, they are still to be seen once they walk no longer.
+  const walker = spawns.find((sp) => sp.when !== 'night' && c.enemies[sp.kind]?.undead);
+  const rested = !!(walker && c.rest && f.text.deadRest);
+  if (walker && rested) {
+    things.push({ id: 'atrest', nouns: f.text.deadRestNouns ?? ['bones'], x: walker.x, y: walker.y, reach: 400, hidden: true, look: f.text.deadRest! });
+    rules.push({ enter: true, if: c.rest, do: [{ show: 'atrest' }] });
+  }
+
   const ways = Object.keys(exits).length;
   const far = level >= 3 ? ' ' + f.text.deep : '';
   // The walls, as the country round them describes them.
@@ -707,6 +734,11 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
     (gaps.length && f.text.scarpGap ? ' ' + f.text.scarpGap.replace('%s', listed(gaps.map((w) => WAY[w]))) : '');
   // A place's name is always drawn, so that the same numbers follow whether or not a sight took it.
   const called = placeName(pick(text.first), text.second, pick);
+  const look = `${pick(text.look)}${hold ? ' ' + hold.look.replace('%s', WAY[out!]) : ''}${sight ? ' ' + sight.seen : ''}${far}${road ? ' ' + road.says : ''}${scarp} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`;
+  const lookWhen: LookWhen[] = [
+    ...(rested && f.text.deadRestSeen ? [{ if: c.rest!, look: `${look} ${f.text.deadRestSeen}` }] : []),
+    ...(biome === 'camp' && !bare ? [{ if: [{ quiet: true }], look: f.text.campQuiet }] : []),
+  ];
   return {
     id,
     name: hold ? placeName(hold.first[mix(X, Y, f.seed, 29) % hold.first.length], text.second, pick) : sight ? sight.name : called,
@@ -714,8 +746,8 @@ function compose(c: Content, X: number, Y: number, attempt: number, bare: boolea
     mark,
     ...(valley || peaceful ? { haven: true } : {}),
     ...(hold && out ? { holds: { [out]: hold.held } } : {}),
-    look: `${pick(text.look)}${hold ? ' ' + hold.look.replace('%s', WAY[out!]) : ''}${sight ? ' ' + sight.seen : ''}${far}${road ? ' ' + road.says : ''}${scarp} ${ways === 4 ? f.text.waysAll : f.text.waysSome}`,
-    ...(biome === 'camp' && !bare ? { lookWhen: [{ if: [{ quiet: true }], look: f.text.campQuiet }] } : {}),
+    look,
+    ...(lookWhen.length ? { lookWhen } : {}),
     scene: { kind: 'outdoor', horizon: hz, walkTop, layers, props, ...(when.length ? { when } : {}) },
     exits,
     doors,
@@ -858,7 +890,9 @@ export function frontierProblems(c: Content): string[] {
     if (rings.some((r, i) => r <= reachOf(c) || (i && r <= rings[i - 1]))) errs.push('frontier: the rings of the marches must lie beyond the valley, nearest first');
     for (const h of f.marches.holds) for (const kind of h.life.flat()) c.enemies[kind] || errs.push(`frontier: unknown enemy "${kind}" holding a pass`);
     for (const [id, at] of Object.entries(f.grid)) {
-      if (rings.includes(Math.max(Math.abs(at[0]), Math.abs(at[1])))) errs.push(`frontier: "${id}" stands on a march, where its wall would run through it`);
+      // A place made by hand may stand in the wall of a march only as the way through it: with a road of its own out on that side.
+      const out = outward(at[0], at[1]);
+      if (rings.includes(Math.max(Math.abs(at[0]), Math.abs(at[1]))) && !(out && c.rooms[id]?.exits?.[out])) errs.push(`frontier: "${id}" stands on a march, where its wall would run through it`);
       for (const side of (f.gates[id] ?? '') as Iterable<Side>) if (STEP[side] && edgeOf(c, at[0], at[1], side) === 'wall') errs.push(`frontier: the ${side} gate of "${id}" opens onto the wall of a march`);
     }
   }
@@ -866,3 +900,4 @@ export function frontierProblems(c: Content): string[] {
     for (const kind of tiers.flat()) c.enemies[kind] || errs.push(`frontier: unknown enemy "${kind}" in ${biome} country`);
   return errs;
 }
+

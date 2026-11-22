@@ -899,7 +899,26 @@ const shaded = (fn: (sc: Scene, p: P) => void, dx: number, rx: number, ry: numbe
   shadow: (sc: Scene, p: P, def: { kind: string }): void => void (def.kind === 'outdoor' && sc.shadowEllipse(p.x + dx, p.y + 1, rx, ry)),
 });
 
+/**
+ * Snow that hangs in the air and does not fall: a band of it right across the picture, down to y,
+ * `h` deep, thickest at the top. With `w`, a way has been pushed through the middle of it, that wide.
+ */
+function hangsnow(sc: Scene, p: P): void {
+  const h = p.h ?? 40;
+  const gap = p.w ?? 0;
+  const seed = p.seed ?? 1;
+  for (let py = p.y - h; py < p.y; py++) {
+    const t = (p.y - py) / h;
+    for (let px = 0; px < PW; px++) {
+      if (gap && Math.abs(px - PW / 2) < gap / 2 + (vnoise(py * 0.3, 1, seed) - 0.5) * 3) continue;
+      if (hash2(px, py, seed) > 0.14 + 0.62 * t) continue;
+      sc.put(px, py, hash2(px, py, seed + 1) < 0.7 ? R.snow : R.ice, 0.72 + 0.28 * hash2(px, py, seed + 2), p.y);
+    }
+  }
+}
+
 Object.assign(PROPS, {
+  hangsnow: draw(hangsnow),
   stone: shaded(stone, 8, 14, 3.5),
   mound: draw(mound),
   tent: shaded(tent, 14, 26, 4),
@@ -938,3 +957,4 @@ Object.assign(PROPS, {
 
 // Referenced so bundlers keep the registration above when this file is imported for its effect.
 export const SCENERY_READY = PW > 0;
+

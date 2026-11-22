@@ -1,6 +1,7 @@
 // Touch controls for phones and tablets: a thumb pad, action buttons, a command field that uses
 // the device's own keyboard, and a row of suggestions for what can be done here. All of it just
-// feeds the same key presses and typed lines a keyboard would.
+// feeds the same key presses and typed lines a keyboard would. Also here, for every kind of
+// device: pointing at the picture, and the same suggestions as numbered buttons for a desktop.
 
 import { SH, SW, type Renderer } from './engine/render';
 import type { Modal, Shell } from './engine/shell';
@@ -15,6 +16,8 @@ export function setupTouch(shell: Shell, renderer: Renderer, canvas: HTMLCanvasE
   document.documentElement.classList.add('touch');
   shell.startHint = 'Pad walks. Tap a button below, or type.';
   shell.roomy = true;
+  // These buttons carry no numbers, so a keyboard's digits are only digits here.
+  shell.digits = false;
 
   // --- thumb pad: slide in any of eight directions
   const pad = document.getElementById('dpad')!;
@@ -89,30 +92,74 @@ export function setupTouch(shell: Shell, renderer: Renderer, canvas: HTMLCanvasE
     else if (line.trim()) shell.submit(line);
   });
 
-  // --- suggestions: rebuilt only when they change
-  const chips = document.getElementById('chips')!;
-  let shown = '';
-  setInterval(() => {
-    const list = shell.suggest();
-    const sig = list.map((s) => s.line).join('|');
-    if (sig === shown) return;
-    shown = sig;
-    chips.replaceChildren(
-      ...list.map((s) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = s.label;
-        b.addEventListener('click', () => shell.submit(s.line));
-        return b;
-      }),
-    );
-  }, 250);
+  // --- suggestions
+  offers(shell, document.getElementById('chips')!, false);
 
   setupPanel(shell);
 
   window.visualViewport?.addEventListener('resize', refit);
   // Safari ignores the page's "no zooming"; a pinch would otherwise zoom the whole game.
   document.addEventListener('gesturestart', (e) => e.preventDefault());
+}
+
+/**
+ * Keep a row of buttons showing what can be done where the player stands: the shell's
+ * suggestions, rebuilt only when they change. With `numbered`, the first ten show the digit key
+ * that does the same. The shell answers that key itself, from what it would suggest at that
+ * moment, so a numbered row is brought up to date more often: what it shows is what a key does.
+ */
+function offers(shell: Shell, row: HTMLElement, numbered: boolean): void {
+  let shown = '';
+  setInterval(() => {
+    const list = shell.suggest();
+    const sig = list.map((s) => `${s.label}=${s.line}`).join('|');
+    if (sig === shown) return;
+    shown = sig;
+    row.replaceChildren(
+      ...list.map((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        if (numbered && i < 10) {
+          const k = document.createElement('kbd');
+          k.textContent = String((i + 1) % 10);
+          b.append(k);
+        }
+        b.append(s.label);
+        b.addEventListener('click', () => shell.submit(s.line));
+        return b;
+      }),
+    );
+    // What belongs to this spot is at the front: a row that changes is shown from its start again.
+    row.scrollTop = 0;
+  }, numbered ? 100 : 250);
+}
+
+/**
+ * With a keyboard and a mouse: the suggestions as numbered buttons by the picture, and the bag
+ * and the menu beside them, so that nothing has to be typed. The typing line stays where it is,
+ * for whoever would rather.
+ */
+export function setupBar(shell: Shell): void {
+  const bar = document.getElementById('bar')!;
+  const row = document.getElementById('offers')!;
+  offers(shell, row, true);
+  // More offers than there is room for: a button turns to the next of them, and round to the first again.
+  const more = document.getElementById('more') as HTMLButtonElement;
+  const atEnd = (): boolean => row.scrollTop + row.clientHeight >= row.scrollHeight - 1;
+  const mark = (): void => {
+    more.hidden = row.scrollHeight <= row.clientHeight + 1;
+    bar.classList.toggle('over', !atEnd());
+  };
+  setInterval(mark, 250);
+  more.addEventListener('click', () => {
+    // The gap between rows of buttons is the stylesheet's.
+    row.scrollTop = atEnd() ? 0 : row.scrollTop + row.clientHeight + 6;
+    mark();
+  });
+  for (const b of bar.querySelectorAll<HTMLButtonElement>('#keys button[data-key]')) b.addEventListener('click', () => shell.keyDown(b.dataset.key!));
+  // A clicked button must not be left holding the keyboard: Enter and Space belong to the game,
+  // and would otherwise press the button again as well.
+  bar.addEventListener('mousedown', (e) => e.target instanceof Element && e.target.closest('button') && e.preventDefault());
 }
 
 /**
@@ -302,16 +349,28 @@ function unwrap(text: string, cols: number): string {
 
 /**
  * A tap or a click on the picture answers a message, picks a row from a list, or looks at a place
- * on the map. For fingers and for mice alike.
+ * on the map; and with nothing open, it goes to the spot, or deals with who or what is there.
+ * For fingers and for mice alike.
  */
 export function setupPointer(shell: Shell, renderer: Renderer, canvas: HTMLCanvasElement): void {
+  /** Where in the picture a pointer is, or null if it is on the lines above or below it. */
+  const spot = (e: PointerEvent): [number, number] | null => {
+    const r = canvas.getBoundingClientRect();
+    const [x, y] = [((e.clientX - r.left) / r.width) * SW, ((e.clientY - r.top) / r.height) * SH - 8];
+    return y >= 0 && y < 168 ? [Math.round(x), Math.round(y)] : null;
+  };
+  // A mouse shows a hand over anybody or anything that a click would do more than walk to.
+  canvas.addEventListener('pointermove', (e) => {
+    const at = e.pointerType === 'mouse' ? spot(e) : null;
+    canvas.style.cursor = at && shell.aim(...at) ? 'pointer' : '';
+  });
   canvas.addEventListener('pointerdown', (e) => {
     const m = shell.modal;
     if (!m) {
-      // With nothing to answer, pointing at the picture means: walk there.
-      const r = canvas.getBoundingClientRect();
-      const [x, y] = [((e.clientX - r.left) / r.width) * SW, ((e.clientY - r.top) / r.height) * SH - 8];
-      if (y >= 0 && y < 168) shell.walkTo(Math.round(x), Math.round(y));
+      // With nothing to answer, pointing at the picture means: go there, and talk to whoever or
+      // take or look at whatever was pointed at.
+      const at = spot(e);
+      if (at) shell.point(...at);
       return;
     }
     e.preventDefault();
@@ -333,3 +392,4 @@ export function setupPointer(shell: Shell, renderer: Renderer, canvas: HTMLCanva
     shell.keyDown('Enter');
   });
 }
+

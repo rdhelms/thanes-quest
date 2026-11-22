@@ -30,6 +30,8 @@ export function test(sim: Sim, c: Cond): boolean {
   if ('skill' in c) return (s.player.skills[c.skill]?.lv ?? 0) >= c.min;
   if ('night' in c) return sim.daylight() < 0.35 === c.night;
   if ('quiet' in c) return !sim.rs.actors.some((a) => hostile(sim, a)) === c.quiet;
+  if ('at' in c) return c.at.includes(s.room);
+  if ('afield' in c) return sim.afield() === c.afield;
   if ('not' in c) return !test(sim, c.not);
   return c.any.some((x) => test(sim, x));
 }
@@ -151,3 +153,4 @@ export function speak(sim: Sim, topic: Topic, who?: string): boolean | 'brief' {
   }
   return false;
 }
+

@@ -658,12 +658,15 @@ export class Renderer {
       // Once the weather has broken, the wind is gone, and at home there is hardly a flake.
       const still = !!sim.content.calm && all(sim, sim.content.calm);
       const wind = still ? 0 : Math.min(2.4, far * 0.4);
-      for (let i = 0, n = still ? (at ? 40 + Math.min(60, far * 8) : 7) : 54 + Math.min(120, far * 20); i < n; i++) {
+      // In some places the snow does not fall at all: it hangs where it was, until the weather breaks.
+      const hung = !still ? sim.room.hung : undefined;
+      for (let i = 0, n = hung ?? (still ? (at ? 40 + Math.min(60, far * 8) : 7) : 54 + Math.min(120, far * 20)); i < n; i++) {
         const near = i % 3 === 0;
-        const speed = (near ? 1.5 : 0.8) + hash2(i, 3, 7) * 0.5;
-        const x = Math.floor(hash2(i, 1, 7) * PW + Math.sin((t + i * 37) * 0.04) * 5 + t * ((hash2(i, 4, 7) - 0.5) * 0.4 - wind * (near ? 1 : 0.6)));
+        const speed = hung ? 0 : (near ? 1.5 : 0.8) + hash2(i, 3, 7) * 0.5;
+        const x = hung ? Math.floor(hash2(i, 1, 7) * PW) : Math.floor(hash2(i, 1, 7) * PW + Math.sin((t + i * 37) * 0.04) * 5 + t * ((hash2(i, 4, 7) - 0.5) * 0.4 - wind * (near ? 1 : 0.6)));
         const y = Math.floor(hash2(i, 2, 7) * PH + t * speed);
-        fb[(PIC_Y + (((y % PH) + PH) % PH)) * SW + (((x % PW) + PW) % PW)] = spriteColour(R.snow, near ? 3 : 2);
+        // Hanging flakes are a little blue, so that they show against the snow behind them.
+        fb[(PIC_Y + (((y % PH) + PH) % PH)) * SW + (((x % PW) + PW) % PW)] = spriteColour(hung && i % 2 ? R.ice : R.snow, near ? 3 : 2);
       }
     }
 
@@ -717,3 +720,4 @@ export class Renderer {
     return fb;
   }
 }
+

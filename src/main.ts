@@ -7,7 +7,7 @@ import { behaviours } from './game/behaviours';
 import { content } from './game/content';
 import { Music, measure } from './music';
 import { playSound, unlockSound } from './sound';
-import { isTouchDevice, setupPointer, setupTouch } from './touch';
+import { isTouchDevice, setupBar, setupPointer, setupTouch } from './touch';
 
 const canvas = document.getElementById('screen') as HTMLCanvasElement;
 canvas.width = SW;
@@ -59,8 +59,18 @@ const music = new Music(content.music);
 const wake = (): void => music.attach(unlockSound());
 
 const touch = isTouchDevice();
+const bar = document.getElementById('bar')!;
+/**
+ * The buttons that offer what can be done, where there is a keyboard: how tall one is, the gap
+ * between rows of them, the gap between them and the picture, and how wide they are as a column.
+ * The first three are the stylesheet's own figures.
+ */
+const BAR = { row: 28, gap: 6, clear: 10, side: 184 };
 
-/** Largest whole-pixel scale that fits the window, leaving room for touch controls if shown. */
+/**
+ * Largest whole-pixel scale that fits the window, leaving room for the touch controls if shown,
+ * or else for the buttons that offer what can be done.
+ */
 function fit(): void {
   const dpr = window.devicePixelRatio || 1;
   const vw = window.innerWidth;
@@ -82,12 +92,27 @@ function fit(): void {
   }
   // With a keyboard, snap to whole device pixels for even lettering. On a phone, size matters more:
   // fill the width.
-  const exact = Math.min(w / SW, h / SH);
-  const scale = touch ? Math.max(0.5, exact) : Math.max(1, Math.floor(exact * dpr)) / dpr;
+  const snap = (exact: number): number => Math.max(1, Math.floor(exact * dpr)) / dpr;
+  let scale = Math.max(0.5, Math.min(w / SW, h / SH));
+  if (!touch) {
+    // The offers go in a row under the picture. A window too short to hold both without the
+    // picture dropping a size, but with width to spare, has them in a column beside it instead.
+    const under = snap(Math.min(w / SW, (h - BAR.clear - BAR.row) / SH));
+    const beside = snap(Math.min((w - BAR.clear - BAR.side) / SW, h / SH));
+    const side = beside > under;
+    scale = side ? beside : under;
+    // Its size is fixed here, so that nothing moves as the buttons come and go: the picture's
+    // width and one row of buttons, or two where there is room for a second.
+    const two = 2 * BAR.row + BAR.gap;
+    document.documentElement.classList.toggle('beside', side);
+    bar.style.width = `${side ? BAR.side : SW * scale}px`;
+    bar.style.height = `${side ? SH * scale : h - SH * scale - BAR.clear >= two ? two : BAR.row}px`;
+  }
   canvas.style.width = `${SW * scale}px`;
   canvas.style.height = `${SH * scale}px`;
 }
 if (touch) setupTouch(shell, renderer, canvas, fit);
+else setupBar(shell);
 setupPointer(shell, renderer, canvas);
 window.addEventListener('resize', fit);
 fit();
@@ -131,3 +156,4 @@ function frame(now: number): void {
 requestAnimationFrame(frame);
 
 if (import.meta.env.DEV) Object.assign(window, { game: { shell, renderer, content, music, measure } });
+

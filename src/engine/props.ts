@@ -594,3 +594,4 @@ export const PROPS: Record<string, PropImpl> = {
   brazier: { draw: (sc, p) => brazier(sc, p) },
   sarcophagus: { needs: ['w'], draw: (sc, p) => sarcophagus(sc, { x: p.x, y: p.y, w: p.w ?? 60 }) },
 };
+

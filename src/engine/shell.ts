@@ -6,10 +6,11 @@ import { hostile } from './combat';
 import { bagRows, groundRows, itemActions, loadText, storedRows, storeHere, weighed } from './commands';
 import { wrap } from './font';
 import { chart, roomOf } from './frontier';
+import { ICONS } from './icons';
 import { all } from './rules';
 import { PH, PW } from './scene';
 import { Sim, type Behaviour } from './sim';
-import type { Content, GameState, Intent } from './types';
+import type { ActorState, Content, DoorDef, GameState, Intent } from './types';
 import { routeTo, type Pace } from './walk';
 
 export interface Store {
@@ -50,6 +51,13 @@ const MAX_INPUT = 37;
 /** Lines of text a box can hold before it must continue on another. */
 const BOX_LINES = 13;
 const TICK_MS = 50;
+/** The most things offered at once. The first ten can be had by a digit key. */
+const OFFERS = 16;
+
+/** What stands at a point in the picture, and what pointing at it does. */
+type Pointed =
+  | { k: 'talk' | 'take' | 'look'; label: string; line: string; x: number; y: number; d: number }
+  | { k: 'fight'; label: string; foe: ActorState };
 
 export class Shell {
   sim: Sim;
@@ -75,9 +83,14 @@ export class Shell {
   /** The row last chosen in this conversation, by its label: where the cursor waits when the menu comes back. */
   private talkLast: string | null = null;
   /** Shown once as play begins. The browser layer swaps in wording for touch screens. */
-  startHint = 'Arrow keys walk. Type HELP for more.';
+  startHint = 'Arrows walk. Click, press 1-9, or type.';
   /** Space list rows further apart, for fingers. */
   roomy = false;
+  /**
+   * A digit pressed on an empty typing line does the thing of that number among those offered
+   * (see `suggest`). The browser layer turns this off where the offers are shown without numbers.
+   */
+  digits = true;
 
   constructor(private content: Content, private store: Store, private dev = false, private behaviours: Record<string, Behaviour> = {}) {
     this.sim = this.fresh();
@@ -245,6 +258,98 @@ export class Shell {
     const from = !!door && p.x >= door.x0 && p.x <= door.x1 && p.y >= door.y0 && p.y <= door.y1;
     this.bound = { x, y, paces: [], i: 0, on: door ? null : on, ticks: 0, stuck: 0, lastX: p.x, lastY: p.y, typed, ...(door ? { door: at, from } : {}) };
     this.plan();
+  }
+
+  /** The door a point in the picture is on: anywhere on its leaf or its threshold. */
+  private doorAt(x: number, y: number): DoorDef | undefined {
+    return (this.sim.room.doors ?? []).find((d) => x >= d.x0 - 6 && x <= d.x1 + 6 && y >= d.y0 - 40 && y <= d.y1 + 4);
+  }
+
+  /**
+   * Who or what is drawn at a point in the picture. Somebody comes before a door they stand in
+   * front of, and a door before the things about it, so that pointing at a door still goes
+   * through it. Scenery that can be seen from anywhere (snow, sky, the far trees) is nothing to
+   * point at: its place in the picture is only somewhere to hang its description. Nor is
+   * anything in the dark.
+   */
+  private under(x: number, y: number): Pointed | null {
+    const sim = this.sim;
+    const c = this.content;
+    if (sim.isDark()) return null;
+    // People, and creatures that mean harm, by the room their figures take up: the nearest, if figures overlap.
+    let who: ActorState | null = null;
+    for (const a of sim.rs.actors) {
+      const spec = a.kind === 'npc' ? c.chars[a.ref]?.spec : hostile(sim, a) ? c.enemies[a.ref]?.spec : undefined;
+      if (!spec) continue;
+      const four = !!spec.body && spec.body !== 'human';
+      const size = spec.size ?? 1;
+      if (Math.abs(x - a.x) > (four ? 14 : 10) * size || y > a.y + 4 || y < a.y - (four ? 24 : 40) * size) continue;
+      if (!who || Math.abs(x - a.x) < Math.abs(x - who.x)) who = a;
+    }
+    if (who?.kind === 'npc') {
+      const def = c.chars[who.ref];
+      return { k: 'talk', label: `Talk to ${def.name}`, line: `talk to ${def.nouns[0]}`, x: who.x, y: who.y, d: 48 };
+    }
+    // Some are named with their article ("the Greyback"), and most are not ("wolf").
+    if (who) return { k: 'fight', label: `Fight the ${c.enemies[who.ref].name.replace(/^the /, '')}`, foe: who };
+    if (this.doorAt(x, y)) return null;
+    // Things: a small picture is itself the mark; anything else is taken to stand on its spot, a
+    // little taller than it is wide. Of two that overlap, the smaller is meant: the book, not the table.
+    const things = sim.things();
+    let best: { t: (typeof things)[number]; hw: number } | null = null;
+    for (const t of things) {
+      const reach = t.reach ?? 30;
+      if (reach > 100) continue;
+      const icon = t.icon ? ICONS[t.icon] : undefined;
+      const hw = icon ? (icon.w >> 1) + 4 : Math.max(8, Math.min(14, Math.round(reach / 3)));
+      const top = icon ? icon.h + (t.lift ?? 0) + 4 : hw * 2 + 4;
+      if (Math.abs(x - t.x) > hw || y > t.y + 5 || y < t.y - top) continue;
+      if (!best || hw < best.hw) best = { t, hw };
+    }
+    if (!best) return null;
+    const t = best.t;
+    // A word for it that means this thing and no other here.
+    const noun = t.nouns.find((w) => things.find((o) => o.nouns.includes(w)) === t) ?? t.nouns[0];
+    const at = { x: t.x, y: t.y, d: t.reach ?? 30 };
+    return t.take ? { k: 'take', label: `Take the ${noun}`, line: `take ${noun}`, ...at } : { k: 'look', label: `Look at the ${noun}`, line: `look at ${noun}`, ...at };
+  }
+
+  /** What pointing at this spot in the picture would do, in a few words; null where it would only walk there. */
+  aim(x: number, y: number): string | null {
+    return this.modal ? null : this.under(x, y)?.label ?? null;
+  }
+
+  /**
+   * The player has pointed at a spot in the picture (a click, a tap). On somebody: walk over and
+   * talk to them. On a thing: walk over and take it, or look at it if it is not to be taken. On
+   * something that means harm: strike if it is within the blow, and otherwise close with it.
+   * Anywhere else it is `walkTo`: bare ground, a door, the way off the edge of the picture.
+   */
+  point(x: number, y: number): void {
+    if (this.modal) return;
+    const at = this.under(x, y);
+    if (!at) return this.walkTo(x, y);
+    if (at.k === 'fight') {
+      // The arc of a swing, as the fight reckons it. With a bow, anything ahead and level is in range.
+      const p = this.sim.p;
+      const [dx, dy] = [at.foe.x - p.x, at.foe.y - p.y];
+      const far = p.weapon && this.content.items[p.weapon]?.kind === 'bow' ? PW : 28;
+      const inArc =
+        p.dir === 'right' ? dx > -4 && dx < far && Math.abs(dy) <= 8
+        : p.dir === 'left' ? dx < 4 && dx > -far && Math.abs(dy) <= 8
+        : p.dir === 'down' ? dy > -3 && dy < far / 2 && Math.abs(dx) <= 15
+        : dy < 3 && dy > -far / 2 && Math.abs(dx) <= 15;
+      if (inArc) this.queue.push({ t: 'attack' });
+      // Walking at it turns the player to face it, and the next click strikes.
+      else this.walkTo(Math.round(at.foe.x), Math.round(at.foe.y));
+    } else if (at.k === 'look') {
+      // Looking is done from where one stands, so nothing would walk the player over for it.
+      // That is done here, and the look is taken on arriving, with the thing in reach to be tried.
+      this.bound = this.errand = null;
+      this.tries = 0;
+      if (this.sim.within(at.x, at.y, at.d)) this.queue.push({ t: 'say', line: at.line });
+      else this.goFor(at);
+    } else this.send(at.line);
   }
 
   /**
@@ -470,6 +575,13 @@ export class Shell {
     else if (key === 'Escape') this.menu();
     else if (key === 'Enter') this.submit(this.input || this.last);
     else if (key === 'Backspace') this.input = this.input.slice(0, -1);
+    // A digit on an empty line is the offer of that number (1 to 9, then 0 for the tenth), and
+    // never the start of a line: a number pressed a moment late would otherwise sit on the line
+    // and quietly turn every number after it into typing. Further along a line it is only a digit.
+    else if (this.digits && !this.input && key.length === 1 && key >= '0' && key <= '9') {
+      const offer = this.suggest()[(Number(key) + 9) % 10];
+      if (offer) this.submit(offer.line);
+    }
     else if (key.length === 1 && this.input.length < MAX_INPUT) this.input += key;
     else return false;
     return true;
@@ -520,7 +632,12 @@ export class Shell {
 
   /**
    * Things worth doing right here, as ready-made commands: who to talk to, what to pick up or
-   * examine, which spells and words are to hand. Touch screens show these as buttons.
+   * examine, which spells and words are to hand. They are shown as buttons: by the picture where
+   * there is a keyboard (the first ten answer to the digit keys), above the pad on a touch screen.
+   *
+   * What belongs to this spot comes first, then the runewords, then what can be done anywhere.
+   * If there are more than will fit it is the last of those that go unshown, and never a word
+   * that a story may be waiting on.
    */
   suggest(): { label: string; line: string }[] {
     if (this.modal) return [];
@@ -534,7 +651,7 @@ export class Shell {
       .sort((a, b) => dist(a.x, a.y) - dist(b.x, b.y))[0];
     if (who) out.push({ label: `Talk to ${c.chars[who.ref].name}`, line: `talk to ${c.chars[who.ref].nouns[0]}` });
     const close = sim.things().filter((t) => dist(t.x, t.y) <= (t.reach ?? 30));
-    // A thing to be tried with something carried ("put crown on anvil") is offered only to whoever carries it.
+    // A thing to be tried with something carried ("lay the log on the hearth") is offered only to whoever carries it.
     const lacking = (line: string): boolean => {
       const r = sim.parser.parse(line);
       return r.ok && r.nouns.some((n) => !sim.things().some((t) => t.nouns.includes(n)) && Object.values(c.items).some((it) => it.nouns.includes(n)) && !Object.keys(p.inv).some((id) => c.items[id]?.nouns.includes(n)));
@@ -543,6 +660,7 @@ export class Shell {
       if (t.take) out.push({ label: `Take the ${t.nouns[0]}`, line: `take ${t.nouns[0]}` });
       for (const line of t.try ?? []) if (!lacking(line)) out.push({ label: line[0].toUpperCase() + line.slice(1), line });
     }
+    for (const w of Object.values(c.words)) if (p.words.includes(w.id) && !(p.cd[w.id] > 0)) out.push({ label: w.verb.toUpperCase(), line: w.verb });
     out.push({ label: 'Look around', line: 'look' });
     if (sim.room.scene.kind === 'outdoor') out.push({ label: 'Map', line: 'map' });
     if (p.inv.potion && p.hp < p.maxHp * 0.6) out.push({ label: 'Drink a draught', line: 'drink potion' });
@@ -555,9 +673,8 @@ export class Shell {
       if (n > 0 && it?.offer && all(sim, it.offer.if)) out.push({ label: it.offer.label, line: it.offer.say });
     }
     for (const id of p.spells) out.push({ label: `Cast ${c.spells[id]?.name ?? id}`, line: `cast ${id}` });
-    for (const w of Object.values(c.words)) if (p.words.includes(w.id) && !(p.cd[w.id] > 0)) out.push({ label: w.verb.toUpperCase(), line: w.verb });
     const seen = new Set<string>();
-    return out.filter((o) => !seen.has(o.line) && seen.add(o.line)).slice(0, 10);
+    return out.filter((o) => !seen.has(o.line) && seen.add(o.line)).slice(0, OFFERS);
   }
 
   private fightUntil = 0;
@@ -846,3 +963,4 @@ export class Shell {
     this.fresh();
   }
 }
+
