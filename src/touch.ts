@@ -157,6 +157,8 @@ export function setupBar(shell: Shell): void {
     mark();
   });
   for (const b of bar.querySelectorAll<HTMLButtonElement>('#keys button[data-key]')) b.addEventListener('click', () => shell.keyDown(b.dataset.key!));
+  // The link out opens in a tab of its own, and must not be left holding the keyboard either.
+  bar.querySelector<HTMLAnchorElement>('a.home')?.addEventListener('click', (e) => (e.currentTarget as HTMLElement).blur());
   // A clicked button must not be left holding the keyboard: Enter and Space belong to the game,
   // and would otherwise press the button again as well.
   bar.addEventListener('mousedown', (e) => e.target instanceof Element && e.target.closest('button') && e.preventDefault());
@@ -286,12 +288,20 @@ function setupPanel(shell: Shell): void {
       b.addEventListener('click', () => shell.modal === m && shell.keyDown('Enter'));
       c.append(b);
     }
-    panel.replaceChildren(c);
+    // At the title and the main menu, under the rows: the way out to the rest of Daventry.
+    const out = m.k === 'list' && m.front ? document.getElementById('home-corner')?.cloneNode(true) : null;
+    if (out instanceof HTMLElement) {
+      out.removeAttribute('id');
+      // On a short phone the main menu needs the room more than the link does; the title screen has it to spare.
+      if (m.k === 'list' && !m.banner) out.classList.add('in-menu');
+    }
+    panel.replaceChildren(...(out ? [c, out] : [c]));
   };
 
   const frame = (): void => {
     const m = shell.modal;
     document.documentElement.classList.toggle('boxed', !!m);
+    document.documentElement.classList.toggle('front', m?.k === 'list' && !!m.front);
     if (m !== seen) {
       // Remember what is said as it is shown; a message that runs over several boxes is kept whole.
       const last = said[said.length - 1];

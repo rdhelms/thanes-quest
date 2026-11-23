@@ -646,3 +646,31 @@ describe('playing without typing', () => {
     expect(shell.heading).toBeNull();
   });
 });
+
+describe('the front of the game', () => {
+  // The page shows a way out to the rest of Daventry only where the game is standing at its own
+  // front door: the title screen and the main menu. Nothing opened from them is the front.
+  it('is the title screen and the main menu, and nothing else', () => {
+    const fresh = new Shell(content, memoryStore(), false, behaviours);
+    fresh.showTitle();
+    expect(list(fresh).front).toBe(true);
+
+    const shell = playing();
+    expect(shell.modal).toBeUndefined();
+    shell.keyDown('Escape');
+    expect(list(shell).items[0]).toBe('Resume');
+    expect(list(shell).front).toBe(true);
+    // The bag, opened from the menu, is not; coming back to the menu is.
+    list(shell).sel = 1;
+    shell.keyDown('Enter');
+    expect(list(shell).title).toContain('Your bag');
+    expect(list(shell).front).toBeFalsy();
+    shell.keyDown('Escape');
+    expect(list(shell).front).toBe(true);
+    // Nor is a conversation.
+    const talk = playing();
+    talk.submit('talk to sigga');
+    for (let i = 0; i < 200 && talk.modal?.k !== 'list'; i++) talk.modal ? talk.keyDown('Enter') : talk.tick();
+    expect(list(talk).front).toBeFalsy();
+  });
+});

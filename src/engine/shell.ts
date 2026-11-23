@@ -31,8 +31,9 @@ export type Modal =
   /**
    * A menu. `lead`: the first line of the title is a heading (the name of the thing shown).
    * `top`: the first row in view, when there are more rows than fit; the picture keeps it.
+   * `front`: the title screen or the main menu, where the page may show what lies outside the game.
    */
-  | { k: 'list'; title: string; items: string[]; sel: number; pick: (i: number) => void; cancel: boolean; banner?: string; onCancel?: () => void; lead?: boolean; top?: number };
+  | { k: 'list'; title: string; items: string[]; sel: number; pick: (i: number) => void; cancel: boolean; banner?: string; onCancel?: () => void; lead?: boolean; top?: number; front?: boolean };
 
 /** Somewhere to come back to once every box is closed: the menu, at the row chosen from it, or the bag. */
 type Return = { to: 'menu'; sel: number } | { to: 'bag'; item: string; room: string };
@@ -134,7 +135,7 @@ export class Shell {
     const auto = saved && saved.state.tick > 0 ? saved : null;
     const items = auto ? ['Begin a new saga', `Continue: ${auto.label}`] : ['Begin a new saga'];
     this.modals.unshift({
-      k: 'list', title: this.content.tagline, items, sel: auto ? 1 : 0, cancel: false, banner: this.content.title.toUpperCase(),
+      k: 'list', title: this.content.tagline, items, sel: auto ? 1 : 0, cancel: false, banner: this.content.title.toUpperCase(), front: true,
       pick: (i) => void (i === 1 && this.restore('auto')),
     });
   }
@@ -774,7 +775,10 @@ export class Shell {
       rows[i][1]();
     });
     const m = this.modals[0];
-    if (m.k === 'list') m.sel = Math.max(0, Math.min(rows.length - 1, sel));
+    if (m.k === 'list') {
+      m.sel = Math.max(0, Math.min(rows.length - 1, sel));
+      m.front = true;
+    }
   }
 
   /** What is carried, a row for each kind of thing; choosing one shows it, and what can be done with it. */
