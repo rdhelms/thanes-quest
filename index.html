@@ -60,23 +60,26 @@
       #bar kbd { margin-right: 7px; font: 600 11px/1 ui-monospace, Menlo, monospace; color: #e8c15a; }
       #keys button { color: #b9bdc8; }
       #keys kbd { color: #8d919c; }
-      /* The way out to the rest of Daventry: quiet until looked at, and never in the game's way.
-         With a keyboard it sits beside the bag and the menu. On a phone it shows only on the
-         title screen and the main menu: under the menu held upright, in a corner held sideways. */
-      a.home {
-        flex: none; font: 12px/1 system-ui, sans-serif; letter-spacing: 0.02em; color: #7d8494; text-decoration: none; white-space: nowrap;
-        -webkit-tap-highlight-color: transparent; transition: color 0.15s;
+      /* The ways out: to the rest of Daventry, and to the game's own source. Quiet until looked
+         at, and never in the game's way. With a keyboard they sit beside the bag and the menu.
+         On a phone they show only on the title screen and the main menu: under the menu held
+         upright, in a corner held sideways. */
+      .out {
+        display: flex; flex: none; align-items: baseline; gap: 7px; font: 12px/1 system-ui, sans-serif; letter-spacing: 0.02em;
+        color: #5d6371; white-space: nowrap;
       }
-      a.home i { font-style: normal; margin-left: 3px; opacity: 0.7; }
-      a.home:hover, a.home:focus-visible, a.home:active { color: #e8c15a; outline: none; }
-      a.home:hover b, a.home:focus-visible b { text-decoration: underline; text-underline-offset: 3px; }
-      a.home b { font-weight: 600; color: #a9afbd; }
-      a.home:hover b, a.home:active b { color: inherit; }
-      #keys a.home { align-self: center; margin-right: 8px; }
-      .beside #keys a.home { flex-basis: 100%; margin: 4px 0 0; text-align: center; order: 9; }
-      #home-corner { display: none; }
-      #panel a.home { flex: none; align-self: center; margin-top: 12px; padding: 8px 12px; font-size: 14px; }
-      @media (max-height: 700px) { #panel a.home.in-menu { display: none; } }
+      .out a { color: #7d8494; text-decoration: none; -webkit-tap-highlight-color: transparent; transition: color 0.15s; }
+      .out a i { font-style: normal; margin-left: 3px; opacity: 0.7; }
+      .out a b { font-weight: 600; color: #a9afbd; }
+      .out a:hover, .out a:focus-visible, .out a:active { color: #e8c15a; outline: none; }
+      .out a:hover b, .out a:focus-visible b, .out a:active b { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+      #keys .out { align-self: center; margin-right: 8px; }
+      .beside #keys .out { flex-basis: 100%; flex-wrap: wrap; justify-content: center; row-gap: 6px; margin: 4px 0 0; order: 9; }
+      .beside #keys .out .dot { display: none; }
+      #out-corner { display: none; }
+      #panel .out { align-self: center; margin-top: 12px; font-size: 14px; }
+      #panel .out a { padding: 8px 4px; }
+      @media (max-height: 700px) { #panel .out.in-menu { display: none; } }
       .beside body { flex-direction: row; }
       .beside #bar { flex-direction: column; align-items: stretch; }
       .beside #offers { flex-direction: column; flex-wrap: nowrap; }
@@ -190,7 +193,9 @@
       .typing #pads, .typing #chips { display: none; }
 
       @media (orientation: landscape) {
-        .touch.front #home-corner { display: block; position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); padding: 6px 2px; font-size: 13px; }
+        .touch.front #out-corner { display: flex; flex-direction: column; align-items: flex-end; gap: 0; position: fixed; top: max(6px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); font-size: 13px; }
+        .touch.front #out-corner a { padding: 7px 2px; }
+        .touch.front #out-corner .dot { display: none; }
         .touch body { justify-content: center; padding-top: 0; }
         .touch #ui { gap: 6px; }
         .touch #pads { display: block; }
@@ -205,14 +210,14 @@
     <div id="bar">
       <div id="offers" aria-label="What can be done here"></div>
       <div id="keys">
-        <a class="home" href="https://daventry.io/" target="_blank" rel="noopener" tabindex="-1" title="Make and play retro adventure games at daventry.io">More at <b>daventry.io</b><i aria-hidden="true">&#8599;</i></a>
+        <span class="out"><a href="https://daventry.io/" target="_blank" rel="noopener" tabindex="-1" title="Make and play retro adventure games at daventry.io">More at <b>daventry.io</b><i aria-hidden="true">&#8599;</i></a><span class="dot" aria-hidden="true">&middot;</span><a href="https://github.com/rdhelms/thanes-quest" target="_blank" rel="noopener" tabindex="-1" title="The game's source code, on GitHub">Source<i aria-hidden="true">&#8599;</i></a></span>
         <button type="button" id="more" hidden>More &#9662;</button>
         <button type="button" data-key="Tab"><kbd>Tab</kbd>Bag</button>
         <button type="button" data-key="Escape"><kbd>Esc</kbd>Menu</button>
       </div>
     </div>
     <div id="panel" aria-live="polite"></div>
-    <a class="home" id="home-corner" href="https://daventry.io/" target="_blank" rel="noopener" tabindex="-1">More at <b>daventry.io</b><i aria-hidden="true">&#8599;</i></a>
+    <span class="out" id="out-corner"><a href="https://daventry.io/" target="_blank" rel="noopener" tabindex="-1" title="Make and play retro adventure games at daventry.io">More at <b>daventry.io</b><i aria-hidden="true">&#8599;</i></a><span class="dot" aria-hidden="true">&middot;</span><a href="https://github.com/rdhelms/thanes-quest" target="_blank" rel="noopener" tabindex="-1" title="The game's source code, on GitHub">Source<i aria-hidden="true">&#8599;</i></a></span>
     <div id="ui">
       <div id="chips"></div>
       <form id="say" autocomplete="off">

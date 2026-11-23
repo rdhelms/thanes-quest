@@ -157,8 +157,8 @@ export function setupBar(shell: Shell): void {
     mark();
   });
   for (const b of bar.querySelectorAll<HTMLButtonElement>('#keys button[data-key]')) b.addEventListener('click', () => shell.keyDown(b.dataset.key!));
-  // The link out opens in a tab of its own, and must not be left holding the keyboard either.
-  bar.querySelector<HTMLAnchorElement>('a.home')?.addEventListener('click', (e) => (e.currentTarget as HTMLElement).blur());
+  // The links out open in tabs of their own, and must not be left holding the keyboard either.
+  for (const link of bar.querySelectorAll<HTMLAnchorElement>('.out a')) link.addEventListener('click', () => link.blur());
   // A clicked button must not be left holding the keyboard: Enter and Space belong to the game,
   // and would otherwise press the button again as well.
   bar.addEventListener('mousedown', (e) => e.target instanceof Element && e.target.closest('button') && e.preventDefault());
@@ -288,8 +288,8 @@ function setupPanel(shell: Shell): void {
       b.addEventListener('click', () => shell.modal === m && shell.keyDown('Enter'));
       c.append(b);
     }
-    // At the title and the main menu, under the rows: the way out to the rest of Daventry.
-    const out = m.k === 'list' && m.front ? document.getElementById('home-corner')?.cloneNode(true) : null;
+    // At the title and the main menu, under the rows: the ways out, to the rest of Daventry and to the source.
+    const out = m.k === 'list' && m.front ? document.getElementById('out-corner')?.cloneNode(true) : null;
     if (out instanceof HTMLElement) {
       out.removeAttribute('id');
       // On a short phone the main menu needs the room more than the link does; the title screen has it to spare.
